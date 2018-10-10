@@ -1,0 +1,361 @@
+﻿using System;
+using System.Linq;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using WebApi.Dtos;
+using WebApi.Entities;
+using WebApi.Enum;
+using WebApi.Helpers;
+
+namespace WebApi.Controllers
+{
+    [Authorize]
+    [ApiController]
+    [Route("[controller]")]
+    public class TransactionsController : BaseController
+    {
+        public TransactionsController(DataContext context)
+        {
+            DatabaseContext = context;
+        }
+
+        [HttpPost("create")]
+        public IActionResult CreateTransaction([FromBody] TransactionDto transactionDto)
+        {
+            if (User != null)
+                try
+                {
+                    var categoryEntity =
+                        DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
+                                                                     transactionDto.Category.CategoryId.Value);
+                    if (!CurrentUser.Budgets.Contains(categoryEntity.Budget))
+                        return BadRequest(new {Message = "category.invalid"});
+                    var transaction = new Transaction
+                                      {
+                                          BudgetCategoryId = categoryEntity.BudgetCategoryId,
+                                          CreatedByUserId = CurrentUser.UserId,
+                                          Description = transactionDto.Description,
+                                          Amount = transactionDto.Amount,
+                                          CreationDateTime = DateTime.Now,
+                                          TransactionDateTime = transactionDto.Date
+                                      };
+                    DatabaseContext.Transactions.Add(transaction);
+                    DatabaseContext.SaveChanges();
+
+                    return Ok(new TransactionDto
+                              {
+                                  TransactionId = transaction.TransactionId,
+                                  Category = new BudgetCategoryDto
+                                             {
+                                                 CategoryId = transaction.BudgetCategory.BudgetCategoryId,
+                                                 Icon = transaction.BudgetCategory.Icon,
+                                                 Name = transaction.BudgetCategory.Name,
+                                                 Type = transaction.BudgetCategory.Type
+                                             },
+                                  Date = transaction.TransactionDateTime,
+                                  RegisteredDate = transaction.CreationDateTime,
+                                  Description = transaction.Description,
+                                  Amount = transaction.Amount
+                              });
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new {message = ex.Message});
+                }
+
+            return Unauthorized();
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetById(int id, int budgetId)
+        {
+            if (User != null)
+                try
+                {
+                    var transaction = DatabaseContext.Transactions.Single(x => x.TransactionId == id);
+                    if (!CurrentUser.Budgets.Contains(transaction.BudgetCategory.Budget))
+                    {
+                        return BadRequest(new {Message = "transactions.notFound"});
+                    }
+
+                    return Ok(new TransactionDto
+                              {
+                                  TransactionId = transaction.TransactionId,
+                                  Category = new BudgetCategoryDto
+                                             {
+                                                 CategoryId = transaction.BudgetCategory.BudgetCategoryId,
+                                                 Icon = transaction.BudgetCategory.Icon,
+                                                 Name = transaction.BudgetCategory.Name,
+                                                 Type = transaction.BudgetCategory.Type
+                                             },
+                                  Date = transaction.TransactionDateTime,
+                                  RegisteredDate = transaction.CreationDateTime,
+                                  Description = transaction.Description,
+                                  Amount = transaction.Amount,
+                                  Budget = new BudgetDataDto()
+                                           {
+                                               Currency = transaction.BudgetCategory.Budget.Currency,
+                                               IncomeCategories = transaction.BudgetCategory.Budget
+                                                                             .BudgetCategories
+                                                                             .Where(x => x.Type == eBudgetCategoryType.Income)
+                                                                             .Select(x => new BudgetCategoryDto
+                                                                                          {
+                                                                                              CategoryId = x.BudgetCategoryId,
+                                                                                              Type = x.Type,
+                                                                                              Name = x.Name,
+                                                                                              Amount = x.MonthlyAmount,
+                                                                                              Icon = x.Icon
+                                                                                          })
+                                                                             .ToList(),
+                                               SavingCategories = transaction.BudgetCategory.Budget
+                                                                             .BudgetCategories
+                                                                             .Where(x => x.Type == eBudgetCategoryType.Saving)
+                                                                             .Select(x => new BudgetCategoryDto
+                                                                                          {
+                                                                                              CategoryId = x.BudgetCategoryId,
+                                                                                              Type = x.Type,
+                                                                                              Name = x.Name,
+                                                                                              Amount = x.MonthlyAmount,
+                                                                                              Icon = x.Icon
+                                                                                          })
+                                                                             .ToList(),
+                                               SpendingCategories = transaction.BudgetCategory.Budget
+                                                                               .BudgetCategories
+                                                                               .Where(x => x.Type == eBudgetCategoryType.Spending)
+                                                                               .Select(x => new BudgetCategoryDto
+                                                                                            {
+                                                                                                CategoryId = x.BudgetCategoryId,
+                                                                                                Type = x.Type,
+                                                                                                Name = x.Name,
+                                                                                                Amount = x.MonthlyAmount,
+                                                                                                Icon = x.Icon
+                                                                                            })
+                                                                               .ToList()
+                                           }
+                              });
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new {message = ex.Message});
+                }
+
+            return Unauthorized();
+        }
+
+        [HttpPost("list")]
+        public IActionResult ListTransactions([FromBody] TransactionsListFiltersDto filters)
+        {
+            if (User != null)
+                try
+                {
+                    var budget = CurrentUser.Budgets.Single(x => x.BudgetId == filters.BudgetId);
+                    if (!CurrentUser.Budgets.Contains(budget)) return BadRequest(new {Message = "budget.invalid"});
+
+                    var spendings = DatabaseContext.Transactions
+                                                   .Where(x => budget.BudgetCategories.Contains(x.BudgetCategory)
+                                                               && x.BudgetCategory.Type == eBudgetCategoryType.Spending);
+
+                    var income = DatabaseContext.Transactions
+                                                .Where(x => budget.BudgetCategories.Contains(x.BudgetCategory)
+                                                            && x.BudgetCategory.Type == eBudgetCategoryType.Income);
+
+                    var saving = DatabaseContext.Transactions
+                                                .Where(x => budget.BudgetCategories.Contains(x.BudgetCategory)
+                                                            && x.BudgetCategory.Type == eBudgetCategoryType.Saving);
+
+                    if (filters.StartDate != null)
+                    {
+                        spendings = spendings.Where(x => x.TransactionDateTime >= filters.StartDate);
+                        income = income.Where(x => x.TransactionDateTime >= filters.StartDate);
+                        saving = saving.Where(x => x.TransactionDateTime >= filters.StartDate);
+                    }
+
+                    if (filters.EndDate != null)
+                    {
+                        spendings = spendings.Where(x => x.TransactionDateTime <= filters.EndDate);
+                        income = income.Where(x => x.TransactionDateTime <= filters.EndDate);
+                        saving.Where(x => x.TransactionDateTime <= filters.EndDate);
+                    }
+
+                    if (filters.Categories != null)
+                    {
+                        spendings = spendings.Where(x => filters.Categories.Select(s=>s.CategoryId).Contains(x.BudgetCategory.BudgetCategoryId));
+                        income = income.Where(x => filters.Categories.Select(s=>s.CategoryId).Contains(x.BudgetCategory.BudgetCategoryId));
+                        saving = saving.Where(x => filters.Categories.Select(s=>s.CategoryId).Contains(x.BudgetCategory.BudgetCategoryId));
+                    }
+
+
+                    spendings = spendings.OrderByDescending(x => x.TransactionDateTime)
+                                         .ThenByDescending(x => x.CreationDateTime);
+
+                    income = income.OrderByDescending(x => x.TransactionDateTime)
+                                   .ThenByDescending(x => x.CreationDateTime);
+
+                    saving = saving.OrderByDescending(x => x.TransactionDateTime)
+                                   .ThenByDescending(x => x.CreationDateTime);
+
+                    if (filters.GroupCount != null && filters.GroupCount != 0)
+                    {
+                        spendings = spendings.Take(filters.GroupCount.Value).OrderByDescending(x => x.TransactionDateTime);
+                        income = income.Take(filters.GroupCount.Value).OrderByDescending(x => x.TransactionDateTime);
+                        saving = saving.Take(filters.GroupCount.Value).OrderByDescending(x => x.TransactionDateTime);
+                    }
+
+                    return Ok(new
+                              {
+                                  Spendings = spendings.Select(x => new TransactionDto
+                                                                    {
+                                                                        TransactionId = x.TransactionId,
+                                                                        Description = x.Description,
+                                                                        Date = x.TransactionDateTime,
+                                                                        RegisteredDate = x.CreationDateTime,
+                                                                        Amount = x.Amount,
+                                                                        Category =
+                                                                            new BudgetCategoryDto
+                                                                            {
+                                                                                Name = x.BudgetCategory.Name,
+                                                                                Icon = x.BudgetCategory.Icon,
+                                                                                CategoryId = x.BudgetCategoryId
+                                                                            }
+                                                                    }).ToList(),
+
+                                  Incomes = income.Select(x => new TransactionDto
+                                                               {
+                                                                   TransactionId = x.TransactionId,
+                                                                   Description = x.Description,
+                                                                   Date = x.TransactionDateTime,
+                                                                   RegisteredDate = x.CreationDateTime,
+                                                                   Amount = x.Amount,
+                                                                   Category = new BudgetCategoryDto
+                                                                              {
+                                                                                  Name = x.BudgetCategory.Name,
+                                                                                  Icon = x.BudgetCategory.Icon,
+                                                                                  CategoryId = x.BudgetCategoryId
+                                                                              }
+                                                               }).ToList(),
+
+                                  Savings = saving.Select(x => new TransactionDto
+                                                               {
+                                                                   TransactionId = x.TransactionId,
+                                                                   Description = x.Description,
+                                                                   Date = x.TransactionDateTime,
+                                                                   RegisteredDate = x.CreationDateTime,
+                                                                   Amount = x.Amount,
+                                                                   Category = new BudgetCategoryDto
+                                                                              {
+                                                                                  Name = x.BudgetCategory.Name,
+                                                                                  Icon = x.BudgetCategory.Icon,
+                                                                                  CategoryId = x.BudgetCategoryId
+                                                                              }
+                                                               }).ToList()
+                              });
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new {message = ex.Message});
+                }
+
+            return Unauthorized();
+        }
+
+        [HttpPost("transfer")]
+        public IActionResult TransferToCategory([FromBody] TransactionsTransferDto transactionTransferDto)
+        {
+            if (User != null)
+                try
+                {
+                    var budget = CurrentUser.Budgets.Single(x => x.BudgetId == transactionTransferDto.BudgetId);
+                    var sourceCategory =
+                        budget.BudgetCategories.Single(x => x.BudgetCategoryId ==
+                                                            transactionTransferDto.SourceCategory);
+                    var targetCategory =
+                        budget.BudgetCategories.Single(x => x.BudgetCategoryId ==
+                                                            transactionTransferDto.TargetCategory);
+
+                    sourceCategory.Transactions.ForEach(x => x.BudgetCategoryId = targetCategory.BudgetCategoryId);
+
+                    DatabaseContext.SaveChanges();
+
+                    return Ok();
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new {message = ex.Message});
+                }
+
+            return Unauthorized();
+        }
+
+        [HttpPost("{id}/update")]
+        public IActionResult UpdateTransaction(int id, [FromBody] TransactionDto transactionDto)
+        {
+            if (User != null)
+                try
+                {
+                    var categoryEntity =
+                        DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
+                                                                     transactionDto.Category.CategoryId.Value);
+                    if (!CurrentUser.Budgets.Contains(categoryEntity.Budget))
+                        return BadRequest(new { Message = "category.invalid" });
+
+                    var transactionEntity = DatabaseContext.Transactions.Single(x => x.TransactionId == id);
+                    transactionEntity.Amount = transactionDto.Amount;
+                    transactionEntity.Description = transactionDto.Description;
+                    transactionEntity.TransactionDateTime = transactionDto.Date;
+                    transactionEntity.BudgetCategoryId = categoryEntity.BudgetCategoryId;
+
+                    DatabaseContext.SaveChanges();
+
+                    return Ok(new TransactionDto
+                    {
+                        TransactionId = transactionEntity.TransactionId,
+                        Category = new BudgetCategoryDto
+                        {
+                            CategoryId = transactionEntity.BudgetCategory.BudgetCategoryId,
+                            Icon = transactionEntity.BudgetCategory.Icon,
+                            Name = transactionEntity.BudgetCategory.Name,
+                            Type = transactionEntity.BudgetCategory.Type
+                        },
+                        Date = transactionEntity.TransactionDateTime,
+                        RegisteredDate = transactionEntity.CreationDateTime,
+                        Description = transactionEntity.Description,
+                        Amount = transactionEntity.Amount
+                    });
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new { message = ex.Message });
+                }
+
+            return Unauthorized();
+        }
+
+        [HttpDelete("{id}/delete")]
+        public IActionResult DeleteTransaction(int id)
+        {
+            if (User != null)
+                try
+                {
+                    var transactionEntity = DatabaseContext.Transactions.Single(x => x.TransactionId == id);
+
+                    var categoryEntity =
+                        DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId == transactionEntity.BudgetCategoryId);
+
+                    if (!CurrentUser.Budgets.Contains(categoryEntity.Budget))
+                        return BadRequest(new { Message = "category.invalid" });
+
+                    DatabaseContext.Transactions.Remove(transactionEntity);
+
+                    DatabaseContext.SaveChanges();
+
+                    return Ok();
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new { message = ex.Message });
+                }
+
+            return Unauthorized();
+        }
+    }
+}
