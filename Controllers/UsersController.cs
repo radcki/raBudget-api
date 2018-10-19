@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using WebApi.Dtos;
 using WebApi.Entities;
+using WebApi.Enum;
 using WebApi.Helpers;
 using WebApi.Services;
 
@@ -106,7 +107,13 @@ namespace WebApi.Controllers
         public IActionResult GetAll()
         {
             var users = _userService.GetAll();
-            var userDtos = _mapper.Map<IList<UserDto>>(users);
+            var userDtos = users.Select(x => new UserDto()
+                                             {
+                                                 Id = x.UserId,
+                                                 Email = x.Email,
+                                                 Username = x.Username
+                                             })
+                                .ToList();
             return Ok(userDtos);
         }
 
@@ -184,9 +191,16 @@ namespace WebApi.Controllers
 
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public IActionResult Delete(int id, [FromBody] PasswordDto password)
         {
-            _userService.Delete(id);
+            var username = User.Identity.Name;
+
+            var user = _userService.Authenticate(username, password.Password);
+            if (user == null) return BadRequest(new { message = "account.passwordInvalid" });
+            if (user.UserId == id || user.UserRoles.Select(x => x.Role).Contains(eRole.Admin))
+            {
+                _userService.Delete(id);
+            }
             return Ok();
         }
     }
