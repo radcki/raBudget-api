@@ -20,25 +20,28 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class UsersController : BaseController
     {
-        private readonly AppSettings _appSettings;
         private readonly IMapper _mapper;
         private readonly UserService _userService;
 
-        public UsersController(UserService userService, IMapper mapper, IOptions<AppSettings> appSettings)
+        public UsersController(UserService userService, IMapper mapper, DataContext context)
         {
             _userService = userService;
             _mapper = mapper;
-            _appSettings = appSettings.Value;
+            DatabaseContext = context;
         }
 
         [AllowAnonymous]
         [HttpPost("authenticate")]
         public IActionResult Authenticate([FromBody] UserDto userDto)
         {
-            var user = _userService.Authenticate(userDto.Username, userDto.Password);
+            var result = _userService.Authenticate(userDto.Username, userDto.Password);
 
-            if (user == null) return NotFound(new {message = "account.creditentialsInvalid"});
+            if (result.Result != eResultType.Success)
+            {
+                return NotFound(new {message = "account.creditentialsInvalid"});
+            }
 
+            var user = result.Data;
             string clientId = null;
             var randomNumber = new byte[8];
             using (var rng = RandomNumberGenerator.Create())
@@ -50,7 +53,7 @@ namespace WebApi.Controllers
             var tokenString = _userService.GenerateAccessToken(user);
             var refreshToken = _userService.GenerateRefreshToken(user, clientId);
 
-            // return basic user info (without password) and token to store client side
+            // dane do zachowania w przeglądarce
             return Ok(new
                       {
                           User = new
@@ -70,7 +73,10 @@ namespace WebApi.Controllers
         public IActionResult RenewToken([FromBody] TokenRenewRequestDto requestData)
         {
             if (!_userService.ValidateRefreshToken(requestData.Token, requestData.RefreshToken, requestData.ClientId))
+            {
                 return BadRequest(new {response = "invalid_token"});
+            }
+
             var principal = _userService.GetPrincipalFromExpiredToken(requestData.Token);
 
             var newJwtToken = _userService.GenerateAccessToken(principal);
@@ -106,12 +112,19 @@ namespace WebApi.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
+            if (!CurrentUser.UserRoles.Select(x => x.Role).Contains(eRole.Admin))
+            {
+                return Unauthorized();
+            }
+
             var users = _userService.GetAll();
             var userDtos = users.Select(x => new UserDto()
                                              {
                                                  Id = x.UserId,
                                                  Email = x.Email,
-                                                 Username = x.Username
+                                                 Username = x.Username,
+                                                 CreationDate = x.CreationTime,
+                                                 Roles = x.UserRoles.Select(s => s.Role).ToList()
                                              })
                                 .ToList();
             return Ok(userDtos);
@@ -155,7 +168,7 @@ namespace WebApi.Controllers
             try
             {
                 var id = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                // save 
+
                 _userService.Update(new User
                                     {
                                         UserId = id,
@@ -169,23 +182,65 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpPut("changepassword")]
-        public IActionResult PasswordChange([FromBody] PasswordChangeDto passwordChangeDto)
+        [HttpPut("admin-updateprofile")]
+        public IActionResult UpdateExternal([FromBody] UserDto userDto)
         {
             try
             {
-                var username = User.Identity.Name;
+                if (!CurrentUser.UserRoles.Select(x => x.Role).Contains(eRole.Admin))
+                {
+                    return Unauthorized();
+                }
 
-                var user = _userService.Authenticate(username, passwordChangeDto.OldPassword);
-                if (user == null) return BadRequest(new {message = "account.passwordInvalid"});
-                if (passwordChangeDto.NewPassword.Length < 5)
-                    return BadRequest(new {message = "forms.tooShortPassword"});
-                _userService.ChangePassword(user, passwordChangeDto.NewPassword);
+                var user = new User
+                           {
+                               UserId = userDto.Id,
+                               Username = userDto.Username,
+                               Email = userDto.Email
+                           };
+
+                _userService.Update(user);
+
+                if (userDto.Roles != null)
+                {
+                    _userService.UpdateRoles(user, userDto.Roles);
+                }
+
                 return Ok();
             }
             catch (Exception ex)
             {
                 return BadRequest(new {message = ex.Message});
+            }
+        }
+
+        [HttpPut("changepassword")]
+        public IActionResult PasswordChange([FromBody] PasswordChangeDto passwordChangeDto)
+        {
+            var username = User.Identity.Name;
+
+            var authenticationResult = _userService.Authenticate(username, passwordChangeDto.OldPassword);
+
+            if (authenticationResult.Result != eResultType.Success)
+            {
+                return BadRequest(new {message = "account.passwordInvalid"});
+            }
+
+            if (passwordChangeDto.NewPassword.Length < 5)
+            {
+                return BadRequest(new {message = "forms.tooShortPassword"});
+            }
+
+            var user = authenticationResult.Data;
+
+            var operationResult = _userService.ChangePassword(user, passwordChangeDto.NewPassword);
+            if (operationResult.Result == eResultType.Success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(new {message = operationResult.Message});
             }
         }
 
@@ -195,13 +250,26 @@ namespace WebApi.Controllers
         {
             var username = User.Identity.Name;
 
-            var user = _userService.Authenticate(username, password.Password);
-            if (user == null) return BadRequest(new { message = "account.passwordInvalid" });
-            if (user.UserId == id || user.UserRoles.Select(x => x.Role).Contains(eRole.Admin))
+            var authenticationResult = _userService.Authenticate(username, password.Password);
+            if (authenticationResult.Result != eResultType.Success)
             {
-                _userService.Delete(id);
+                return BadRequest(new { message = "account.passwordInvalid" });
             }
-            return Ok();
+
+            var user = authenticationResult.Data;
+            if (user.UserId != id && !user.UserRoles.Select(x => x.Role).Contains(eRole.Admin))
+                return Unauthorized();
+            
+            var operationResult = _userService.Delete(id);
+            if (operationResult.Result == eResultType.Success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(new { message = operationResult.Message });
+            }
+
         }
     }
 }

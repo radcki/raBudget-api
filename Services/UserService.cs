@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using WebApi.Dtos;
 using WebApi.Entities;
 using WebApi.Enum;
 using WebApi.Helpers;
@@ -26,23 +27,33 @@ namespace WebApi.Services
             _appSettings = appSettings.Value;
         }
 
-        public User Authenticate(string username, string password)
+        public BaseResult<User> Authenticate(string username, string password)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-                return null;
+            {
+                return new BaseResult<User>(){Result = eResultType.Error};
+            }
 
             var user = DatabaseContext.Users.FirstOrDefault(x => x.Username == username);
 
             // check if username exists
             if (user == null)
-                return null;
+            {
+                return new BaseResult<User>() { Result = eResultType.NotFound };
+            }
 
             // check if password is correct
             if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
-                return null;
+            {
+                return new BaseResult<User>() { Result = eResultType.Unauthorized };
+            }
 
             // authentication successful
-            return user;
+            return new BaseResult<User>()
+                   {
+                       Result = eResultType.Success,
+                       Data = user
+            };
         }
 
         public string GenerateAccessToken(ClaimsPrincipal principal)
@@ -109,7 +120,7 @@ namespace WebApi.Services
             {
                 DatabaseContext.RefreshTokens.Add(token);
             }
-            
+
             DatabaseContext.SaveChanges();
 
             return token.Token;
@@ -244,25 +255,80 @@ namespace WebApi.Services
             return user;
         }
 
-        public void Update(User user)
+        public BaseResult Update(User user)
         {
             var userEntity = DatabaseContext.Users.Find(user.UserId);
 
-            if (user == null) throw new Exception("account.userNotFound");
+            if (userEntity == null)
+            {
+                return new BaseResult()
+                       {
+                           Result = eResultType.NotFound,
+                           Message = "account.userNotFound"
+                       };
+            }
 
             // test zajêtoœci loginu
-            if (user.Username != null && user.Username != userEntity.Username)
-                if (DatabaseContext.Users.Any(x => x.Username == user.Username))
-                    throw new Exception("account.usernameTaken");
+            if (user.Username != null && user.Username != userEntity.Username && DatabaseContext.Users.Any(x => x.Username == user.Username))
+            {
+                return new BaseResult()
+                       {
+                           Result = eResultType.Error,
+                           Message = "account.usernameTaken"
+                       };
+            }
 
-            if (user.Username != null) userEntity.Username = user.Username;
+            if (user.Username != null)
+            {
+                userEntity.Username = user.Username;
+            }
 
-            if (user.Email != null) userEntity.Email = user.Email;
+            if (user.Email != null)
+            {
+                userEntity.Email = user.Email;
+            }
 
-            DatabaseContext.SaveChanges();
+            try
+            {
+                DatabaseContext.SaveChanges();
+                return new BaseResult() {Result = eResultType.Success};
+            }
+            catch (Exception e)
+            {
+                //todo: logowanie
+                return new BaseResult()
+                       {
+                           Result = eResultType.Error
+                       };
+            }
         }
 
-        public void ChangePassword(User userEntity, string newPassword)
+        public BaseResult UpdateRoles(User user, List<eRole> roles)
+        {
+            var oldRoles = DatabaseContext.UserRoles.Where(x => x.UserId == user.UserId);
+            DatabaseContext.UserRoles.RemoveRange(oldRoles);
+            var newRoles = roles.Select(x => new UserRole()
+                                             {
+                                                 UserId = user.UserId,
+                                                 Role = x
+                                             });
+            DatabaseContext.UserRoles.AddRange(newRoles);
+            try
+            {
+                DatabaseContext.SaveChanges();
+                return new BaseResult() {Result = eResultType.Success};
+            }
+            catch (Exception e)
+            {
+                //todo: logowanie
+                return new BaseResult()
+                       {
+                           Result = eResultType.Error
+                       };
+            }
+        }
+
+        public BaseResult ChangePassword(User userEntity, string newPassword)
         {
             var hashedPassword = HashPassword(newPassword);
             userEntity.Password = hashedPassword;
@@ -272,16 +338,46 @@ namespace WebApi.Services
                                      ChangeDateTime = DateTime.Now
                                  };
             DatabaseContext.PasswordChanges.Add(passwordChange);
-            DatabaseContext.SaveChanges();
+            try
+            {
+                DatabaseContext.SaveChanges();
+                return new BaseResult() {Result = eResultType.Success};
+            }
+            catch (Exception e)
+            {
+                //todo: logowanie
+                return new BaseResult()
+                       {
+                           Result = eResultType.Error
+                       };
+            }
         }
 
-        public void Delete(int id)
+        public BaseResult Delete(int id)
         {
             var user = DatabaseContext.Users.Find(id);
-            if (user != null)
+            if (user == null)
             {
-                DatabaseContext.Users.Remove(user);
+                return new BaseResult()
+                       {
+                           Result = eResultType.NotFound,
+                           Message = "account.userNotFound"
+                       };
+            }
+
+            DatabaseContext.Users.Remove(user);
+            try
+            {
                 DatabaseContext.SaveChanges();
+                return new BaseResult() {Result = eResultType.Success};
+            }
+            catch (Exception e)
+            {
+                //todo: logowanie
+                return new BaseResult()
+                       {
+                           Result = eResultType.Error
+                       };
             }
         }
 

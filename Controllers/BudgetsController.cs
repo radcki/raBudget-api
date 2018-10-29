@@ -26,18 +26,14 @@ namespace WebApi.Controllers
         {
             try
             {
-                if (CurrentUser.Budgets != null && CurrentUser.Budgets.Any())
-                    return Ok(CurrentUser.Budgets
-                                         .Select(budget => new BudgetDto
-                                                           {
-                                                               Name = budget.Name,
-                                                               Id = budget.BudgetId,
-                                                               Currency = budget.Currency,
-                                                               Balance = BalanceHandler.CurrentFunds(budget),
-                                                               Default = budget.BudgetId == CurrentUser.DefaultBudgetId
-                                                           })
-                                         .ToList());
-                return NotFound();
+                if (CurrentUser.Budgets == null || !CurrentUser.Budgets.Any())
+                {
+                    return NotFound();
+                }
+
+                return Ok(CurrentUser.Budgets
+                                     .Select(budget => budget.ToDto())
+                                     .ToList());
             }
             catch (Exception ex)
             {
@@ -54,6 +50,7 @@ namespace WebApi.Controllers
                     var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
                     var userEntity = DatabaseContext.Users.Single(x => x.UserId == userId);
                     var budget = userEntity.Budgets.Single(x => x.BudgetId == id);
+
                     var balanceHandler = new BalanceHandler(budget);
                     return Ok(new BudgetDataDto
                               {
@@ -62,41 +59,26 @@ namespace WebApi.Controllers
                                   StartingDate = budget.StartingDate,
                                   Balance = balanceHandler.CurrentFunds(),
                                   Default = budget.BudgetId == CurrentUser.DefaultBudgetId,
+
                                   IncomeCategories = budget
                                                     .BudgetCategories
                                                     .Where(x => x.Type == eBudgetCategoryType.Income)
-                                                    .Select(x => new BudgetCategoryDto
-                                                                 {
-                                                                     CategoryId = x.BudgetCategoryId,
-                                                                     Type = x.Type,
-                                                                     Name = x.Name,
-                                                                     Amount = x.MonthlyAmount,
-                                                                     Icon = x.Icon
-                                                                 })
+                                                    .AsEnumerable()
+                                                    .Select(x => x.ToDto())
                                                     .ToList(),
+
                                   SavingCategories = budget
                                                     .BudgetCategories
                                                     .Where(x => x.Type == eBudgetCategoryType.Saving)
-                                                    .Select(x => new BudgetCategoryDto
-                                                                 {
-                                                                     CategoryId = x.BudgetCategoryId,
-                                                                     Type = x.Type,
-                                                                     Name = x.Name,
-                                                                     Amount = x.MonthlyAmount,
-                                                                     Icon = x.Icon
-                                                                 })
+                                                    .AsEnumerable()
+                                                    .Select(x => x.ToDto())
                                                     .ToList(),
+
                                   SpendingCategories = budget
                                                       .BudgetCategories
                                                       .Where(x => x.Type == eBudgetCategoryType.Spending)
-                                                      .Select(x => new BudgetCategoryDto
-                                                                   {
-                                                                       CategoryId = x.BudgetCategoryId,
-                                                                       Type = x.Type,
-                                                                       Name = x.Name,
-                                                                       Amount = x.MonthlyAmount,
-                                                                       Icon = x.Icon
-                                                                   })
+                                                      .AsEnumerable()
+                                                      .Select(x => x.ToDto())
                                                       .ToList()
                               });
                 }
@@ -185,7 +167,7 @@ namespace WebApi.Controllers
             try
             {
                 if (CurrentUser.Budgets.All(x => x.BudgetId != id))
-                    return BadRequest(new { message = "budgets.notFound" });
+                    return BadRequest(new {message = "budgets.notFound"});
 
                 var userEntity = DatabaseContext.Users.First(x => x.UserId == CurrentUser.UserId);
                 userEntity.DefaultBudgetId = id;
@@ -195,7 +177,7 @@ namespace WebApi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new {message = ex.Message});
             }
         }
 
@@ -225,7 +207,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                if (!CurrentUser.Budgets.Where(x => x.BudgetId == id).Any())
+                if (CurrentUser.Budgets.All(x => x.BudgetId != id))
                     return BadRequest(new {message = "budgets.notFound"});
 
                 var budgetEntity = DatabaseContext.Budgets.Single(x => x.BudgetId == id);
@@ -347,7 +329,7 @@ namespace WebApi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new {message = ex.Message});
             }
         }
 
@@ -367,7 +349,7 @@ namespace WebApi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new {message = ex.Message});
             }
         }
 
@@ -387,7 +369,7 @@ namespace WebApi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new {message = ex.Message});
             }
         }
     }

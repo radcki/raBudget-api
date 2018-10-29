@@ -110,14 +110,7 @@ namespace WebApi.Helpers
                        OverallBudgetBalance = balance.OverallBudgetBalance,
                        ThisMonthBudget = balance.ThisMonthBudget,
                        BudgetSoFar = balance.BudgetSoFar,
-                       BudgetCategory = new BudgetCategoryDto()
-                                        {
-                                            Amount = balance.Category.MonthlyAmount,
-                                            CategoryId = balance.Category.BudgetCategoryId,
-                                            Icon = balance.Category.Icon,
-                                            Name = balance.Category.Name,
-                                            Type = balance.Category.Type
-                                        },
+                       BudgetCategory = balance.Category.ToDto(),
                        LeftToEndOfYear = balance.LeftToEndOfYear,
                        ThisYearBudget = balance.ThisYearBudget,
                        ThisMonthTransactionsSum = balance.ThisMonthTransactionsSum,
