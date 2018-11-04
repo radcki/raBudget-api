@@ -7,8 +7,10 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using WebApi.Dtos;
 using WebApi.Entities;
 using WebApi.Enum;
@@ -20,11 +22,16 @@ namespace WebApi.Services
     {
         private readonly AppSettings _appSettings;
         private readonly DataContext DatabaseContext;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger Logger;
 
-        public UserService(DataContext context, IOptions<AppSettings> appSettings)
+
+        public UserService(DataContext context, IOptions<AppSettings> appSettings, ILoggerFactory loggerFactory)
         {
             DatabaseContext = context;
             _appSettings = appSettings.Value;
+            _loggerFactory = loggerFactory;
+            Logger = _loggerFactory.CreateLogger("UserService");
         }
 
         public BaseResult<User> Authenticate(string username, string password)
@@ -39,15 +46,17 @@ namespace WebApi.Services
             // check if username exists
             if (user == null)
             {
+                Logger.Log(LogLevel.Warning, "Username " + username + " authentication: requested user not found");
                 return new BaseResult<User>() { Result = eResultType.NotFound };
             }
 
             // check if password is correct
             if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
             {
+                Logger.Log(LogLevel.Information, "User " + user.UserId + " authentication: bad password");
                 return new BaseResult<User>() { Result = eResultType.Unauthorized };
             }
-
+            Logger.Log(LogLevel.Information, "User " + user.UserId + " authentication: success");
             // authentication successful
             return new BaseResult<User>()
                    {
@@ -164,8 +173,11 @@ namespace WebApi.Services
             if (!refreshTokens.Any()
                 || refreshTokens.First().Token != refreshToken
                 || refreshTokens.First().ValidTo < DateTime.UtcNow)
+            {
+                Logger.Log(LogLevel.Information, "User " + user.UserId + " refresh token check: failure");
                 return false;
-
+            }
+            Logger.Log(LogLevel.Information, "User " + user.UserId + " refresh token check: success");
             return true;
         }
 
@@ -268,9 +280,14 @@ namespace WebApi.Services
                        };
             }
 
+            Logger.Log(LogLevel.Information, "User update request, from: "
+                                         + JsonConvert.SerializeObject(new User {UserId = userEntity.UserId, Email = userEntity.Email, Username = userEntity.Username})
+                                         + " to: "
+                                         + JsonConvert.SerializeObject(new User {UserId = user.UserId, Email = user.Email, Username = user.Username}));
             // test zajêtoœci loginu
             if (user.Username != null && user.Username != userEntity.Username && DatabaseContext.Users.Any(x => x.Username == user.Username))
             {
+                Logger.Log(LogLevel.Warning, "User " + user.UserId + " username update request failed: username " + user.Username + " is taken");
                 return new BaseResult()
                        {
                            Result = eResultType.Error,
@@ -295,7 +312,7 @@ namespace WebApi.Services
             }
             catch (Exception e)
             {
-                //todo: logowanie
+                Logger.Log(LogLevel.Error, "User " + user.UserId + " update: Exception " + (e.InnerException != null ? e.InnerException.Message : e.Message));
                 return new BaseResult()
                        {
                            Result = eResultType.Error
@@ -358,6 +375,7 @@ namespace WebApi.Services
             var user = DatabaseContext.Users.Find(id);
             if (user == null)
             {
+                Logger.Log(LogLevel.Warning, "User " + id + " deletion: User not found");
                 return new BaseResult()
                        {
                            Result = eResultType.NotFound,
@@ -369,11 +387,12 @@ namespace WebApi.Services
             try
             {
                 DatabaseContext.SaveChanges();
+                Logger.Log(LogLevel.Information, "User " + user.UserId + " deletion: success");
                 return new BaseResult() {Result = eResultType.Success};
             }
             catch (Exception e)
             {
-                //todo: logowanie
+                Logger.Log(LogLevel.Error, "User " + user.UserId + " deletion: Exception " + (e.InnerException != null ? e.InnerException.Message : e.Message));
                 return new BaseResult()
                        {
                            Result = eResultType.Error

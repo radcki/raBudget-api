@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,8 @@ namespace WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             //services.AddDbContext<DataContext>(x => x.UseInMemoryDatabase("TestDb"));
             //var mysqlConnection = @"Server=localhost;Database=larabudget;User=root";
             //services.AddDbContext<DataContext>(options => options.UseMySql(mysqlConnection));

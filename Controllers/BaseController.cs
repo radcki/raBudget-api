@@ -9,6 +9,7 @@ namespace WebApi.Controllers
     public class BaseController : ControllerBase
     {
         protected DataContext DatabaseContext { get; set; }
+
         private User _currentUser { get; set; }
 
         protected User CurrentUser

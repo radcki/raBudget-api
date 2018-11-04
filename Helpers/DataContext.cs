@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebApi.Entities;
+using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
 namespace WebApi.Helpers
 {
@@ -9,6 +10,7 @@ namespace WebApi.Helpers
             : base(options)
         {
         }
+        public DbSet<Log> Logs { get; set; }
 
         public DbSet<User> Users { get; set; }
         public DbSet<PasswordChange> PasswordChanges { get; set; }
@@ -24,6 +26,10 @@ namespace WebApi.Helpers
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            LogModelBuilderHelper.Build(modelBuilder.Entity<Log>());
+            modelBuilder.Entity<Log>().ToTable("Log");
+
+
             modelBuilder.Entity<User>().Property(b => b.Password).IsRequired();
             modelBuilder.Entity<User>().Property(b => b.Username).IsRequired();
             modelBuilder.Entity<User>().Property(b => b.Email).IsRequired();

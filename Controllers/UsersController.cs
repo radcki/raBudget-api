@@ -6,12 +6,14 @@ using System.Security.Cryptography;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using WebApi.Dtos;
 using WebApi.Entities;
 using WebApi.Enum;
 using WebApi.Helpers;
 using WebApi.Services;
+using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
 namespace WebApi.Controllers
 {
@@ -22,12 +24,16 @@ namespace WebApi.Controllers
     {
         private readonly IMapper _mapper;
         private readonly UserService _userService;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger Logger;
 
-        public UsersController(UserService userService, IMapper mapper, DataContext context)
+        public UsersController(UserService userService, IMapper mapper, DataContext context, ILoggerFactory loggerFactory)
         {
             _userService = userService;
             _mapper = mapper;
             DatabaseContext = context;
+            _loggerFactory = loggerFactory;
+            Logger = _loggerFactory.CreateLogger("UsersController");
         }
 
         [AllowAnonymous]
@@ -40,6 +46,7 @@ namespace WebApi.Controllers
             {
                 return NotFound(new {message = "account.creditentialsInvalid"});
             }
+            
 
             var user = result.Data;
             string clientId = null;
@@ -174,6 +181,7 @@ namespace WebApi.Controllers
                                         UserId = id,
                                         Email = userDto.Email
                                     });
+                
                 return Ok();
             }
             catch (Exception ex)
@@ -189,6 +197,7 @@ namespace WebApi.Controllers
             {
                 if (!CurrentUser.UserRoles.Select(x => x.Role).Contains(eRole.Admin))
                 {
+                    Logger.Log(LogLevel.Warning, "Admin request to update user " + userDto.Id + " invoked by user" + CurrentUser.UserId + " failed: user is not admin");
                     return Unauthorized();
                 }
 
@@ -203,6 +212,7 @@ namespace WebApi.Controllers
 
                 if (userDto.Roles != null)
                 {
+                    Logger.Log(LogLevel.Information, "Admin request to update user " + userDto.Id + " invoked by user" + CurrentUser.UserId + ": success");
                     _userService.UpdateRoles(user, userDto.Roles);
                 }
 
@@ -210,6 +220,7 @@ namespace WebApi.Controllers
             }
             catch (Exception ex)
             {
+                Logger.Log(LogLevel.Error, "Admin request to update user " + userDto.Id + " invoked by user" + CurrentUser.UserId + " exception: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message));
                 return BadRequest(new {message = ex.Message});
             }
         }
@@ -258,7 +269,10 @@ namespace WebApi.Controllers
 
             var user = authenticationResult.Data;
             if (user.UserId != id && !user.UserRoles.Select(x => x.Role).Contains(eRole.Admin))
+            {
+                Logger.Log(LogLevel.Warning, "Request to delete user " + user.UserId + " interrupted: authorization failed");
                 return Unauthorized();
+            }
             
             var operationResult = _userService.Delete(id);
             if (operationResult.Result == eResultType.Success)
@@ -267,6 +281,7 @@ namespace WebApi.Controllers
             }
             else
             {
+                
                 return BadRequest(new { message = operationResult.Message });
             }
 
