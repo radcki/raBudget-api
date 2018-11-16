@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using WebApi.Dtos;
 using WebApi.Entities;
+using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
 namespace WebApi.Helpers
 {
@@ -39,6 +41,19 @@ namespace WebApi.Helpers
                        Balance = BalanceHandler.CurrentFunds(entity),
                        Default = entity.BudgetId == entity.User.DefaultBudgetId
                    };
+        }
+
+        public static LogDto ToDto(this Log entity)
+        {
+            var dto = new LogDto()
+                      {
+                          Id = entity.Id,
+                          Message = entity.Message,
+                          Name = entity.Name,
+                          Level = (LogLevel) entity.Level,
+                          TimeStamp = entity.TimeStamp
+                      };
+            return dto;
         }
 
     }

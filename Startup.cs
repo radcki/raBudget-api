@@ -41,8 +41,10 @@ namespace WebApi
                                                                  .UseSqlServer(Configuration
                                                                                    ["Data:DefaultConnection:ConnectionString"]));
 
-            services.AddMvc(options => { options.Filters.Add(typeof(ValidateModelStateAttribute)); }
-                           );
+            services.AddMvc(options =>
+                            {
+                                options.Filters.Add(typeof(ValidateModelStateAttribute));
+                            });
             services.AddAutoMapper();
 
             // configure strongly typed settings objects
