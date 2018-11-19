@@ -18,12 +18,14 @@ namespace WebApi.Helpers
 
         public double ThisMonthTransactionsSum => Category
                                                  .Transactions
-                                                 .Where(x => x.TransactionDateTime.Month == DateTime.Today.Month)
+                                                 .Where(x => x.TransactionDateTime.Year == DateTime.Today.Year 
+                                                             && x.TransactionDateTime.Month == DateTime.Today.Month)
                                                  .Sum(x => x.Amount);
 
         public double ThisMonthAllocationsSum => Category
                                                 .Allocations
-                                                .Where(x => x.AllocationDateTime.Month == DateTime.Today.Month)
+                                                .Where(x => x.AllocationDateTime.Year == DateTime.Today.Year
+                                                            && x.AllocationDateTime.Month == DateTime.Today.Month)
                                                 .Sum(x => x.Amount);
 
         public double TotalTransactionsSum => Category.Transactions.Where(x => x.TransactionDateTime >= Budget.StartingDate).Sum(x => x.Amount);
@@ -116,5 +118,6 @@ namespace WebApi.Helpers
                        ThisMonthTransactionsSum = balance.ThisMonthTransactionsSum,
                    };
         }
+
     }
 }

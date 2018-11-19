@@ -372,5 +372,53 @@ namespace WebApi.Controllers
                 return BadRequest(new {message = ex.Message});
             }
         }
+
+        [HttpGet("{budgetId}/report/period")]
+        public IActionResult PeriodReport(int budgetId, DateTime startDate, DateTime endDate)
+        {
+            if (User == null) return Unauthorized();
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var userEntity = DatabaseContext.Users.Single(x => x.UserId == userId);
+                var budget = userEntity.Budgets.Single(x => x.BudgetId == budgetId);
+                var reportHandler = new ReportHandler(budget, startDate, endDate);
+
+                return Ok(new
+                          {
+                              Spending = reportHandler.SpendingCategoriesSummary,
+                              Saving = reportHandler.SavingCategoriesSummary,
+                              Income = reportHandler.IncomeCategoriesSummary
+                          });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("{budgetId}/report/monthly")]
+        public IActionResult MonthlyReport(int budgetId, DateTime startDate, DateTime endDate)
+        {
+            if (User == null) return Unauthorized();
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var userEntity = DatabaseContext.Users.Single(x => x.UserId == userId);
+                var budget = userEntity.Budgets.Single(x => x.BudgetId == budgetId);
+                var reportHandler = new ReportHandler(budget, startDate, endDate);
+
+                return Ok(new
+                          {
+                              Spending = reportHandler.SpendingCategoriesByMonth,
+                              Saving = reportHandler.SavingCategoriesByMonth,
+                              Income = reportHandler.IncomeCategoriesByMonth
+                          });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

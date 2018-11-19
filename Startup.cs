@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.IO;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -15,6 +16,7 @@ using WebApi.Enum;
 using WebApi.Filters;
 using WebApi.Helpers;
 using WebApi.Services;
+using Microsoft.AspNetCore.SpaServices.Webpack;
 
 namespace WebApi
 {
@@ -122,6 +124,17 @@ namespace WebApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
+                                            {
+                                                HotModuleReplacement = true,
+                                                ProjectPath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).FullName, "ClientApp"),
+                                                ConfigFile = @"build\webpack.dev.conf.js",
+                });
+            }
+
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
