@@ -17,6 +17,9 @@ using WebApi.Filters;
 using WebApi.Helpers;
 using WebApi.Services;
 using Microsoft.AspNetCore.SpaServices.Webpack;
+using System;
+using System.Collections.Generic;
+using kedzior.io.ConnectionStringConverter;
 
 namespace WebApi
 {
@@ -29,31 +32,39 @@ namespace WebApi
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             //services.AddDbContext<DataContext>(x => x.UseInMemoryDatabase("TestDb"));
-            //var mysqlConnection = @"Server=localhost;Database=larabudget;User=root";
-            //services.AddDbContext<DataContext>(options => options.UseMySql(mysqlConnection));
+            if (IsDebug)
+            {
+                services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
+                                                                     .UseMySql("server=localhost;uid=root;pwd=;database=localdb"));
+                /* SQL SERVER 
+                services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
+                                                                     .UseSqlServer(Configuration
+                                                                                       ["Data:DefaultConnection:ConnectionString"]));
+                */
+            }
+            else
+            {
+                string connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_localdb");
+                services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
+                                                                     .UseMySql(AzureMySQL.ToMySQLStandard(connectionString) + ";CHARSET=utf8;"));
+            }
 
-            services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
-                                                                 .UseSqlServer(Configuration
-                                                                                   ["Data:DefaultConnection:ConnectionString"]));
+            services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
 
-            services.AddMvc(options =>
-                            {
-                                options.Filters.Add(typeof(ValidateModelStateAttribute));
-                            });
+
+            services.AddMvc(options => { options.Filters.Add(typeof(ValidateModelStateAttribute)); });
             services.AddAutoMapper();
 
-            // configure strongly typed settings objects
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
 
-            // configure jwt authentication
+            // jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
             services.AddAuthentication(x =>
@@ -117,40 +128,79 @@ namespace WebApi
                                       }
                                      );
 
-            // configure DI for application services
+            // DEPENDENCY INJECTION
             services.AddScoped<UserService>();
+
+            services.AddSpaStaticFiles(config =>
+                                       {
+                                           config.RootPath = @"./wwwroot";
+                                       });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            /* webpack start from visual studio with hot reloading
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
                 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
                                             {
                                                 HotModuleReplacement = true,
                                                 ProjectPath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).FullName, "ClientApp"),
                                                 ConfigFile = @"build\webpack.dev.conf.js",
                 });
-            }
+            }*/
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            // global cors policy
-            app.UseCors(x => x
-                            .AllowAnyOrigin()
-                            .AllowAnyMethod()
-                            .AllowAnyHeader()
-                            .AllowCredentials()
-                            .WithExposedHeaders("Token-Expired")
-                            .WithOrigins("http://localhost:8080")
-                       );
+            /*
+             * CORS
+             */
+            if (IsDebug)
+            {
+                app.UseCors(x => x
+                                .WithOrigins("http://localhost:8080")
+                                .AllowAnyMethod()
+                                .AllowAnyHeader()
+                                .AllowCredentials()
+                                .WithExposedHeaders("Token-Expired")
+                           );
+
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseCors(x => x
+                                .WithOrigins("http://rabudget.azurewebsites.net")
+                                .AllowAnyMethod()
+                                .AllowAnyHeader()
+                                .AllowCredentials()
+                                .WithExposedHeaders("Token-Expired")
+                           );
+            }
 
             app.UseAuthentication();
-
             app.UseMvc();
+            
+            if (!IsDebug)
+            {
+                app.UseStaticFiles();
+                app.UseSpaStaticFiles();
+                app.UseSpa(config => { });
+            }
+        }
+
+        public static bool IsDebug
+        {
+            get
+            {
+                bool isDebug = false;
+#if DEBUG
+                isDebug = true;
+#endif
+                return isDebug;
+            }
         }
     }
 }

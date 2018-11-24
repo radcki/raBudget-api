@@ -101,7 +101,12 @@ namespace WebApi.Controllers
         public IActionResult Register([FromBody] UserDto userDto)
         {
             // map dto to entity
-            var user = _mapper.Map<User>(userDto);
+            var user = new User
+                       {
+                           Username = userDto.Username,
+                           Email = userDto.Email,
+                           Password = userDto.Password
+                       };
 
             try
             {

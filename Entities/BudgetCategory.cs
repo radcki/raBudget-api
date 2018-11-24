@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using WebApi.Enum;
 
 namespace WebApi.Entities
 {
     public class BudgetCategory
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key] public int BudgetCategoryId { get; set; }
 
         [Required] public eBudgetCategoryType Type { get; set; }

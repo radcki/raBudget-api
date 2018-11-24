@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 using WebApi.Entities;
 using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
@@ -29,6 +30,15 @@ namespace WebApi.Helpers
             LogModelBuilderHelper.Build(modelBuilder.Entity<Log>());
             modelBuilder.Entity<Log>().ToTable("Log");
 
+            modelBuilder.Entity<Allocation>().Property(c => c.AllocationId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Budget>().Property(c => c.BudgetId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<BudgetCategory>().Property(c => c.BudgetCategoryId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<PasswordChange>().Property(c => c.PasswordChangeId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<PasswordReset>().Property(c => c.PasswordResetId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<RefreshToken>().Property(c => c.RefreshTokenId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Transaction>().Property(c => c.TransactionId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<User>().Property(c => c.UserId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<UserRole>().Property(c => c.UserRoleId).ValueGeneratedOnAdd();
 
             modelBuilder.Entity<User>().Property(b => b.Password).IsRequired();
             modelBuilder.Entity<User>().Property(b => b.Username).IsRequired();

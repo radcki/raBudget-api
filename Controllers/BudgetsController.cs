@@ -4,10 +4,12 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using WebApi.Dtos;
 using WebApi.Entities;
 using WebApi.Enum;
 using WebApi.Helpers;
+using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
 namespace WebApi.Controllers
 {
@@ -16,9 +18,14 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class BudgetsController : BaseController
     {
-        public BudgetsController(DataContext context)
+        private readonly ILogger Logger;
+        private readonly ILoggerFactory _loggerFactory;
+
+        public BudgetsController(DataContext context, ILoggerFactory loggerFactory)
         {
             DatabaseContext = context;
+            _loggerFactory = loggerFactory;
+            Logger = _loggerFactory.CreateLogger("BudgetsController");
         }
 
         [HttpGet]
@@ -263,7 +270,8 @@ namespace WebApi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new {message = ex.Message});
+                Logger.Log(LogLevel.Warning, "Exception during category save: " + ex + "; " + (ex.InnerException.Message != null ? ex.InnerException.Message : ex.Message));
+                return BadRequest(new {message = ex.InnerException.Message != null ? ex.InnerException.Message : ex.Message});
             }
         }
 

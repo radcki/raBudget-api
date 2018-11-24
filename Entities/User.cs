@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApi.Entities
 {
     public class User
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key] public int UserId { get; set; }
 
         [Required] [MaxLength(160)] public string Email { get; set; }

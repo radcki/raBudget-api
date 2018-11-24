@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using WebApi.Enum;
 
 namespace WebApi.Entities
 {
     public class UserRole
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key] public int UserRoleId { get; set; }
 
         [Required] public eRole Role { get; set; }

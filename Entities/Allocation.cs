@@ -1,10 +1,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApi.Entities
 {
     public class Allocation
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key] public int AllocationId { get; set; }
 
         [Required] public string Description { get; set; }

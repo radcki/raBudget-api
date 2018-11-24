@@ -4,16 +4,14 @@
     <UserSecretsId>8dea6bea-8667-459c-ba1b-57e95b65209c</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="7.0.1" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="5.0.1" />
+    <PackageReference Include="AutoMapper" Version="8.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="3.1.0" />
+    <PackageReference Include="kedzior.io.ConnectionStringConverter" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.1.4" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.2" />
     <PackageReference Include="ZNetCS.AspNetCore.Logging.EntityFrameworkCore" Version="2.0.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Migrations\" />
   </ItemGroup>
 </Project>

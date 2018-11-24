@@ -2,7 +2,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApi.Helpers;
 
@@ -15,15 +14,13 @@ namespace WebApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.3-rtm-32065")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("WebApi.Entities.Allocation", b =>
                 {
                     b.Property<int>("AllocationId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<DateTime>("AllocationDateTime");
 
@@ -48,8 +45,7 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Entities.Budget", b =>
                 {
                     b.Property<int>("BudgetId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Currency");
 
@@ -70,8 +66,7 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Entities.BudgetCategory", b =>
                 {
                     b.Property<int>("BudgetCategoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<int>("BudgetId");
 
@@ -95,8 +90,7 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Entities.PasswordChange", b =>
                 {
                     b.Property<int>("PasswordChangeId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<DateTime>("ChangeDateTime");
 
@@ -112,8 +106,7 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Entities.PasswordReset", b =>
                 {
                     b.Property<int>("PasswordResetId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<DateTime>("GenerationDateTime");
 
@@ -132,8 +125,7 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Entities.RefreshToken", b =>
                 {
                     b.Property<int>("RefreshTokenId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("ClientId")
                         .IsRequired();
@@ -158,8 +150,7 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Entities.Transaction", b =>
                 {
                     b.Property<int>("TransactionId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<double>("Amount");
 
@@ -184,8 +175,7 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Entities.User", b =>
                 {
                     b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<DateTime>("CreationTime");
 
@@ -219,8 +209,7 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Entities.UserRole", b =>
                 {
                     b.Property<int>("UserRoleId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<int>("Role");
 
@@ -236,8 +225,7 @@ namespace WebApi.Migrations
             modelBuilder.Entity("ZNetCS.AspNetCore.Logging.EntityFrameworkCore.Log", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<int>("EventId");
 

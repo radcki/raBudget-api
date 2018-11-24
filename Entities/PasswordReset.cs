@@ -1,10 +1,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApi.Entities
 {
     public class PasswordReset
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key] public int PasswordResetId { get; set; }
 
         [Required] public string Token { get; set; }
