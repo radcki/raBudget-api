@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using WebApi.Dtos;
-using WebApi.Entities;
-using WebApi.Enum;
+using WebApi.Models.Entities;
+using WebApi.Models.Enum;
 
 namespace WebApi.Helpers
 {

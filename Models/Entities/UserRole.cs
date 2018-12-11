@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using WebApi.Enum;
+using WebApi.Models.Enum;
 
-namespace WebApi.Entities
+namespace WebApi.Models.Entities
 {
     public class UserRole
     {

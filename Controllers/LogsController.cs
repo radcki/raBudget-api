@@ -4,10 +4,9 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Dtos;
-using WebApi.Entities;
-using WebApi.Enum;
+using WebApi.Contexts;
 using WebApi.Helpers;
+using WebApi.Models.Enum;
 
 namespace WebApi.Controllers
 {

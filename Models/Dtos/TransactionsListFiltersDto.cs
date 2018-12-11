@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace WebApi.Dtos
+namespace WebApi.Models.Dtos
 {
     public class TransactionsListFiltersDto
     {

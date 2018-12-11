@@ -1,4 +1,4 @@
-namespace WebApi.Dtos
+namespace WebApi.Models.Dtos
 {
     public class TokenRenewRequestDto
     {

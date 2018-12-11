@@ -2,18 +2,18 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebApi.Entities
+namespace WebApi.Models.Entities
 {
-    public class Transaction
+    public class Allocation
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Key] public int TransactionId { get; set; }
+        [Key] public int AllocationId { get; set; }
 
         [Required] public string Description { get; set; }
 
         [Required] public double Amount { get; set; }
 
-        [Required] public DateTime TransactionDateTime { get; set; }
+        [Required] public DateTime AllocationDateTime { get; set; }
 
         [Required] public DateTime CreationDateTime { get; set; }
 

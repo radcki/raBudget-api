@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using WebApi.Dtos;
-using WebApi.Entities;
+using WebApi.Models.Dtos;
+using WebApi.Models.Entities;
 
 namespace WebApi.Helpers
 {

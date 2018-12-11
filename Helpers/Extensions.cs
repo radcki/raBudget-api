@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using WebApi.Dtos;
-using WebApi.Entities;
+using WebApi.Models.Dtos;
+using WebApi.Models.Entities;
 using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
 namespace WebApi.Helpers

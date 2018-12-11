@@ -11,10 +11,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using WebApi.Dtos;
-using WebApi.Entities;
-using WebApi.Enum;
+using WebApi.Contexts;
 using WebApi.Helpers;
+using WebApi.Models.Dtos;
+using WebApi.Models.Entities;
+using WebApi.Models.Enum;
 
 namespace WebApi.Services
 {

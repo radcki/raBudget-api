@@ -1,4 +1,4 @@
-﻿namespace WebApi.Enum
+﻿namespace WebApi.Models.Enum
 {
     public enum eResultType
     {

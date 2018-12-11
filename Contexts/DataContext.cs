@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations.Schema;
-using WebApi.Entities;
+using WebApi.Models.Entities;
 using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
-namespace WebApi.Helpers
+namespace WebApi.Contexts
 {
     public class DataContext : DbContext
     {

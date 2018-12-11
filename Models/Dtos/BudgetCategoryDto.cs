@@ -1,6 +1,6 @@
-using WebApi.Enum;
+using WebApi.Models.Enum;
 
-namespace WebApi.Dtos
+namespace WebApi.Models.Dtos
 {
     public class BudgetCategoryDto
     {

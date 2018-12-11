@@ -12,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using WebApi.Enum;
 using WebApi.Filters;
 using WebApi.Helpers;
 using WebApi.Services;
@@ -20,6 +19,8 @@ using Microsoft.AspNetCore.SpaServices.Webpack;
 using System;
 using System.Collections.Generic;
 using kedzior.io.ConnectionStringConverter;
+using WebApi.Contexts;
+using WebApi.Models.Enum;
 
 namespace WebApi
 {

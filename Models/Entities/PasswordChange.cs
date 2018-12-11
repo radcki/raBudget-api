@@ -2,18 +2,14 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebApi.Entities
+namespace WebApi.Models.Entities
 {
-    public class RefreshToken
+    public class PasswordChange
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Key] public int RefreshTokenId { get; set; }
+        [Key] public int PasswordChangeId { get; set; }
 
-        [Required] public string Token { get; set; }
-
-        [Required] public string ClientId { get; set; }
-
-        [Required] public DateTime ValidTo { get; set; }
+        [Required] public DateTime ChangeDateTime { get; set; }
 
         [Required] public int UserId { get; set; }
 
