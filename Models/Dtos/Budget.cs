@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace WebApi.Models.Dtos
 {
     public class BudgetDto
@@ -7,5 +10,10 @@ namespace WebApi.Models.Dtos
         public double Balance { get; set; }
         public string Currency { get; set; }
         public bool Default { get; set; }
+        public DateTime StartingDate { get; set; }
+
+        public List<BudgetCategoryDto> SpendingCategories { get; set; }
+        public List<BudgetCategoryDto> SavingCategories { get; set; }
+        public List<BudgetCategoryDto> IncomeCategories { get; set; }
     }
 }

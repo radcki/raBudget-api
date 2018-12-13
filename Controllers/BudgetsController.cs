@@ -60,9 +60,9 @@ namespace WebApi.Controllers
                     var budget = userEntity.Budgets.Single(x => x.BudgetId == id);
 
                     var balanceHandler = new BalanceHandler(budget);
-                    return Ok(new BudgetDataDto
+                    return Ok(new BudgetDto
                               {
-                                  BudgetName = budget.Name,
+                                  Name = budget.Name,
                                   Currency = budget.Currency,
                                   StartingDate = budget.StartingDate,
                                   Balance = balanceHandler.CurrentFunds(),
@@ -105,14 +105,14 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("create")]
-        public IActionResult Create([FromBody] BudgetDataDto budgetDto)
+        public IActionResult Create([FromBody] BudgetDto budgetDto)
         {
             try
             {
                 // dodanie budżetu
                 var budgetEntity = new Budget
                                    {
-                                       Name = budgetDto.BudgetName,
+                                       Name = budgetDto.Name,
                                        Currency = budgetDto.Currency,
                                        StartingDate = budgetDto.StartingDate,
                                        UserId = CurrentUser.UserId
@@ -198,7 +198,7 @@ namespace WebApi.Controllers
                     return BadRequest(new {message = "budgets.notFound"});
 
                 var budgetEntity = DatabaseContext.Budgets.Single(x => x.BudgetId == id);
-                budgetEntity.Name = budgetDataDto.BudgetName;
+                budgetEntity.Name = budgetDataDto.Name;
                 budgetEntity.Currency = budgetDataDto.Currency;
                 budgetEntity.StartingDate = budgetDataDto.StartingDate;
                 DatabaseContext.SaveChanges();

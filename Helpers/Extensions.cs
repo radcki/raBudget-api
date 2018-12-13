@@ -38,6 +38,7 @@ namespace WebApi.Helpers
                        Name = entity.Name,
                        Id = entity.BudgetId,
                        Currency = entity.Currency,
+                       StartingDate = entity.StartingDate,
                        Balance = BalanceHandler.CurrentFunds(entity),
                        Default = entity.BudgetId == entity.User.DefaultBudgetId
                    };

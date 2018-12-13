@@ -122,6 +122,16 @@ namespace WebApi.Controllers
             }
         }
 
+        [HttpGet("confirm-authorization")]
+        public IActionResult Ping()
+        {
+            if (!CurrentUser.UserRoles.Select(x => x.Role).Contains(eRole.User))
+            {
+                return Unauthorized();
+            }
+            return Ok();
+        }
+
         [HttpGet]
         public IActionResult GetAll()
         {
