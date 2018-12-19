@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
+using WebApi.Models.Enum;
 using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
 namespace WebApi.Helpers
@@ -40,7 +41,10 @@ namespace WebApi.Helpers
                        Currency = entity.Currency,
                        StartingDate = entity.StartingDate,
                        Balance = BalanceHandler.CurrentFunds(entity),
-                       Default = entity.BudgetId == entity.User.DefaultBudgetId
+                       Default = entity.BudgetId == entity.User.DefaultBudgetId,
+                       IncomeCategories = entity.BudgetCategories.Where(x=>x.Type == eBudgetCategoryType.Income).Select(x=>x.ToDto()).ToList(),
+                       SpendingCategories = entity.BudgetCategories.Where(x=>x.Type == eBudgetCategoryType.Spending).Select(x=>x.ToDto()).ToList(),
+                       SavingCategories = entity.BudgetCategories.Where(x=>x.Type == eBudgetCategoryType.Saving).Select(x=>x.ToDto()).ToList(),
                    };
         }
 

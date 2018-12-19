@@ -81,8 +81,7 @@ namespace WebApi
                                                                         {
                                                                             var userService =
                                                                                 context.HttpContext.RequestServices
-                                                                                       .GetRequiredService<UserService
-                                                                                        >();
+                                                                                       .GetRequiredService<UserService>();
                                                                             var userId =
                                                                                 int.Parse(context.Principal
                                                                                                  .FindFirst(ClaimTypes
