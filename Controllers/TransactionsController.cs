@@ -99,38 +99,20 @@ namespace WebApi.Controllers
                                                IncomeCategories = transaction.BudgetCategory.Budget
                                                                              .BudgetCategories
                                                                              .Where(x => x.Type == eBudgetCategoryType.Income)
-                                                                             .Select(x => new BudgetCategoryDto
-                                                                                          {
-                                                                                              CategoryId = x.BudgetCategoryId,
-                                                                                              Type = x.Type,
-                                                                                              Name = x.Name,
-                                                                                              Amount = x.MonthlyAmount,
-                                                                                              Icon = x.Icon
-                                                                                          })
+                                                                             .AsEnumerable()
+                                                                             .Select(x => x.ToDto())
                                                                              .ToList(),
                                                SavingCategories = transaction.BudgetCategory.Budget
                                                                              .BudgetCategories
                                                                              .Where(x => x.Type == eBudgetCategoryType.Saving)
-                                                                             .Select(x => new BudgetCategoryDto
-                                                                                          {
-                                                                                              CategoryId = x.BudgetCategoryId,
-                                                                                              Type = x.Type,
-                                                                                              Name = x.Name,
-                                                                                              Amount = x.MonthlyAmount,
-                                                                                              Icon = x.Icon
-                                                                                          })
+                                                                             .AsEnumerable()
+                                                                             .Select(x => x.ToDto())
                                                                              .ToList(),
                                                SpendingCategories = transaction.BudgetCategory.Budget
                                                                                .BudgetCategories
                                                                                .Where(x => x.Type == eBudgetCategoryType.Spending)
-                                                                               .Select(x => new BudgetCategoryDto
-                                                                                            {
-                                                                                                CategoryId = x.BudgetCategoryId,
-                                                                                                Type = x.Type,
-                                                                                                Name = x.Name,
-                                                                                                Amount = x.MonthlyAmount,
-                                                                                                Icon = x.Icon
-                                                                                            })
+                                                                               .AsEnumerable()
+                                                                               .Select(x => x.ToDto())
                                                                                .ToList()
                                            }
                               });

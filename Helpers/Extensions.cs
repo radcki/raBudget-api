@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using WebApi.Models.Dtos;
@@ -27,7 +28,13 @@ namespace WebApi.Helpers
                        CategoryId = entity.BudgetCategoryId,
                        Type = entity.Type,
                        Name = entity.Name,
-                       Amount = entity.MonthlyAmount,
+                       AmountConfigs = entity.BudgetCategoryAmountConfigs
+                                               .Select(x => new BudgetCategoryAmountConfigDto() {
+                                                   Amount = x.MonthlyAmount,
+                                                   ValidFrom = x.ValidFrom,
+                                                   ValidTo = x.ValidTo
+                                               })
+                                               .ToList(),
                        Icon = entity.Icon
                    };
         }
@@ -48,6 +55,21 @@ namespace WebApi.Helpers
                    };
         }
 
+        public static BudgetCategoryAmountConfigDto ToDto (this BudgetCategoryAmountConfig entity)
+        {
+            return new BudgetCategoryAmountConfigDto
+            {
+                Amount = entity.MonthlyAmount,
+                ValidFrom = entity.ValidFrom,
+                ValidTo = entity.ValidTo,
+                BudgetCategory = new BudgetCategoryDto
+                {
+                    CategoryId = entity.BudgetCategory.BudgetCategoryId,
+                    Name = entity.BudgetCategory.Name
+                }
+            };
+        }
+
         public static LogDto ToDto(this Log entity)
         {
             var dto = new LogDto()
@@ -59,6 +81,21 @@ namespace WebApi.Helpers
                           TimeStamp = entity.TimeStamp
                       };
             return dto;
+        }
+
+        public static DateTime FirstDayOfMonth(this DateTime value)
+        {
+            return new DateTime(value.Year, value.Month, 1);
+        }
+
+        public static int DaysInMonth(this DateTime value)
+        {
+            return DateTime.DaysInMonth(value.Year, value.Month);
+        }
+
+        public static DateTime LastDayOfMonth(this DateTime value)
+        {
+            return new DateTime(value.Year, value.Month, value.DaysInMonth());
         }
 
     }

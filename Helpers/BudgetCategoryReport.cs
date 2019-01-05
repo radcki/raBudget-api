@@ -28,14 +28,17 @@ namespace WebApi.Helpers
         {
             get
             {
+                var balance = new BudgetCategoryBalance(Category);
                 var dto = new PeriodReportDto();
                 dto.Category = Category.ToDto();
                 dto.TransactionsSum = Category.Transactions
                                               .Where(x => x.TransactionDateTime >= StartDate && x.TransactionDateTime <= EndDate)
                                               .Sum(x => x.Amount);
+
                 dto.AveragePerDay = dto.TransactionsSum / DaysInPeriod;
                 dto.AveragePerMonth = dto.TransactionsSum / MonthsInPeriod;
-                dto.BudgetAmount = MonthsInPeriod * Category.MonthlyAmount;
+
+                dto.BudgetAmount = balance.PeriodBudget(StartDate, EndDate);
 
                 dto.AllocationsSum = Category.Allocations.Where(x => x.AllocationDateTime >= StartDate && x.AllocationDateTime <= EndDate)
                                              .Sum(x => x.Amount);

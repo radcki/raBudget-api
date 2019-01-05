@@ -147,7 +147,7 @@ namespace WebApi.Services
                                                 IssuerSigningKey =
                                                     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings
                                                                                                        .Secret)),
-                                                ValidateLifetime = false // pominiêcie wa¿noœci
+                                                ValidateLifetime = false // pominiï¿½cie waï¿½noï¿½ci
                                             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -285,7 +285,7 @@ namespace WebApi.Services
                                          + JsonConvert.SerializeObject(new User {UserId = userEntity.UserId, Email = userEntity.Email, Username = userEntity.Username})
                                          + " to: "
                                          + JsonConvert.SerializeObject(new User {UserId = user.UserId, Email = user.Email, Username = user.Username}));
-            // test zajêtoœci loginu
+            // test zajï¿½toï¿½ci loginu
             if (user.Username != null && user.Username != userEntity.Username && DatabaseContext.Users.Any(x => x.Username == user.Username))
             {
                 Logger.Log(LogLevel.Warning, "User " + user.UserId + " username update request failed: username " + user.Username + " is taken");
@@ -338,7 +338,7 @@ namespace WebApi.Services
             }
             catch (Exception e)
             {
-                //todo: logowanie
+                Logger.Log(LogLevel.Error, "User " + user.UserId + " roles update: Exception " + (e.InnerException != null ? e.InnerException.Message : e.Message));
                 return new BaseResult()
                        {
                            Result = eResultType.Error
@@ -363,7 +363,7 @@ namespace WebApi.Services
             }
             catch (Exception e)
             {
-                //todo: logowanie
+                Logger.Log(LogLevel.Error, "User " + userEntity.UserId + " password change: Exception " + (e.InnerException != null ? e.InnerException.Message : e.Message));
                 return new BaseResult()
                        {
                            Result = eResultType.Error

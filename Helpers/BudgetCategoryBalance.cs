@@ -32,64 +32,33 @@ namespace WebApi.Helpers
 
         public double TotalAllocationsSum => Category.Allocations.Where(x => x.AllocationDateTime >= Budget.StartingDate).Sum(x => x.Amount);
 
-        /// <summary>
-        ///     Zabudżetowana kwota w pierwszym roku budżetu
-        /// </summary>
-        public double FirstYearBudget
-        {
-            get
-            {
-                /*
-                 * np start w sierpniu - 12 - 8 = 4 pełne miesiące (wrzesień-grudzień)
-                 */
-                var fullMonths = 12 - Budget.StartingDate.Month;
-                /*
-                 * Pozostałość z potencjalnie niepełnego miesiąca
-                 * np 1 sierpnia - 31-1+1 = 31, 5 sierpnia - 31-5+1 = 27
-                 */
-                var leftoverDays = DateTime.DaysInMonth(Budget.StartingDate.Year, Budget.StartingDate.Month)
-                                   - Budget.StartingDate.Day + 1;
-                return fullMonths * Category.MonthlyAmount
-                       + leftoverDays * (Category.MonthlyAmount / leftoverDays);
-            }
-        }
-
+       
         /// <summary>
         ///     Ogólna zabudżetowana w bieżącym roku kwota w kategorii
         /// </summary>
         public double ThisYearBudget => Category.Allocations.Where(x=>DateTime.Now.Year == x.AllocationDateTime.Year).Sum(x=>x.Amount) //alokacje z tego roku
                                         + (DateTime.Now.Year == Budget.StartingDate.Year
-                                            ? FirstYearBudget
-                                            : Category.MonthlyAmount * 12);
+                                            ? PeriodBudget(Budget.StartingDate, new DateTime(DateTime.Today.Year, 12, 1))
+                                            : PeriodBudget(new DateTime(DateTime.Today.Year, 1, 1), new DateTime(DateTime.Today.Year, 12, 1)));
 
         /// <summary>
         ///     Ogólna zabudżetowana kwota od początku budżetu
         /// </summary>
-        public double BudgetSoFar
-        {
-            get
-            {
-                var firstMonthDays = DateTime.DaysInMonth(Budget.StartingDate.Year, Budget.StartingDate.Month);
-                return (Category.MonthlyAmount / firstMonthDays) * (firstMonthDays - Budget.StartingDate.Day + 1) // obliczanie dla potencjalnie niepełnego miesiąca
-                       + TotalAllocationsSum // dodanie alokacji
-                       + Category.MonthlyAmount * ((DateTime.Today.Year - Budget.StartingDate.Year) * 12 + DateTime.Today.Month - Budget.StartingDate.Month); // dodanie pełnych miesięcy
-            }
-        }
+        public double BudgetSoFar => TotalAllocationsSum + PeriodBudget(Budget.StartingDate, DateTime.Today);
 
-        public double ThisMonthBudget
-        {
-            get
-            {
-                if (DateTime.Now.Year != Budget.StartingDate.Year || DateTime.Now.Month != Budget.StartingDate.Month)
-                {
-                    return Category.MonthlyAmount;
-                }
+        public double ThisMonthBudget => ThisMonthAllocationsSum + PeriodBudget(DateTime.Today.FirstDayOfMonth(), DateTime.Today.LastDayOfMonth().AddDays(1));
 
-                var leftoverDays = DateTime.DaysInMonth(Budget.StartingDate.Year, Budget.StartingDate.Month)
-                                   - Budget.StartingDate.Day + 1;
-                return ThisMonthAllocationsSum 
-                       + leftoverDays * (Category.MonthlyAmount / DateTime.DaysInMonth(Budget.StartingDate.Year, Budget.StartingDate.Month));
+
+        public double PeriodBudget(DateTime from, DateTime to)
+        {
+            var configPeriods = Category.BudgetCategoryAmountConfigs.Where(x => (x.ValidTo??DateTime.MaxValue) >= from && x.ValidFrom <= to);
+            double budget = 0;
+            foreach (var config in configPeriods)
+            {
+                var monthsCount = OverlapingMonths(from, to, config.ValidFrom, config.ValidTo ?? DateTime.MaxValue);
+                budget += monthsCount * config.MonthlyAmount;
             }
+            return budget;
         }
 
         /// <summary>
@@ -117,6 +86,18 @@ namespace WebApi.Helpers
                        ThisYearBudget = balance.ThisYearBudget,
                        ThisMonthTransactionsSum = balance.ThisMonthTransactionsSum,
                    };
+        }
+
+        private static int OverlapingMonths(DateTime s1, DateTime e1, DateTime s2, DateTime e2)
+        {
+            if (!(s1 <= e2 && e1 >= s2))
+            {
+                return 0;
+            }
+            DateTime start = s1 > s2 ? s1 : s2;
+            DateTime end = e1 > e2 ? e2 : e1;
+
+            return (12*(end.Year-start.Year) + end.Month - start.Month) + 1;
         }
 
     }

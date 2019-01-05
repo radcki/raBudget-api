@@ -55,9 +55,9 @@ namespace WebApi
                 services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
                                                                      .UseMySql(AzureMySQL.ToMySQLStandard(connectionString) + ";CHARSET=utf8;"));
             }
-
+            /* AUTOMIGRATION
             services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
-
+            */
 
             services.AddMvc(options => { options.Filters.Add(typeof(ValidateModelStateAttribute)); });
             services.AddAutoMapper();

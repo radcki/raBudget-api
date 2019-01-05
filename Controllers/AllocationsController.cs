@@ -130,7 +130,7 @@ namespace WebApi.Controllers
                                                                                              CategoryId = x.BudgetCategoryId,
                                                                                              Type = x.Type,
                                                                                              Name = x.Name,
-                                                                                             Amount = x.MonthlyAmount,
+                                                                                             AmountConfigs = x.BudgetCategoryAmountConfigs.AsEnumerable().Select(s=>s.ToDto()).ToList(),
                                                                                              Icon = x.Icon
                                                                                          })
                                                                             .ToList(),
@@ -142,7 +142,7 @@ namespace WebApi.Controllers
                                                                                              CategoryId = x.BudgetCategoryId,
                                                                                              Type = x.Type,
                                                                                              Name = x.Name,
-                                                                                             Amount = x.MonthlyAmount,
+                                                                                             AmountConfigs = x.BudgetCategoryAmountConfigs.AsEnumerable().Select(s => s.ToDto()).ToList(),
                                                                                              Icon = x.Icon
                                                                                          })
                                                                             .ToList(),
@@ -154,7 +154,7 @@ namespace WebApi.Controllers
                                                                                                CategoryId = x.BudgetCategoryId,
                                                                                                Type = x.Type,
                                                                                                Name = x.Name,
-                                                                                               Amount = x.MonthlyAmount,
+                                                                                               AmountConfigs = x.BudgetCategoryAmountConfigs.AsEnumerable().Select(s => s.ToDto()).ToList(),
                                                                                                Icon = x.Icon
                                                                                            })
                                                                               .ToList()

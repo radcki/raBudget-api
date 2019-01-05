@@ -15,10 +15,7 @@ namespace WebApi.Models.Entities
         [Required] public string Icon { get; set; }
 
         [Required] public string Name { get; set; }
-
-        [Required] public double MonthlyAmount { get; set; }
-
-
+               
         [Required] public int BudgetId { get; set; }
 
         public virtual Budget Budget { get; set; }
@@ -28,5 +25,6 @@ namespace WebApi.Models.Entities
          */
         public virtual List<Transaction> Transactions { get; set; }
         public virtual List<Allocation> Allocations { get; set; }
+        public virtual List<BudgetCategoryAmountConfig> BudgetCategoryAmountConfigs { get; set; }
     }
 }

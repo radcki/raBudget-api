@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using WebApi.Models.Enum;
 
 namespace WebApi.Models.Dtos
@@ -8,6 +9,7 @@ namespace WebApi.Models.Dtos
         public string Name { get; set; }
         public string Icon { get; set; }
         public double Amount { get; set; }
+        public List<BudgetCategoryAmountConfigDto> AmountConfigs { get; set; }
         public eBudgetCategoryType Type { get; set; }
     }
 }

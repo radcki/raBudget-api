@@ -21,6 +21,7 @@ namespace WebApi.Contexts
 
         public DbSet<Budget> Budgets { get; set; }
         public DbSet<BudgetCategory> BudgetCategories { get; set; }
+        public DbSet<BudgetCategoryAmountConfig> BudgetCategoryAmountConfigs { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Allocation> Allocations { get; set; }
 
@@ -32,6 +33,7 @@ namespace WebApi.Contexts
             modelBuilder.Entity<Allocation>().Property(c => c.AllocationId).ValueGeneratedOnAdd();
             modelBuilder.Entity<Budget>().Property(c => c.BudgetId).ValueGeneratedOnAdd();
             modelBuilder.Entity<BudgetCategory>().Property(c => c.BudgetCategoryId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<BudgetCategoryAmountConfig>().Property(c => c.BudgetCategoryAmountConfigId).ValueGeneratedOnAdd();
             modelBuilder.Entity<PasswordChange>().Property(c => c.PasswordChangeId).ValueGeneratedOnAdd();
             modelBuilder.Entity<PasswordReset>().Property(c => c.PasswordResetId).ValueGeneratedOnAdd();
             modelBuilder.Entity<RefreshToken>().Property(c => c.RefreshTokenId).ValueGeneratedOnAdd();

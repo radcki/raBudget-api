@@ -60,35 +60,36 @@ namespace WebApi.Controllers
                     var budget = userEntity.Budgets.Single(x => x.BudgetId == id);
 
                     var balanceHandler = new BalanceHandler(budget);
-                    return Ok(new BudgetDto
-                              {
-                                  Name = budget.Name,
-                                  Currency = budget.Currency,
-                                  StartingDate = budget.StartingDate,
-                                  Balance = balanceHandler.CurrentFunds(),
-                                  Default = budget.BudgetId == CurrentUser.DefaultBudgetId,
+                    var budgetDto = new BudgetDto
+                    {
+                        Name = budget.Name,
+                        Currency = budget.Currency,
+                        StartingDate = budget.StartingDate,
+                        Balance = balanceHandler.CurrentFunds(),
+                        Default = budget.BudgetId == CurrentUser.DefaultBudgetId,
 
-                                  IncomeCategories = budget
+                        IncomeCategories = budget
                                                     .BudgetCategories
                                                     .Where(x => x.Type == eBudgetCategoryType.Income)
                                                     .AsEnumerable()
                                                     .Select(x => x.ToDto())
                                                     .ToList(),
 
-                                  SavingCategories = budget
+                        SavingCategories = budget
                                                     .BudgetCategories
                                                     .Where(x => x.Type == eBudgetCategoryType.Saving)
                                                     .AsEnumerable()
                                                     .Select(x => x.ToDto())
                                                     .ToList(),
 
-                                  SpendingCategories = budget
+                        SpendingCategories = budget
                                                       .BudgetCategories
                                                       .Where(x => x.Type == eBudgetCategoryType.Spending)
                                                       .AsEnumerable()
                                                       .Select(x => x.ToDto())
                                                       .ToList()
-                              });
+                    };
+                    return Ok(budgetDto);
                 }
                 catch (Exception ex)
                 {
@@ -114,7 +115,7 @@ namespace WebApi.Controllers
                                    {
                                        Name = budgetDto.Name,
                                        Currency = budgetDto.Currency,
-                                       StartingDate = budgetDto.StartingDate,
+                                       StartingDate = budgetDto.StartingDate.FirstDayOfMonth(),
                                        UserId = CurrentUser.UserId
                                    };
 
@@ -132,7 +133,14 @@ namespace WebApi.Controllers
                                                       {
                                                           BudgetId = budgetEntity.BudgetId,
                                                           Icon = x.Icon,
-                                                          MonthlyAmount = x.Amount,
+                                                          BudgetCategoryAmountConfigs = new List<BudgetCategoryAmountConfig>
+                                                          {
+                                                              new BudgetCategoryAmountConfig
+                                                              {
+                                                                  ValidFrom = budgetDto.StartingDate.FirstDayOfMonth(),
+                                                                  MonthlyAmount = x.Amount
+                                                              }
+                                                          },
                                                           Name = x.Name,
                                                           Type = eBudgetCategoryType.Income
                                                       }));
@@ -143,8 +151,15 @@ namespace WebApi.Controllers
                                                       {
                                                           BudgetId = budgetEntity.BudgetId,
                                                           Icon = x.Icon,
-                                                          MonthlyAmount = x.Amount,
-                                                          Name = x.Name,
+                                                         BudgetCategoryAmountConfigs = new List<BudgetCategoryAmountConfig>
+                                                            {
+                                                                new BudgetCategoryAmountConfig
+                                                                {
+                                                                    ValidFrom = budgetDto.StartingDate.FirstDayOfMonth(),
+                                                                    MonthlyAmount = x.Amount
+                                                                }
+                                                            },
+                                                         Name = x.Name,
                                                           Type = eBudgetCategoryType.Spending
                                                       }));
 
@@ -154,8 +169,15 @@ namespace WebApi.Controllers
                                                       {
                                                           BudgetId = budgetEntity.BudgetId,
                                                           Icon = x.Icon,
-                                                          MonthlyAmount = x.Amount,
-                                                          Name = x.Name,
+                                             BudgetCategoryAmountConfigs = new List<BudgetCategoryAmountConfig>
+                                                          {
+                                                              new BudgetCategoryAmountConfig
+                                                              {
+                                                                  ValidFrom = budgetDto.StartingDate.FirstDayOfMonth(),
+                                                                  MonthlyAmount = x.Amount
+                                                              }
+                                                          },
+                                             Name = x.Name,
                                                           Type = eBudgetCategoryType.Saving
                                                       }));
 
@@ -198,9 +220,15 @@ namespace WebApi.Controllers
                     return BadRequest(new {message = "budgets.notFound"});
 
                 var budgetEntity = DatabaseContext.Budgets.Single(x => x.BudgetId == id);
+                var categoryConfigPeriods = budgetEntity.BudgetCategories.SelectMany(x => x.BudgetCategoryAmountConfigs).Where(x => x.ValidFrom < budgetDataDto.StartingDate || x.ValidFrom == budgetEntity.StartingDate);
+               foreach( var categoryConfig in categoryConfigPeriods)
+                {
+                    categoryConfig.ValidFrom = budgetDataDto.StartingDate.FirstDayOfMonth();
+                }
+
                 budgetEntity.Name = budgetDataDto.Name;
                 budgetEntity.Currency = budgetDataDto.Currency;
-                budgetEntity.StartingDate = budgetDataDto.StartingDate;
+                budgetEntity.StartingDate = budgetDataDto.StartingDate.FirstDayOfMonth();
                 DatabaseContext.SaveChanges();
                 return Ok();
             }
@@ -238,13 +266,30 @@ namespace WebApi.Controllers
                 if (!CurrentUser.Budgets.Where(x => x.BudgetId == id).Any())
                     return BadRequest(new {message = "budgets.notFound"});
 
+                if (budgetCategoryDto.AmountConfigs.Count > 1)
+                {
+                    budgetCategoryDto.AmountConfigs = budgetCategoryDto.AmountConfigs.OrderBy(x => x.ValidFrom).ToList();
+                    
+                    for (int i = 0; i < budgetCategoryDto.AmountConfigs.Count - 1; i++)
+                    {
+                        budgetCategoryDto.AmountConfigs[i + 1].ValidTo = null;
+                        budgetCategoryDto.AmountConfigs[i].ValidTo = budgetCategoryDto.AmountConfigs[i+1].ValidFrom.AddDays(-1).FirstDayOfMonth();
+                    }
+                }
+                
+
                 if (budgetCategoryDto.CategoryId == null)
                 {
                     var categoryEntity = new BudgetCategory
                                          {
                                              BudgetId = id,
                                              Name = budgetCategoryDto.Name,
-                                             MonthlyAmount = budgetCategoryDto.Amount,
+                                             BudgetCategoryAmountConfigs = budgetCategoryDto.AmountConfigs.Select(s=>new BudgetCategoryAmountConfig
+                                             {
+                                                 MonthlyAmount = s.Amount,
+                                                 ValidFrom = s.ValidFrom,
+                                                 ValidTo = s.ValidTo
+                                             }).ToList(),
                                              Icon = budgetCategoryDto.Icon ?? "",
                                              Type = budgetCategoryDto.Type
                                          };
@@ -263,7 +308,13 @@ namespace WebApi.Controllers
                                                                      budgetCategoryDto.CategoryId);
                     categoryEntity.Name = budgetCategoryDto.Name;
                     categoryEntity.Icon = budgetCategoryDto.Icon ?? "";
-                    categoryEntity.MonthlyAmount = budgetCategoryDto.Amount;
+                    DatabaseContext.BudgetCategoryAmountConfigs.RemoveRange(categoryEntity.BudgetCategoryAmountConfigs);
+                    categoryEntity.BudgetCategoryAmountConfigs = budgetCategoryDto.AmountConfigs.Select(s => new BudgetCategoryAmountConfig
+                    {
+                        MonthlyAmount = s.Amount,
+                        ValidFrom = s.ValidFrom,
+                        ValidTo = s.ValidTo
+                    }).ToList();
                     DatabaseContext.SaveChanges();
                     budgetCategoryDto.Type = categoryEntity.Type;
                     return Ok(budgetCategoryDto);
