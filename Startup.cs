@@ -35,6 +35,7 @@ namespace WebApi
 
         public void ConfigureServices(IServiceCollection services)
         {
+            
             services.AddCors();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
@@ -104,7 +105,7 @@ namespace WebApi
                                                                                   return Task.CompletedTask;
                                                                               }
                                                  };
-                                      x.RequireHttpsMetadata = false;
+                                      x.RequireHttpsMetadata = !IsDebug;
                                       x.SaveToken = true;
                                       x.TokenValidationParameters = new TokenValidationParameters
                                                                     {
@@ -150,6 +151,7 @@ namespace WebApi
                                                 ConfigFile = @"build\webpack.dev.conf.js",
                 });
             }*/
+           
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
@@ -178,13 +180,15 @@ namespace WebApi
                                 .AllowCredentials()
                                 .WithExposedHeaders("Token-Expired")
                            );
+                app.UseHsts();
             }
 
             app.UseAuthentication();
             app.UseMvc();
-            
+            app.UseHttpsRedirection();
+
             if (!IsDebug)
-            {
+            {                
                 app.UseStaticFiles();
                 app.UseSpaStaticFiles();
                 app.UseSpa(config => { });
