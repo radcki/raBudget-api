@@ -276,7 +276,8 @@ namespace WebApi.Controllers
                         budgetCategoryDto.AmountConfigs[i].ValidTo = budgetCategoryDto.AmountConfigs[i+1].ValidFrom.AddDays(-1).FirstDayOfMonth();
                     }
                 }
-                
+                // usunięcie daty validto z ostatniego okresu, potrzebne dla usuwania okresu
+                budgetCategoryDto.AmountConfigs.Where(x => x.ValidFrom == budgetCategoryDto.AmountConfigs.Max(m => m.ValidFrom)).FirstOrDefault().ValidTo = null;
 
                 if (budgetCategoryDto.CategoryId == null)
                 {
@@ -384,7 +385,7 @@ namespace WebApi.Controllers
                 var userEntity = DatabaseContext.Users.Single(x => x.UserId == userId);
                 var budget = userEntity.Budgets.Single(x => x.BudgetId == budgetId);
                 var balanceHandler = new BalanceHandler(budget);
-
+                
                 return Ok(balanceHandler.SavingCategoriesBalance);
             }
             catch (Exception ex)

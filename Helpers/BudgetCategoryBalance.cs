@@ -46,7 +46,7 @@ namespace WebApi.Helpers
         /// </summary>
         public double BudgetSoFar => TotalAllocationsSum + PeriodBudget(Budget.StartingDate, DateTime.Today);
 
-        public double ThisMonthBudget => ThisMonthAllocationsSum + PeriodBudget(DateTime.Today.FirstDayOfMonth(), DateTime.Today.LastDayOfMonth().AddDays(1));
+        public double ThisMonthBudget => ThisMonthAllocationsSum + PeriodBudget(DateTime.Today.FirstDayOfMonth(), DateTime.Today.LastDayOfMonth());
 
 
         public double PeriodBudget(DateTime from, DateTime to)
