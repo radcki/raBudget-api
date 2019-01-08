@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using kedzior.io.ConnectionStringConverter;
 using WebApi.Contexts;
 using WebApi.Models.Enum;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace WebApi
 {
@@ -39,23 +40,21 @@ namespace WebApi
             services.AddCors();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            //services.AddDbContext<DataContext>(x => x.UseInMemoryDatabase("TestDb"));
-            if (IsDebug)
-            {
-                services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
-                                                                     .UseMySql("server=localhost;uid=root;pwd=;database=localdb"));
-                /* SQL SERVER 
-                services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
-                                                                     .UseSqlServer(Configuration
-                                                                                       ["Data:DefaultConnection:ConnectionString"]));
-                */
-            }
-            else
-            {
-                string connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_localdb");
-                services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
-                                                                     .UseMySql(AzureMySQL.ToMySQLStandard(connectionString) + ";CHARSET=utf8;"));
-            }
+            
+            services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
+                                                                    .UseMySql("server=localhost;uid=root;pwd=;database=localdb"));
+            /* SQL SERVER 
+            services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
+                                                                    .UseSqlServer(Configuration
+                                                                                    ["Data:DefaultConnection:ConnectionString"]));
+            */
+
+            /* AZURE IN-APP MYSQL
+            string connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_localdb");
+            services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
+                                                                    .UseMySql(AzureMySQL.ToMySQLStandard(connectionString) + ";CHARSET=utf8;"));
+                                                                    */
+            
             /* AUTOMIGRATION
             services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
             */
@@ -138,23 +137,19 @@ namespace WebApi
                                        });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            /* webpack start from visual studio with hot reloading
-            if (env.IsDevelopment())
-            {
-                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
-                                            {
-                                                HotModuleReplacement = true,
-                                                ProjectPath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).FullName, "ClientApp"),
-                                                ConfigFile = @"build\webpack.dev.conf.js",
-                });
-            }*/
-           
+          
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
+            /* FOR NGINX REVERSE PROXY */
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
 
             /*
              * CORS
@@ -174,7 +169,7 @@ namespace WebApi
             else
             {
                 app.UseCors(x => x
-                                .WithOrigins("http://rabudget.azurewebsites.net")
+                                .WithOrigins("http://budget.rabt.pl")
                                 .AllowAnyMethod()
                                 .AllowAnyHeader()
                                 .AllowCredentials()
