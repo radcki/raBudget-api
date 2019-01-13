@@ -68,6 +68,7 @@ namespace WebApi.Controllers
                                  {
                                      Id = user.UserId,
                                      user.Username,
+                                     EmailVerified = user.EmailVerified,
                                      Roles = user.UserRoles.Select(x => x.Role).ToList()
                                  },
                           Token = tokenString,
@@ -119,6 +120,69 @@ namespace WebApi.Controllers
             {
                 // return error message if there was an exception
                 return BadRequest(new {message = ex.Message});
+            }
+        }
+        
+        [HttpPost("confirm-email")]
+        public IActionResult ConfirmEmail([FromBody] EmailVerificationDto emailVerificationDto)
+        {
+            var result = _userService.VerifyEmail(CurrentUser, emailVerificationDto.ConfirmCode);
+            if (result.Result == eResultType.Success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPost("request-email-confirmation")]
+        public IActionResult RequestEmailConfirm()
+        {
+            var result = _userService.EmailVerifyRequest(CurrentUser);
+            if (result.Result == eResultType.Success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPost("request-password-reset")]
+        [AllowAnonymous]
+        public IActionResult RequestPasswordReset([FromBody] PasswordResetDto passwordResetDto)
+        {
+            var result = _userService.PasswordResetRequest(passwordResetDto.Email);
+            if (result.Result == eResultType.Success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPost("submit-password-reset")]
+        [AllowAnonymous]
+        public IActionResult SubmitPasswordReset([FromBody] PasswordResetDto passwordResetDto)
+        {
+            var user = DatabaseContext.Users.FirstOrDefault(x => x.Email == passwordResetDto.Email);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var result = _userService.ResetPassword(user, passwordResetDto.NewPassword, passwordResetDto.Token);
+            if (result.Result == eResultType.Success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
             }
         }
 

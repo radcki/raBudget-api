@@ -90,6 +90,7 @@ namespace WebApi
                                                                             var user = userService.GetById(userId);
                                                                             if (user == null)
                                                                                 context.Fail("Unauthorized");
+
                                                                             return Task.CompletedTask;
                                                                         },
                                                      OnAuthenticationFailed = context =>

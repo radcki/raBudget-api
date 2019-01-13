@@ -85,7 +85,7 @@ namespace WebApi.Services
             foreach (var roleEntity in user.UserRoles)
                 claims.Append(new Claim(ClaimTypes.Role, roleEntity.Role.ToString()));
 
-            var jwt = new JwtSecurityToken("rabudget.azurewebsites.net",
+            var jwt = new JwtSecurityToken("rabt.pl",
                                            "Everyone",
                                            claims,
                                            DateTime.UtcNow,
@@ -242,15 +242,14 @@ namespace WebApi.Services
                 || user.Username.Contains(" ")
                 || user.Username.Any(x => char.IsWhiteSpace(x)))
                 throw new Exception("account.usernameInvalid");
-
-
+            
             user.Password = HashPassword(password);
             user.CreationTime = DateTime.Now;
 
             DatabaseContext.Users.Add(user);
             DatabaseContext.SaveChanges();
 
-            var userId = DatabaseContext.Users.First(x => x.Username == user.Username).UserId;
+            var userId = user.UserId;
 
             DatabaseContext.UserRoles.Add(new UserRole
                                           {
@@ -265,7 +264,66 @@ namespace WebApi.Services
                                                   Role = eRole.Admin
                                               });
             DatabaseContext.SaveChanges();
+            EmailVerifyRequest(user);
             return user;
+        }
+
+        public BaseResult VerifyEmail(User user, string verificationCode)
+        {
+            var userEntity = DatabaseContext.Users.FirstOrDefault(x => x.Username == user.Username);
+            if (userEntity == null)
+            {
+                return new BaseResult(){Result = eResultType.NotFound};
+            }
+            if (userEntity.EmailVerificationCode == verificationCode)
+            {
+                userEntity.EmailVerified = true;
+                userEntity.EmailVerificationCode = null;
+                DatabaseContext.SaveChanges();
+                return new BaseResult(){Result = eResultType.Success};
+            }
+            else
+            {
+                return new BaseResult(){Result = eResultType.Error};
+            }
+        }
+
+        public BaseResult EmailVerifyRequest(User user)
+        {
+            var userEntity = DatabaseContext.Users.FirstOrDefault(x => x.UserId == user.UserId);
+            if (userEntity == null)
+            {
+                return new BaseResult(){Result = eResultType.NotFound};
+            }
+            var emailConfirmString = Extensions.RandomString(6);
+            userEntity.EmailVerificationCode = emailConfirmString;
+            userEntity.EmailVerified = false;
+            DatabaseContext.SaveChanges();
+
+            var emailService = new EmailService();
+            emailService.SendEmailConfirmEmail(user.Email, emailConfirmString);
+            return new BaseResult() { Result = eResultType.Success };
+        }
+
+        public BaseResult PasswordResetRequest(string email)
+        {
+            var userEntity = DatabaseContext.Users.FirstOrDefault(x => x.Email == email);
+            if (userEntity == null)
+            {
+                return new BaseResult() { Result = eResultType.NotFound };
+            }
+            var passwordResetToken = Extensions.RandomString(20);
+            
+
+            userEntity.PasswordResets.Add(new PasswordReset()
+                                          {
+                                              GenerationDateTime = DateTime.Now,
+                                              Token = passwordResetToken
+            });
+            DatabaseContext.SaveChanges();
+            var emailService = new EmailService();
+            emailService.SendPasswordRecoveryEmail(userEntity.Email, passwordResetToken);
+            return new BaseResult(){Result = eResultType.Success};
         }
 
         public BaseResult Update(User user)
@@ -369,6 +427,22 @@ namespace WebApi.Services
                            Result = eResultType.Error
                        };
             }
+        }
+
+        public BaseResult ResetPassword(User user, string newPassword, string resetToken)
+        {
+            var userEntity = DatabaseContext.Users.FirstOrDefault(x => x.UserId == user.UserId);
+            if (userEntity == null)
+            {
+                return new BaseResult(){Result = eResultType.NotFound};
+            }
+            var matchingToken = userEntity.PasswordResets.FirstOrDefault(x => x.Token == resetToken && x.GenerationDateTime >= DateTime.Now.AddDays(-1));
+            if (matchingToken != null)
+            {
+                DatabaseContext.PasswordResets.Remove(matchingToken);
+                return ChangePassword(userEntity, newPassword);
+            }
+            return new BaseResult() { Result = eResultType.NotFound };
         }
 
         public BaseResult Delete(int id)

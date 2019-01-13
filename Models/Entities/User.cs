@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace WebApi.Models.Entities
 {
@@ -12,7 +13,10 @@ namespace WebApi.Models.Entities
 
         [Required] [MaxLength(160)] public string Email { get; set; }
 
-        public DateTime? EmailVerifiedTime { get; set; }
+        [MaxLength(160)] public string EmailVerificationCode { get; set; }
+
+        public bool EmailVerified { get; set; }
+
 
         [Required] [MaxLength(30)] public string Username { get; set; }
 
