@@ -62,6 +62,7 @@ namespace WebApi.Controllers
                     var balanceHandler = new BalanceHandler(budget);
                     var budgetDto = new BudgetDto
                     {
+                        Id = budget.BudgetId,
                         Name = budget.Name,
                         Currency = budget.Currency,
                         StartingDate = budget.StartingDate,
