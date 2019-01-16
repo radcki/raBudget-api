@@ -26,11 +26,11 @@ namespace WebApi.Controllers
             if (User != null)
                 try
                 {
-                    if (allocationDto.SourceCategory?.CategoryId != null)
+                    if (allocationDto.SourceCategory?.CategoryId != 0)
                     {
                         var sourceCategory =
                             DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                         allocationDto.SourceCategory.CategoryId.Value);
+                                                                         allocationDto.SourceCategory.CategoryId);
 
                         if (!CurrentUser.Budgets.Contains(sourceCategory.Budget))
                         {
@@ -51,7 +51,7 @@ namespace WebApi.Controllers
 
                     var destinationCategory =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     allocationDto.DestinationCategory.CategoryId.Value);
+                                                                     allocationDto.DestinationCategory.CategoryId);
 
                     if (!CurrentUser.Budgets.Contains(destinationCategory.Budget))
                         return BadRequest(new {Message = "category.invalid"});
@@ -235,7 +235,7 @@ namespace WebApi.Controllers
                 {
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     allocationDto.DestinationCategory.CategoryId.Value);
+                                                                     allocationDto.DestinationCategory.CategoryId);
                     if (!CurrentUser.Budgets.Contains(categoryEntity.Budget))
                         return BadRequest(new {Message = "category.invalid"});
 

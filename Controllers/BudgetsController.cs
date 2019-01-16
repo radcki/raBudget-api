@@ -264,7 +264,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                if (!CurrentUser.Budgets.Where(x => x.BudgetId == id).Any())
+                if (!CurrentUser.Budgets.Any(x => x.BudgetId == id))
                     return BadRequest(new {message = "budgets.notFound"});
 
                 if (budgetCategoryDto.AmountConfigs.Count > 1)
@@ -280,7 +280,7 @@ namespace WebApi.Controllers
                 // usunięcie daty validto z ostatniego okresu, potrzebne dla usuwania okresu
                 budgetCategoryDto.AmountConfigs.Where(x => x.ValidFrom == budgetCategoryDto.AmountConfigs.Max(m => m.ValidFrom)).FirstOrDefault().ValidTo = null;
 
-                if (budgetCategoryDto.CategoryId == null)
+                if (budgetCategoryDto.CategoryId == 0)
                 {
                     var categoryEntity = new BudgetCategory
                                          {
@@ -325,7 +325,7 @@ namespace WebApi.Controllers
             catch (Exception ex)
             {
                 Logger.Log(LogLevel.Warning, "Exception during category save: " + ex + "; " + (ex.InnerException.Message != null ? ex.InnerException.Message : ex.Message));
-                return BadRequest(new {message = ex.InnerException.Message != null ? ex.InnerException.Message : ex.Message});
+                return BadRequest(new {message = ex.InnerException.Message ?? ex.Message});
             }
         }
 

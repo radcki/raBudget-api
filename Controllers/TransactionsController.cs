@@ -28,7 +28,7 @@ namespace WebApi.Controllers
                 {
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     transactionDto.Category.CategoryId.Value);
+                                                                     transactionDto.Category.CategoryId);
                     if (!CurrentUser.Budgets.Contains(categoryEntity.Budget))
                         return BadRequest(new {Message = "category.invalid"});
                     var transaction = new Transaction
@@ -277,7 +277,7 @@ namespace WebApi.Controllers
                 {
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     transactionDto.Category.CategoryId.Value);
+                                                                     transactionDto.Category.CategoryId);
                     if (!CurrentUser.Budgets.Contains(categoryEntity.Budget))
                         return BadRequest(new { Message = "category.invalid" });
 
