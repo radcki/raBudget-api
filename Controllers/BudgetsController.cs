@@ -10,7 +10,6 @@ using WebApi.Helpers;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
 using WebApi.Models.Enum;
-using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
 namespace WebApi.Controllers
 {

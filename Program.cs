@@ -22,6 +22,7 @@ namespace WebApi
                                                 logging.AddFilter<EntityFrameworkLoggerProvider<DataContext>>("Microsoft", LogLevel.Warning);
                                                 logging.AddFilter<EntityFrameworkLoggerProvider<DataContext>>("System", LogLevel.Warning);
                                                 logging.AddEntityFramework<DataContext>();
+                                                logging.AddConsole();
                                             })
                           .UseStartup<Startup>()
                           .UseUrls("http://localhost:4000")

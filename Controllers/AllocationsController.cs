@@ -32,7 +32,7 @@ namespace WebApi.Controllers
                             DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
                                                                          allocationDto.SourceCategory.CategoryId);
 
-                        if (!CurrentUser.Budgets.Contains(sourceCategory.Budget))
+                        if (!CurrentUser.Budgets.Any(x => x.BudgetId == sourceCategory.Budget.BudgetId))
                         {
                             return BadRequest(new {Message = "category.invalid"});
                         }
@@ -53,7 +53,7 @@ namespace WebApi.Controllers
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
                                                                      allocationDto.DestinationCategory.CategoryId);
 
-                    if (!CurrentUser.Budgets.Contains(destinationCategory.Budget))
+                    if (!CurrentUser.Budgets.Any(x => x.BudgetId == destinationCategory.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
 
                     var allocation = new Allocation
@@ -100,7 +100,7 @@ namespace WebApi.Controllers
                 try
                 {
                     var allocation = DatabaseContext.Allocations.Single(x => x.AllocationId == id);
-                    if (!CurrentUser.Budgets.Contains(allocation.BudgetCategory.Budget))
+                    if (!CurrentUser.Budgets.Any(x=> x.BudgetId == allocation.BudgetCategory.Budget.BudgetId))
                     {
                         return BadRequest(new {Message = "allocations.notFound"});
                     }
@@ -177,11 +177,9 @@ namespace WebApi.Controllers
                 {
                     var budget = CurrentUser.Budgets.Single(x => x.BudgetId == filters.BudgetId);
 
-                    if (!CurrentUser.Budgets.Contains(budget)) return BadRequest(new {Message = "budget.invalid"});
+                    if (!CurrentUser.Budgets.Any(x=>x.BudgetId == budget.BudgetId)) return BadRequest(new {Message = "budget.invalid"});
 
-                    var spendings = DatabaseContext.Allocations
-                                                   .Where(x => budget.BudgetCategories.Contains(x.BudgetCategory)
-                                                               && x.BudgetCategory.Type == eBudgetCategoryType.Spending);
+                    var spendings = budget.BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Spending).SelectMany(x=>x.Allocations);
 
                     if (filters.StartDate != null)
                     {
@@ -236,7 +234,7 @@ namespace WebApi.Controllers
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
                                                                      allocationDto.DestinationCategory.CategoryId);
-                    if (!CurrentUser.Budgets.Contains(categoryEntity.Budget))
+                    if (!CurrentUser.Budgets.Any(x=>x.BudgetId == categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
 
                     var allocationEntity = DatabaseContext.Allocations.Single(x => x.AllocationId == id);
@@ -282,7 +280,7 @@ namespace WebApi.Controllers
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId == allocationEntity.BudgetCategoryId);
 
-                    if (!CurrentUser.Budgets.Contains(categoryEntity.Budget))
+                    if (!CurrentUser.Budgets.Any(x=>x.BudgetId == categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
 
                     DatabaseContext.Allocations.Remove(allocationEntity);

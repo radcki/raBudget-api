@@ -142,10 +142,10 @@ namespace WebApi
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
           
-
+            /*
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-
+            */
             /* FOR NGINX REVERSE PROXY */
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
