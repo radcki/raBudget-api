@@ -165,9 +165,9 @@ namespace WebApi.Controllers
                     if (!filters.Categories.IsNullOrDefault())
                     {
                         var filterIds = filters.Categories.Select(x => x.CategoryId);
-                        spendings = spendings.Where(x => filterIds.Contains(x.BudgetCategory.BudgetCategoryId));
-                        income = income.Where(x => filterIds.Contains(x.BudgetCategory.BudgetCategoryId));
-                        saving = saving.Where(x => filterIds.Contains(x.BudgetCategory.BudgetCategoryId));
+                        spendings = spendings.Where(x => filterIds.Any(s=>s == x.BudgetCategory.BudgetCategoryId));
+                        income = income.Where(x => filterIds.Any(s=>s == x.BudgetCategory.BudgetCategoryId));
+                        saving = saving.Where(x => filterIds.Any(s=>s == x.BudgetCategory.BudgetCategoryId));
                     }
 
 
@@ -182,9 +182,10 @@ namespace WebApi.Controllers
 
                     if (!filters.GroupCount.IsNullOrDefault())
                     {
-                        spendings = spendings.OrderByDescending(x => x.TransactionDateTime).Take(filters.GroupCount.Value);
-                        income = income.OrderByDescending(x => x.TransactionDateTime).Take(filters.GroupCount.Value);
-                        saving = saving.OrderByDescending(x => x.TransactionDateTime).Take(filters.GroupCount.Value);
+                        var count = filters.GroupCount.GetValueOrDefault();
+                        spendings = spendings.Take(count);
+                        income = income.Take(count);
+                        saving = saving.Take(count);
                     }
 
                     return Ok(new
