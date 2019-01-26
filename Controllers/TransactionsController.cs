@@ -146,21 +146,21 @@ namespace WebApi.Controllers
                                                 .Where(x => budget.BudgetCategories.Contains(x.BudgetCategory)
                                                             && x.BudgetCategory.Type == eBudgetCategoryType.Saving);
 
-                    if (filters.StartDate != null)
+                    if (!filters.StartDate.IsNullOrDefault())
                     {
                         spendings = spendings.Where(x => x.TransactionDateTime >= filters.StartDate);
                         income = income.Where(x => x.TransactionDateTime >= filters.StartDate);
                         saving = saving.Where(x => x.TransactionDateTime >= filters.StartDate);
                     }
 
-                    if (filters.EndDate != null)
+                    if (!filters.EndDate.IsNullOrDefault())
                     {
                         spendings = spendings.Where(x => x.TransactionDateTime <= filters.EndDate);
                         income = income.Where(x => x.TransactionDateTime <= filters.EndDate);
                         saving.Where(x => x.TransactionDateTime <= filters.EndDate);
                     }
 
-                    if (filters.Categories != null)
+                    if (!filters.Categories.IsNullOrDefault())
                     {
                         spendings = spendings.Where(x => filters.Categories.Select(s=>s.CategoryId).Contains(x.BudgetCategory.BudgetCategoryId));
                         income = income.Where(x => filters.Categories.Select(s=>s.CategoryId).Contains(x.BudgetCategory.BudgetCategoryId));
@@ -179,9 +179,9 @@ namespace WebApi.Controllers
 
                     if (filters.GroupCount != null && filters.GroupCount != 0)
                     {
-                        spendings = spendings.Take(filters.GroupCount.Value).OrderByDescending(x => x.TransactionDateTime);
-                        income = income.Take(filters.GroupCount.Value).OrderByDescending(x => x.TransactionDateTime);
-                        saving = saving.Take(filters.GroupCount.Value).OrderByDescending(x => x.TransactionDateTime);
+                        spendings = spendings.OrderByDescending(x => x.TransactionDateTime).Take(filters.GroupCount.Value);
+                        income = income.OrderByDescending(x => x.TransactionDateTime).Take(filters.GroupCount.Value);
+                        saving = saving.OrderByDescending(x => x.TransactionDateTime).Take(filters.GroupCount.Value);
                     }
 
                     return Ok(new

@@ -181,12 +181,12 @@ namespace WebApi.Controllers
 
                     var spendings = budget.BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Spending).SelectMany(x=>x.Allocations);
 
-                    if (filters.StartDate != null)
+                    if (!filters.StartDate.IsNullOrDefault())
                     {
                         spendings = spendings.Where(x => x.AllocationDateTime >= filters.StartDate);
                     }
 
-                    if (filters.EndDate != null)
+                    if (!filters.EndDate.IsNullOrDefault())
                     {
                         spendings = spendings.Where(x => x.AllocationDateTime <= filters.EndDate);
                     }

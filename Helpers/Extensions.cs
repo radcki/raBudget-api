@@ -119,5 +119,10 @@ namespace WebApi.Helpers
             return res.ToString();
         }
 
+        public static bool IsNullOrDefault<T>(this T val)
+        {
+            return val == null || EqualityComparer<T>.Default.Equals(val, default(T));
+        }
+
     }
 }
