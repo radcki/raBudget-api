@@ -7,8 +7,8 @@ namespace WebApi.Models.Dtos
     {
         public int BudgetId { get; set; }
         public int? GroupCount { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public List<BudgetCategoryDto> Categories { get; set; }
     }
 }

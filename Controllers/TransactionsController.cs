@@ -148,23 +148,26 @@ namespace WebApi.Controllers
 
                     if (!filters.StartDate.IsNullOrDefault())
                     {
-                        spendings = spendings.Where(x => x.TransactionDateTime >= filters.StartDate);
-                        income = income.Where(x => x.TransactionDateTime >= filters.StartDate);
-                        saving = saving.Where(x => x.TransactionDateTime >= filters.StartDate);
+                        var filter = filters.StartDate.GetValueOrDefault();
+                        spendings = spendings.Where(x => x.TransactionDateTime >= filter);
+                        income = income.Where(x => x.TransactionDateTime >= filter);
+                        saving = saving.Where(x => x.TransactionDateTime >= filter);
                     }
 
                     if (!filters.EndDate.IsNullOrDefault())
                     {
-                        spendings = spendings.Where(x => x.TransactionDateTime <= filters.EndDate);
-                        income = income.Where(x => x.TransactionDateTime <= filters.EndDate);
-                        saving.Where(x => x.TransactionDateTime <= filters.EndDate);
+                        var filter = filters.EndDate.GetValueOrDefault();
+                        spendings = spendings.Where(x => x.TransactionDateTime <= filter);
+                        income = income.Where(x => x.TransactionDateTime <= filter);
+                        saving.Where(x => x.TransactionDateTime <= filter);
                     }
 
                     if (!filters.Categories.IsNullOrDefault())
                     {
-                        spendings = spendings.Where(x => filters.Categories.Select(s=>s.CategoryId).Contains(x.BudgetCategory.BudgetCategoryId));
-                        income = income.Where(x => filters.Categories.Select(s=>s.CategoryId).Contains(x.BudgetCategory.BudgetCategoryId));
-                        saving = saving.Where(x => filters.Categories.Select(s=>s.CategoryId).Contains(x.BudgetCategory.BudgetCategoryId));
+                        var filterIds = filters.Categories.Select(x => x.CategoryId);
+                        spendings = spendings.Where(x => filterIds.Contains(x.BudgetCategory.BudgetCategoryId));
+                        income = income.Where(x => filterIds.Contains(x.BudgetCategory.BudgetCategoryId));
+                        saving = saving.Where(x => filterIds.Contains(x.BudgetCategory.BudgetCategoryId));
                     }
 
 
@@ -177,7 +180,7 @@ namespace WebApi.Controllers
                     saving = saving.OrderByDescending(x => x.TransactionDateTime)
                                    .ThenByDescending(x => x.CreationDateTime);
 
-                    if (filters.GroupCount != null && filters.GroupCount != 0)
+                    if (!filters.GroupCount.IsNullOrDefault())
                     {
                         spendings = spendings.OrderByDescending(x => x.TransactionDateTime).Take(filters.GroupCount.Value);
                         income = income.OrderByDescending(x => x.TransactionDateTime).Take(filters.GroupCount.Value);
