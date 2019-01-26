@@ -29,7 +29,7 @@ namespace WebApi.Controllers
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
                                                                      transactionDto.Category.CategoryId);
-                    if (!CurrentUser.Budgets.Contains(categoryEntity.Budget))
+                    if (!CurrentUser.Budgets.Any(x=>x.BudgetId == categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
                     var transaction = new Transaction
                                       {
@@ -74,7 +74,7 @@ namespace WebApi.Controllers
                 try
                 {
                     var transaction = DatabaseContext.Transactions.Single(x => x.TransactionId == id);
-                    if (!CurrentUser.Budgets.Contains(transaction.BudgetCategory.Budget))
+                    if (!CurrentUser.Budgets.Any(x=>x.BudgetId == transaction.BudgetCategory.Budget.BudgetId))
                     {
                         return BadRequest(new {Message = "transactions.notFound"});
                     }
@@ -132,18 +132,18 @@ namespace WebApi.Controllers
                 try
                 {
                     var budget = CurrentUser.Budgets.Single(x => x.BudgetId == filters.BudgetId);
-                    if (!CurrentUser.Budgets.Contains(budget)) return BadRequest(new {Message = "budget.invalid"});
+                    if (!CurrentUser.Budgets.Any(x=>x.BudgetId == budget.BudgetId)) return BadRequest(new {Message = "budget.invalid"});
 
                     var spendings = DatabaseContext.Transactions
-                                                   .Where(x => budget.BudgetCategories.Contains(x.BudgetCategory)
+                                                   .Where(x => budget.BudgetCategories.Any(s=>s.BudgetCategoryId == x.BudgetCategoryId)
                                                                && x.BudgetCategory.Type == eBudgetCategoryType.Spending);
 
                     var income = DatabaseContext.Transactions
-                                                .Where(x => budget.BudgetCategories.Contains(x.BudgetCategory)
+                                                .Where(x => budget.BudgetCategories.Any(s=>s.BudgetCategoryId == x.BudgetCategoryId)
                                                             && x.BudgetCategory.Type == eBudgetCategoryType.Income);
 
                     var saving = DatabaseContext.Transactions
-                                                .Where(x => budget.BudgetCategories.Contains(x.BudgetCategory)
+                                                .Where(x => budget.BudgetCategories.Any(s=>s.BudgetCategoryId == x.BudgetCategoryId)
                                                             && x.BudgetCategory.Type == eBudgetCategoryType.Saving);
 
                     if (!filters.StartDate.IsNullOrDefault())
@@ -282,7 +282,7 @@ namespace WebApi.Controllers
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
                                                                      transactionDto.Category.CategoryId);
-                    if (!CurrentUser.Budgets.Contains(categoryEntity.Budget))
+                    if (!CurrentUser.Budgets.Any(x=>x.BudgetId == categoryEntity.Budget.BudgetId))
                         return BadRequest(new { Message = "category.invalid" });
 
                     var transactionEntity = DatabaseContext.Transactions.Single(x => x.TransactionId == id);
@@ -328,7 +328,7 @@ namespace WebApi.Controllers
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId == transactionEntity.BudgetCategoryId);
 
-                    if (!CurrentUser.Budgets.Contains(categoryEntity.Budget))
+                    if (!CurrentUser.Budgets.Any(x=>x.BudgetId == categoryEntity.Budget.BudgetId))
                         return BadRequest(new { Message = "category.invalid" });
 
                     DatabaseContext.Transactions.Remove(transactionEntity);
