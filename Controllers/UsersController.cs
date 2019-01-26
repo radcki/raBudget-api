@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -7,14 +6,11 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using WebApi.Contexts;
-using WebApi.Helpers;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
 using WebApi.Models.Enum;
 using WebApi.Services;
-using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
 namespace WebApi.Controllers
 {
@@ -47,7 +43,6 @@ namespace WebApi.Controllers
             {
                 return NotFound(new {message = "account.creditentialsInvalid"});
             }
-            
 
             var user = result.Data;
             string clientId = null;
@@ -112,7 +107,7 @@ namespace WebApi.Controllers
 
             try
             {
-                // save 
+                // save
                 _userService.Create(user, userDto.Password);
                 return Ok();
             }
@@ -122,7 +117,7 @@ namespace WebApi.Controllers
                 return BadRequest(new {message = ex.Message});
             }
         }
-        
+
         [HttpPost("confirm-email")]
         public IActionResult ConfirmEmail([FromBody] EmailVerificationDto emailVerificationDto)
         {
@@ -175,6 +170,7 @@ namespace WebApi.Controllers
             {
                 return NotFound();
             }
+
             var result = _userService.ResetPassword(user, passwordResetDto.NewPassword, passwordResetDto.Token);
             if (result.Result == eResultType.Success)
             {
@@ -193,6 +189,7 @@ namespace WebApi.Controllers
             {
                 return Unauthorized();
             }
+
             return Ok();
         }
 
@@ -213,7 +210,7 @@ namespace WebApi.Controllers
                                                  CreationDate = x.CreationTime,
                                                  Roles = x.UserRoles.Select(s => s.Role).ToList()
                                              })
-                                .ToList();
+                             .ToList();
             return Ok(userDtos);
         }
 
@@ -261,7 +258,7 @@ namespace WebApi.Controllers
                                         UserId = id,
                                         Email = userDto.Email
                                     });
-                
+
                 return Ok();
             }
             catch (Exception ex)
@@ -335,7 +332,6 @@ namespace WebApi.Controllers
             }
         }
 
-
         [HttpDelete("{id}")]
         public IActionResult Delete(int id, [FromBody] PasswordDto password)
         {
@@ -344,7 +340,7 @@ namespace WebApi.Controllers
             var authenticationResult = _userService.Authenticate(username, password.Password);
             if (authenticationResult.Result != eResultType.Success)
             {
-                return BadRequest(new { message = "account.passwordInvalid" });
+                return BadRequest(new {message = "account.passwordInvalid"});
             }
 
             var user = authenticationResult.Data;
@@ -353,7 +349,7 @@ namespace WebApi.Controllers
                 Logger.Log(LogLevel.Warning, "Request to delete user " + user.UserId + " interrupted: authorization failed");
                 return Unauthorized();
             }
-            
+
             var operationResult = _userService.Delete(id);
             if (operationResult.Result == eResultType.Success)
             {
@@ -361,10 +357,8 @@ namespace WebApi.Controllers
             }
             else
             {
-                
-                return BadRequest(new { message = operationResult.Message });
+                return BadRequest(new {message = operationResult.Message});
             }
-
         }
     }
 }
