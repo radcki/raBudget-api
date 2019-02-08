@@ -26,7 +26,7 @@ namespace WebApi.Controllers
             if (User != null)
                 try
                 {
-                    if (allocationDto.SourceCategory?.CategoryId != 0)
+                    if (!allocationDto.SourceCategory.IsNullOrDefault() && allocationDto.SourceCategory.CategoryId != 0)
                     {
                         var sourceCategory =
                             DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
