@@ -24,6 +24,7 @@ namespace WebApi.Contexts
         public DbSet<BudgetCategoryAmountConfig> BudgetCategoryAmountConfigs { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Allocation> Allocations { get; set; }
+        public DbSet<TransactionSchedule> TransactionSchedules { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +39,7 @@ namespace WebApi.Contexts
             modelBuilder.Entity<PasswordReset>().Property(c => c.PasswordResetId).ValueGeneratedOnAdd();
             modelBuilder.Entity<RefreshToken>().Property(c => c.RefreshTokenId).ValueGeneratedOnAdd();
             modelBuilder.Entity<Transaction>().Property(c => c.TransactionId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<TransactionSchedule>().Property(c => c.TransactionScheduleId).ValueGeneratedOnAdd();
             modelBuilder.Entity<User>().Property(c => c.UserId).ValueGeneratedOnAdd();
             modelBuilder.Entity<UserRole>().Property(c => c.UserRoleId).ValueGeneratedOnAdd();
 

@@ -21,5 +21,6 @@ namespace WebApi.Models.Entities
          * Klucze obce
          */
         public virtual List<BudgetCategory> BudgetCategories { get; set; }
+        
     }
 }

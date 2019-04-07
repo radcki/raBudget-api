@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
@@ -37,7 +38,8 @@ namespace WebApi.Helpers
                                                    ValidTo = x.ValidTo
                                                })
                                                .ToList(),
-                       Icon = entity.Icon
+                       Icon = entity.Icon,
+                       Budget = new BudgetDto(){Id = entity.BudgetId, Name = entity.Budget.Name}
                    };
         }
 
@@ -55,6 +57,23 @@ namespace WebApi.Helpers
                        SpendingCategories = entity.BudgetCategories.Where(x=>x.Type == eBudgetCategoryType.Spending).Select(x=>x.ToDto()).ToList(),
                        SavingCategories = entity.BudgetCategories.Where(x=>x.Type == eBudgetCategoryType.Saving).Select(x=>x.ToDto()).ToList(),
                    };
+        }
+
+        public static TransactionScheduleDto ToDto(this TransactionSchedule entity)
+        {
+             var dto = new TransactionScheduleDto()
+                       {
+                           TransactionScheduleId = entity.TransactionScheduleId,
+                           Amount = entity.Amount,
+                           BudgetCategory = entity.BudgetCategory.ToDto(),
+                           Description = entity.Description,
+                           StartDate = entity.StartDate,
+                           EndDate = entity.EndDate,
+                           Frequency = entity.Frequency,
+                           PeriodStep = entity.PeriodStep,
+                           // Lista transakcji zostaje tutaj pominięta jako zazwyczaj niepotrzebna
+                       };
+             return dto;
         }
 
         public static BudgetCategoryAmountConfigDto ToDto (this BudgetCategoryAmountConfig entity)
@@ -83,6 +102,51 @@ namespace WebApi.Helpers
                           TimeStamp = entity.TimeStamp
                       };
             return dto;
+        }
+
+        public static List<DateTime> OccurrencesInPeriod(this TransactionScheduleDto schedule, DateTime from, DateTime to)
+        {
+            var entity = new TransactionSchedule()
+                         {
+                             StartDate = schedule.StartDate,
+                             EndDate = schedule.EndDate,
+                             PeriodStep = schedule.PeriodStep,
+                             Frequency = schedule.Frequency
+                         };
+            return entity.OccurrencesInPeriod(from, to);
+        }
+        public static List<DateTime> OccurrencesInPeriod(this TransactionSchedule schedule, DateTime from, DateTime to)
+        {
+            var start = new[] {schedule.StartDate, from}.Min();
+            var end = schedule.EndDate.IsNullOrDefault() ? to : new[] {schedule.EndDate.Value, to}.Min();
+
+            var allOccurrences = new List<DateTime>();
+            var current = new DateTime(schedule.StartDate.Ticks);
+            bool exitLoop = false;
+            while (current <= end)
+            {
+                allOccurrences.Add(current);
+                switch (schedule.Frequency)
+                {
+                    case eFrequency.Monthly:
+                        current = current.AddMonths(schedule.PeriodStep);
+                        break;
+                    case  eFrequency.Weekly:
+                        current = current.AddDays(7 * schedule.PeriodStep);
+                        break;
+                    case eFrequency.Daily:
+                        current = current.AddDays(schedule.PeriodStep);
+                        break;
+                    default:
+                    case eFrequency.Once: //już dodany przed switch
+                        exitLoop = true;
+                        break;
+                }
+                
+                if (exitLoop){ break;}
+            }
+
+            return allOccurrences.Where(x => x > start).ToList();
         }
 
         public static DateTime FirstDayOfMonth(this DateTime value)
@@ -122,6 +186,18 @@ namespace WebApi.Helpers
         public static bool IsNullOrDefault<T>(this T val)
         {
             return val == null || EqualityComparer<T>.Default.Equals(val, default(T));
+        }
+
+        public static T Max<T>(T first, T second) {
+            if (Comparer<T>.Default.Compare(first, second) > 0)
+                return first;
+            return second;
+        }
+
+        public static T Min<T>(T first, T second) {
+            if (Comparer<T>.Default.Compare(first, second) < 0)
+                return first;
+            return second;
         }
 
     }

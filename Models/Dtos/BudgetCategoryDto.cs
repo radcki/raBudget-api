@@ -11,5 +11,6 @@ namespace WebApi.Models.Dtos
         public double Amount { get; set; }
         public List<BudgetCategoryAmountConfigDto> AmountConfigs { get; set; }
         public eBudgetCategoryType Type { get; set; }
+        public BudgetDto Budget { get; set; }
     }
 }

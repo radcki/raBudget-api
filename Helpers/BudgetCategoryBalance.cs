@@ -28,6 +28,34 @@ namespace WebApi.Helpers
                                                             && x.AllocationDateTime.Month == DateTime.Today.Month)
                                                 .Sum(x => x.Amount);
 
+        public double ThisMonthYetScheduledSum()
+        {
+            var schedules = Category.TransactionSchedules.Where(x => x.StartDate.Month <= DateTime.Now.Month && x.StartDate.Year <= DateTime.Now.Year);
+            var today = DateTime.Today;
+            double sum = 0;
+            foreach (var schedule in schedules)
+            {
+                var occurrences = schedule.OccurrencesInPeriod(today, new DateTime(today.Year, today.Month, 1).AddMonths(1).AddDays(-1));
+                sum += schedule.Amount * occurrences.Count;
+            }
+
+            return sum;
+        }
+
+        public double ThisYearYetScheduledSum()
+        {
+            var schedules = Category.TransactionSchedules.Where(x => x.StartDate.Month <= DateTime.Now.Month && x.StartDate.Year <= DateTime.Now.Year);
+            var today = DateTime.Today;
+            double sum = 0;
+            foreach (var schedule in schedules)
+            {
+                var occurrences = schedule.OccurrencesInPeriod(today, new DateTime(today.Year, 12, 31));
+                sum += schedule.Amount * occurrences.Count;
+            }
+
+            return sum;
+        }
+
         public double TotalTransactionsSum => Category.Transactions.Where(x => x.TransactionDateTime >= Budget.StartingDate).Sum(x => x.Amount);
 
         public double TotalAllocationsSum => Category.Allocations.Where(x => x.AllocationDateTime >= Budget.StartingDate).Sum(x => x.Amount);
@@ -85,6 +113,8 @@ namespace WebApi.Helpers
                        LeftToEndOfYear = balance.LeftToEndOfYear,
                        ThisYearBudget = balance.ThisYearBudget,
                        ThisMonthTransactionsSum = balance.ThisMonthTransactionsSum,
+                       ThisMonthYetScheduledSum = balance.ThisMonthYetScheduledSum(),
+                       ThisYearYetScheduledSum = balance.ThisYearYetScheduledSum()
                    };
         }
 

@@ -26,5 +26,6 @@ namespace WebApi.Models.Entities
         public virtual List<Transaction> Transactions { get; set; }
         public virtual List<Allocation> Allocations { get; set; }
         public virtual List<BudgetCategoryAmountConfig> BudgetCategoryAmountConfigs { get; set; }
+        public virtual List<TransactionSchedule> TransactionSchedules { get; set; }
     }
 }

@@ -8,10 +8,12 @@ namespace WebApi.Models.Dtos
         public double ThisMonthBudgetBalance { get; set; }
 
         public double ThisMonthTransactionsSum { get; set; }
+        public double ThisMonthYetScheduledSum { get; set; }
 
         public double LeftToEndOfYear { get; set; }
 
         public double ThisYearBudget { get; set; }
+        public double ThisYearYetScheduledSum { get; set; }
         public double ThisMonthBudget { get; set; }
         public double BudgetSoFar { get; set; }
 

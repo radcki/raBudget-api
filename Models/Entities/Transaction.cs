@@ -20,7 +20,11 @@ namespace WebApi.Models.Entities
         [Required] public int CreatedByUserId { get; set; }
 
         [Required] public int BudgetCategoryId { get; set; }
+        
+        public int? TransactionScheduleId { get; set; }
 
         public virtual BudgetCategory BudgetCategory { get; set; }
+
+        public virtual TransactionSchedule TransactionSchedule { get; set; }
     }
 }
