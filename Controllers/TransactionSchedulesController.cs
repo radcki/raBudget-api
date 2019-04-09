@@ -36,6 +36,11 @@ namespace WebApi.Controllers
                         return BadRequest(new {Message = "category.invalid"});
                     }
 
+                    if (transactionScheduleDto.Frequency > 0 && transactionScheduleDto.PeriodStep == 0)
+                    {
+                        return BadRequest(new {Message = "transactionSchedules.invalidPeriodStep"});
+                    }
+
 
                     DatabaseContext.TransactionSchedules.Add(new TransactionSchedule()
                                                              {

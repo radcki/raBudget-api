@@ -53,7 +53,7 @@ namespace WebApi.Helpers
                 sum += schedule.Amount * occurrences.Count;
             }
 
-            return sum;
+             return sum;
         }
 
         public double TotalTransactionsSum => Category.Transactions.Where(x => x.TransactionDateTime >= Budget.StartingDate).Sum(x => x.Amount);
