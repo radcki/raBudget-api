@@ -44,7 +44,7 @@ namespace WebApi.Helpers
 
         public double ThisYearYetScheduledSum()
         {
-            var schedules = Category.TransactionSchedules.Where(x => x.StartDate.Month <= DateTime.Now.Month && x.StartDate.Year <= DateTime.Now.Year);
+            var schedules = Category.TransactionSchedules.Where(x => x.EndDate == null || x.EndDate >= DateTime.Today);
             var today = DateTime.Today;
             double sum = 0;
             foreach (var schedule in schedules)
