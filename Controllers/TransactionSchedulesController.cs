@@ -205,7 +205,7 @@ namespace WebApi.Controllers
                     var occurrences = new List<TransactionDto>();
                     foreach (var schedule in schedules)
                     {
-                        var scheduleOccurrences = schedule.OccurrencesInPeriod(DateTime.Today, endDate);
+                        var scheduleOccurrences = schedule.OccurrencesInPeriod(DateTime.Today.AddDays(-4), endDate);
 
                         scheduleOccurrences.ForEach(date =>
                                                     {
