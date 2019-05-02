@@ -9,22 +9,44 @@ namespace WebApi.Helpers
 {
     public class BalanceHandler
     {
+        public BalanceHandler(Budget budget, eBudgetCategoryType limitCategoryType)
+        {
+            Budget = budget;
+            Budget = budget;
+            switch (limitCategoryType)
+            {
+                case eBudgetCategoryType.Spending:
+                    SpendingCategories = Budget.BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Spending);
+                    break;
+                case eBudgetCategoryType.Income:
+                    IncomeCategories = Budget.BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Income);
+                    break;
+                case eBudgetCategoryType.Saving:
+                    SavingCategories = Budget.BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Saving);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(limitCategoryType), limitCategoryType, null);
+            }
+            
+            DaysFromBudgetStart = (DateTime.Today - Budget.StartingDate).TotalDays;
+        }
         public BalanceHandler(Budget budget)
         {
             Budget = budget;
+            SpendingCategories = Budget.BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Spending);
+            IncomeCategories = Budget.BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Income);
+            SavingCategories = Budget.BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Saving);
+            DaysFromBudgetStart = (DateTime.Today - Budget.StartingDate).TotalDays;
         }
 
         private Budget Budget { get; }
-        public double DaysFromBudgetStart => (DateTime.Today - Budget.StartingDate).TotalDays;
+        public double DaysFromBudgetStart { get; }
 
-        private IEnumerable<BudgetCategory> SpendingCategories =>
-            Budget.BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Spending);
+        private IEnumerable<BudgetCategory> SpendingCategories { get; }
 
-        private IEnumerable<BudgetCategory> IncomeCategories =>
-            Budget.BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Income);
+        private IEnumerable<BudgetCategory> IncomeCategories { get; }
 
-        private IEnumerable<BudgetCategory> SavingCategories =>
-            Budget.BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Saving);
+        private IEnumerable<BudgetCategory> SavingCategories { get; }
 
         public double CurrentFunds() => IncomeCategories.TransactionsSum()
                                         - SpendingCategories.TransactionsSum()

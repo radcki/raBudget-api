@@ -22,6 +22,7 @@ using kedzior.io.ConnectionStringConverter;
 using WebApi.Contexts;
 using WebApi.Models.Enum;
 using Microsoft.AspNetCore.HttpOverrides;
+using WebApi.Controllers;
 
 namespace WebApi
 {
@@ -60,7 +61,7 @@ namespace WebApi
             */
 
             services.AddMvc(options => { options.Filters.Add(typeof(ValidateModelStateAttribute)); });
-            services.AddAutoMapper();
+            services.AddAutoMapper(typeof(UsersController));
 
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);

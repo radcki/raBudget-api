@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApi.Contexts;
 using WebApi.Helpers;
 using WebApi.Models.Dtos;
@@ -42,7 +43,7 @@ namespace WebApi.Controllers
                                       };
                     DatabaseContext.Transactions.Add(transaction);
                     DatabaseContext.SaveChanges();
-
+                    PrecalculateTransactionsSum(transaction.BudgetCategory);
                     return Ok(new TransactionDto
                               {
                                   TransactionId = transaction.TransactionId,
@@ -131,54 +132,44 @@ namespace WebApi.Controllers
             if (User != null)
                 try
                 {
-                    var budget = CurrentUser.Budgets.Single(x => x.BudgetId == filters.BudgetId);
-                    if (!CurrentUser.Budgets.Any(x=>x.BudgetId == budget.BudgetId)) return BadRequest(new {Message = "budget.invalid"});
+                    var budget = DatabaseContext.Budgets.Single(x => x.BudgetId == filters.BudgetId && x.UserId == CurrentUser.UserId);
+                    if (budget.IsNullOrDefault()) return BadRequest(new {Message = "budget.invalid"});
+                    
+                    var transactions = DatabaseContext.Transactions
+                                           .Include(b => b.BudgetCategory)
+                                           .ThenInclude(b=>b.Budget)
+                                           .Where(x => x.BudgetCategory.BudgetId == budget.BudgetId 
+                                                       && x.BudgetCategory.Budget.UserId == budget.UserId);
 
-                    var spendings = DatabaseContext.Transactions
-                                                   .Where(x => budget.BudgetCategories.Any(s=>s.BudgetCategoryId == x.BudgetCategoryId)
-                                                               && x.BudgetCategory.Type == eBudgetCategoryType.Spending);
-
-                    var income = DatabaseContext.Transactions
-                                                .Where(x => budget.BudgetCategories.Any(s=>s.BudgetCategoryId == x.BudgetCategoryId)
-                                                            && x.BudgetCategory.Type == eBudgetCategoryType.Income);
-
-                    var saving = DatabaseContext.Transactions
-                                                .Where(x => budget.BudgetCategories.Any(s=>s.BudgetCategoryId == x.BudgetCategoryId)
-                                                            && x.BudgetCategory.Type == eBudgetCategoryType.Saving);
 
                     if (!filters.StartDate.IsNullOrDefault())
                     {
                         var filter = filters.StartDate.GetValueOrDefault();
-                        spendings = spendings.Where(x => x.TransactionDateTime >= filter);
-                        income = income.Where(x => x.TransactionDateTime >= filter);
-                        saving = saving.Where(x => x.TransactionDateTime >= filter);
+                        transactions = transactions.Where(x => x.TransactionDateTime >= filter);
+
                     }
 
                     if (!filters.EndDate.IsNullOrDefault())
                     {
                         var filter = filters.EndDate.GetValueOrDefault();
-                        spendings = spendings.Where(x => x.TransactionDateTime <= filter);
-                        income = income.Where(x => x.TransactionDateTime <= filter);
-                        saving.Where(x => x.TransactionDateTime <= filter);
+                        transactions = transactions.Where(x => x.TransactionDateTime <= filter);
+
                     }
 
                     if (!filters.Categories.IsNullOrDefault())
                     {
                         var filterIds = filters.Categories.Select(x => x.CategoryId);
-                        spendings = spendings.Where(x => filterIds.Any(s=>s == x.BudgetCategory.BudgetCategoryId));
-                        income = income.Where(x => filterIds.Any(s=>s == x.BudgetCategory.BudgetCategoryId));
-                        saving = saving.Where(x => filterIds.Any(s=>s == x.BudgetCategory.BudgetCategoryId));
+                        transactions = transactions.Where(x => filterIds.Any(s=>s == x.BudgetCategory.BudgetCategoryId));
                     }
 
 
-                    spendings = spendings.OrderByDescending(x => x.TransactionDateTime)
+                    transactions = transactions.OrderByDescending(x => x.TransactionDateTime)
                                          .ThenByDescending(x => x.CreationDateTime);
+                    var transactionsList = transactions.ToList();
 
-                    income = income.OrderByDescending(x => x.TransactionDateTime)
-                                   .ThenByDescending(x => x.CreationDateTime);
-
-                    saving = saving.OrderByDescending(x => x.TransactionDateTime)
-                                   .ThenByDescending(x => x.CreationDateTime);
+                    var spendings = transactionsList.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Spending);
+                    var income = transactionsList.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Income);
+                    var saving = transactionsList.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Saving);
 
                     if (!filters.GroupCount.IsNullOrDefault())
                     {
@@ -262,7 +253,8 @@ namespace WebApi.Controllers
                     sourceCategory.Transactions.ForEach(x => x.BudgetCategoryId = targetCategory.BudgetCategoryId);
 
                     DatabaseContext.SaveChanges();
-
+                    PrecalculateTransactionsSum(sourceCategory);
+                    PrecalculateTransactionsSum(targetCategory);
                     return Ok();
                 }
                 catch (Exception ex)
@@ -292,7 +284,7 @@ namespace WebApi.Controllers
                     transactionEntity.BudgetCategoryId = categoryEntity.BudgetCategoryId;
 
                     DatabaseContext.SaveChanges();
-
+                    PrecalculateTransactionsSum(categoryEntity);
                     return Ok(new TransactionDto
                     {
                         TransactionId = transactionEntity.TransactionId,
@@ -334,7 +326,7 @@ namespace WebApi.Controllers
                     DatabaseContext.Transactions.Remove(transactionEntity);
 
                     DatabaseContext.SaveChanges();
-
+                    PrecalculateTransactionsSum(transactionEntity.BudgetCategory);
                     return Ok();
                 }
                 catch (Exception ex)
@@ -343,6 +335,14 @@ namespace WebApi.Controllers
                 }
 
             return Unauthorized();
+        }
+
+        private void PrecalculateTransactionsSum(BudgetCategory category)
+        {
+            DatabaseContext.BudgetCategories
+                        .First(x=>x.BudgetCategoryId == category.BudgetCategoryId)
+                        .TransactionsSum = category.Transactions.Sum(x => x.Amount);
+            DatabaseContext.SaveChanges();
         }
     }
 }

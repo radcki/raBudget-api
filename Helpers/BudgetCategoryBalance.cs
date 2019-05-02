@@ -11,22 +11,27 @@ namespace WebApi.Helpers
         {
             Category = category;
             Budget = category.Budget;
+
+            ThisMonthAllocationsSum = Category
+                                  .Allocations
+                                  .Where(x => x.AllocationDateTime.Year == DateTime.Today.Year
+                                              && x.AllocationDateTime.Month == DateTime.Today.Month)
+                                  .Sum(x => x.Amount);
+            ThisMonthTransactionsSum = Category
+                                   .Transactions
+                                   .Where(x => x.TransactionDateTime.Year == DateTime.Today.Year
+                                               && x.TransactionDateTime.Month == DateTime.Today.Month)
+                                   .Sum(x => x.Amount);
+            TotalTransactionsSum = Category.TransactionsSum ?? Category.Transactions.Where(x => x.TransactionDateTime >= Budget.StartingDate).Sum(x => x.Amount);
+            TotalAllocationsSum = Category.AllocationsSum ?? Category.Allocations.Where(x => x.AllocationDateTime >= Budget.StartingDate).Sum(x => x.Amount);
         }
 
         private BudgetCategory Category { get; }
         private Budget Budget { get; }
 
-        public double ThisMonthTransactionsSum => Category
-                                                 .Transactions
-                                                 .Where(x => x.TransactionDateTime.Year == DateTime.Today.Year 
-                                                             && x.TransactionDateTime.Month == DateTime.Today.Month)
-                                                 .Sum(x => x.Amount);
+        public double ThisMonthTransactionsSum { get; }
 
-        public double ThisMonthAllocationsSum => Category
-                                                .Allocations
-                                                .Where(x => x.AllocationDateTime.Year == DateTime.Today.Year
-                                                            && x.AllocationDateTime.Month == DateTime.Today.Month)
-                                                .Sum(x => x.Amount);
+        public double ThisMonthAllocationsSum { get; }
 
         public double ThisMonthYetScheduledSum()
         {
@@ -56,9 +61,9 @@ namespace WebApi.Helpers
              return sum;
         }
 
-        public double TotalTransactionsSum => Category.Transactions.Where(x => x.TransactionDateTime >= Budget.StartingDate).Sum(x => x.Amount);
+        public double TotalTransactionsSum { get; }
 
-        public double TotalAllocationsSum => Category.Allocations.Where(x => x.AllocationDateTime >= Budget.StartingDate).Sum(x => x.Amount);
+        public double TotalAllocationsSum { get; }
 
        
         /// <summary>

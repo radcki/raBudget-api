@@ -15,6 +15,9 @@ namespace WebApi.Models.Entities
         [Required] public string Icon { get; set; }
 
         [Required] public string Name { get; set; }
+
+        public double? TransactionsSum { get; set; }
+        public double? AllocationsSum { get; set; }
                
         [Required] public int BudgetId { get; set; }
 

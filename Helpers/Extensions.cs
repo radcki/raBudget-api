@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -16,12 +17,22 @@ namespace WebApi.Helpers
     {
         public static double TransactionsSum(this IEnumerable<BudgetCategory> categories)
         {
-            return categories.SelectMany(x => x.Transactions).Sum(x => x.Amount);
+            double sum = 0;
+            foreach (var budgetCategory in categories)
+            {
+                sum += budgetCategory.TransactionsSum ?? budgetCategory.Transactions.Sum(x => x.Amount);
+            }
+            return sum;
         }
 
         public static double AllocationsSum(this IEnumerable<BudgetCategory> categories)
         {
-            return categories.SelectMany(x => x.Allocations).Sum(x => x.Amount);
+            double sum = 0;
+            foreach (var budgetCategory in categories)
+            {
+                sum += budgetCategory.AllocationsSum ?? budgetCategory.Allocations.Sum(x => x.Amount);
+            }
+            return sum;
         }
 
         public static BudgetCategoryDto ToDto(this BudgetCategory entity)
@@ -45,18 +56,23 @@ namespace WebApi.Helpers
 
         public static BudgetDto ToDto(this Budget entity)
         {
-            return new BudgetDto
+            var categories = entity.BudgetCategories.Select(x => x.ToDto()).ToList();
+            var budget = new BudgetDto
                    {
                        Name = entity.Name,
                        Id = entity.BudgetId,
                        Currency = entity.Currency,
                        StartingDate = entity.StartingDate,
-                       Balance = BalanceHandler.CurrentFunds(entity),
+                       
                        Default = entity.BudgetId == entity.User.DefaultBudgetId,
-                       IncomeCategories = entity.BudgetCategories.Where(x=>x.Type == eBudgetCategoryType.Income).Select(x=>x.ToDto()).ToList(),
-                       SpendingCategories = entity.BudgetCategories.Where(x=>x.Type == eBudgetCategoryType.Spending).Select(x=>x.ToDto()).ToList(),
-                       SavingCategories = entity.BudgetCategories.Where(x=>x.Type == eBudgetCategoryType.Saving).Select(x=>x.ToDto()).ToList(),
+                       IncomeCategories = categories.Where(x=>x.Type == eBudgetCategoryType.Income).ToList(),
+                       SpendingCategories = categories.Where(x=>x.Type == eBudgetCategoryType.Spending).ToList(),
+                       SavingCategories = categories.Where(x=>x.Type == eBudgetCategoryType.Saving).ToList(),
                    };
+
+            budget.Balance = BalanceHandler.CurrentFunds(entity);
+
+            return budget;
         }
 
         public static TransactionScheduleDto ToDto(this TransactionSchedule entity)

@@ -68,7 +68,7 @@ namespace WebApi.Controllers
 
                     DatabaseContext.Allocations.Add(allocation);
                     DatabaseContext.SaveChanges();
-
+                    PrecalculateAllocationsSum(allocation.BudgetCategory);
                     return Ok(new AllocationDto
                               {
                                   AllocationId = allocation.AllocationId,
@@ -244,7 +244,7 @@ namespace WebApi.Controllers
                     allocationEntity.BudgetCategoryId = categoryEntity.BudgetCategoryId;
 
                     DatabaseContext.SaveChanges();
-
+                    PrecalculateAllocationsSum(categoryEntity);
                     return Ok(new AllocationDto
                               {
                                   AllocationId = allocationEntity.AllocationId,
@@ -286,7 +286,7 @@ namespace WebApi.Controllers
                     DatabaseContext.Allocations.Remove(allocationEntity);
 
                     DatabaseContext.SaveChanges();
-
+                    PrecalculateAllocationsSum(categoryEntity);
                     return Ok();
                 }
                 catch (Exception ex)
@@ -295,6 +295,14 @@ namespace WebApi.Controllers
                 }
 
             return Unauthorized();
+        }
+
+        private void PrecalculateAllocationsSum(BudgetCategory category)
+        {
+            DatabaseContext.BudgetCategories
+                        .First(x=>x.BudgetCategoryId == category.BudgetCategoryId)
+                        .AllocationsSum = category.Allocations.Sum(x => x.Amount);
+            DatabaseContext.SaveChanges();
         }
     }
 }
