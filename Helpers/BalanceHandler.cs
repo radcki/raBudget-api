@@ -60,13 +60,13 @@ namespace WebApi.Helpers
                    - handler.SavingCategories.TransactionsSum();
         }
 
-        public List<BudgetCategoryBalanceDto> SpendingCategoriesBalance => SpendingCategories.Select(x=>BudgetCategoryBalance.BalanceDto(x)).ToList();
-        public List<BudgetCategoryBalanceDto> IncomeCategoriesBalance => IncomeCategories.Select(x=>BudgetCategoryBalance.BalanceDto(x)).ToList();
-        public List<BudgetCategoryBalanceDto> SavingCategoriesBalance => SavingCategories.Select(x=>BudgetCategoryBalance.BalanceDto(x)).ToList();
+        public List<BudgetCategoryBalanceDto> SpendingCategoriesBalance => SpendingCategories.Select(BudgetCategoryBalance.BalanceDto).ToList();
+        public List<BudgetCategoryBalanceDto> IncomeCategoriesBalance => IncomeCategories.Select(BudgetCategoryBalance.BalanceDto).ToList();
+        public List<BudgetCategoryBalanceDto> SavingCategoriesBalance => SavingCategories.Select(BudgetCategoryBalance.BalanceDto).ToList();
 
         public double UnassignedFunds()
         {
-            var budgeted = SpendingCategories.Select(x=>BudgetCategoryBalance.BalanceDto(x,true)).Select(x => x.OverallBudgetBalance).Sum();
+            var budgeted = SpendingCategories.Select(x=>BudgetCategoryBalance.BalanceDto(x,eBudgetCategoryBalanceIncluded.OverallBalance).OverallBudgetBalance).Where(x=>x > 0).Sum();
             return CurrentFunds() - budgeted;
         }
     }

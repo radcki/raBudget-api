@@ -2,6 +2,7 @@
 using System.Linq;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
+using WebApi.Models.Enum;
 
 namespace WebApi.Helpers
 {
@@ -103,31 +104,43 @@ namespace WebApi.Helpers
 
         public double LeftToEndOfYear => ThisYearBudget - Category.Transactions.Where(x => x.TransactionDateTime.Year == DateTime.Today.Year).Sum(x => x.Amount);
 
-        public static BudgetCategoryBalanceDto BalanceDto(BudgetCategory category, bool overallOnly = false)
+        public static BudgetCategoryBalanceDto BalanceDto(BudgetCategory category)
+        {
+            return BalanceDto(category, eBudgetCategoryBalanceIncluded.All);
+        }
+        public static BudgetCategoryBalanceDto BalanceDto(BudgetCategory category, eBudgetCategoryBalanceIncluded included)
         {
             var balance = new BudgetCategoryBalance(category);
-            if (overallOnly)
+            var dto = new BudgetCategoryBalanceDto(){BudgetCategory = balance.Category.ToDto()};
+            if (included.HasFlag(eBudgetCategoryBalanceIncluded.OverallBalance))
             {
-                return new BudgetCategoryBalanceDto()
-                       {
-                           OverallBudgetBalance = balance.OverallBudgetBalance
-                       };
+                dto.OverallBudgetBalance = balance.OverallBudgetBalance;
             }
-            return new BudgetCategoryBalanceDto()
-                   {
-                       TotalTransactionsSum = balance.TotalTransactionsSum,
-                       TotalAllocationsSum = balance.TotalAllocationsSum,
-                       ThisMonthBudgetBalance = balance.ThisMonthBudgetBalance,
-                       OverallBudgetBalance = balance.OverallBudgetBalance,
-                       ThisMonthBudget = balance.ThisMonthBudget,
-                       BudgetSoFar = balance.BudgetSoFar,
-                       BudgetCategory = balance.Category.ToDto(),
-                       LeftToEndOfYear = balance.LeftToEndOfYear,
-                       ThisYearBudget = balance.ThisYearBudget,
-                       ThisMonthTransactionsSum = balance.ThisMonthTransactionsSum,
-                       ThisMonthYetScheduledSum = balance.ThisMonthYetScheduledSum(),
-                       ThisYearYetScheduledSum = balance.ThisYearYetScheduledSum()
-                   };
+
+            if (included.HasFlag(eBudgetCategoryBalanceIncluded.ThisMonth))
+            {
+                dto.ThisMonthBudgetBalance = balance.ThisMonthBudgetBalance;
+                dto.ThisMonthBudget = balance.ThisMonthBudget;
+                dto.ThisMonthTransactionsSum = balance.ThisMonthTransactionsSum;
+                dto.ThisMonthYetScheduledSum = balance.ThisMonthYetScheduledSum();
+            }
+
+            if (included.HasFlag(eBudgetCategoryBalanceIncluded.ThisYear))
+            {
+                dto.LeftToEndOfYear = balance.LeftToEndOfYear;
+                dto.ThisYearBudget = balance.ThisYearBudget;
+                dto.ThisYearYetScheduledSum = balance.ThisYearYetScheduledSum();
+            }
+
+            if (included.HasFlag(eBudgetCategoryBalanceIncluded.Totals))
+            {
+                dto.TotalTransactionsSum = balance.TotalTransactionsSum;
+                dto.TotalAllocationsSum = balance.TotalAllocationsSum;
+                dto.OverallBudgetBalance = balance.OverallBudgetBalance;
+                dto.BudgetSoFar = balance.BudgetSoFar;
+            }
+
+            return dto;
         }
 
         private static int OverlapingMonths(DateTime s1, DateTime e1, DateTime s2, DateTime e2)
