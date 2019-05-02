@@ -103,9 +103,16 @@ namespace WebApi.Helpers
 
         public double LeftToEndOfYear => ThisYearBudget - Category.Transactions.Where(x => x.TransactionDateTime.Year == DateTime.Today.Year).Sum(x => x.Amount);
 
-        public static BudgetCategoryBalanceDto BalanceDto(BudgetCategory category)
+        public static BudgetCategoryBalanceDto BalanceDto(BudgetCategory category, bool overallOnly = false)
         {
             var balance = new BudgetCategoryBalance(category);
+            if (overallOnly)
+            {
+                return new BudgetCategoryBalanceDto()
+                       {
+                           OverallBudgetBalance = balance.OverallBudgetBalance
+                       };
+            }
             return new BudgetCategoryBalanceDto()
                    {
                        TotalTransactionsSum = balance.TotalTransactionsSum,
