@@ -41,6 +41,7 @@ namespace WebApi.Helpers
             double sum = 0;
             foreach (var schedule in schedules)
             {
+                var test = new DateTime(today.Year, today.Month, 1).AddMonths(1).AddDays(-1);
                 var occurrences = schedule.OccurrencesInPeriod(today, new DateTime(today.Year, today.Month, 1).AddMonths(1).AddDays(-1));
                 sum += schedule.Amount * occurrences.Count;
             }

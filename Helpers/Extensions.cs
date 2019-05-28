@@ -133,7 +133,7 @@ namespace WebApi.Helpers
         }
         public static List<DateTime> OccurrencesInPeriod(this TransactionSchedule schedule, DateTime from, DateTime to)
         {
-            var start = new[] {schedule.StartDate, from}.Min();
+            var start = new[] {schedule.StartDate, from}.Max();
             var end = schedule.EndDate.IsNullOrDefault() ? to : new[] {schedule.EndDate.Value, to}.Min();
 
             var allOccurrences = new List<DateTime>();
