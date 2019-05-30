@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WebApi.Contexts;
 using WebApi.Helpers;
 using WebApi.Models.Dtos;
@@ -71,7 +72,7 @@ namespace WebApi.Controllers
                 try
                 {
                     var transactionSchedule = DatabaseContext.TransactionSchedules.Single(x => x.TransactionScheduleId == id);
-                    if (!CurrentUser.Budgets.SelectMany(x=>x.BudgetCategories).Any(x=>x.BudgetCategoryId == transactionSchedule.BudgetCategoryId))
+                    if (!CurrentUser.Budgets.SelectMany(x => x.BudgetCategories).Any(x => x.BudgetCategoryId == transactionSchedule.BudgetCategoryId))
                     {
                         return BadRequest(new {Message = "transactionsSchedule.notFound"});
                     }
@@ -94,7 +95,7 @@ namespace WebApi.Controllers
                 {
                     var budget = CurrentUser.Budgets.Single(x => x.BudgetId == filters.BudgetId);
 
-                    var schedules = budget.BudgetCategories.SelectMany(x=>x.TransactionSchedules).AsEnumerable();
+                    var schedules = budget.BudgetCategories.SelectMany(x => x.TransactionSchedules).AsEnumerable();
 
                     if (!filters.StartDate.IsNullOrDefault())
                     {
@@ -109,7 +110,7 @@ namespace WebApi.Controllers
 
                     schedules = schedules.OrderByDescending(x => x.Description);
 
-                   return Ok(schedules.AsEnumerable().Select(x=>x.ToDto()).ToList());
+                    return Ok(schedules.AsEnumerable().Select(x => x.ToDto()).ToList());
                 }
                 catch (Exception ex)
                 {
@@ -128,7 +129,7 @@ namespace WebApi.Controllers
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
                                                                      scheduleDto.BudgetCategory.CategoryId);
-                    if (!CurrentUser.Budgets.Any(x=>x.BudgetId == categoryEntity.Budget.BudgetId))
+                    if (!CurrentUser.Budgets.Any(x => x.BudgetId == categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
 
                     var schedule = categoryEntity.TransactionSchedules.Single(x => x.TransactionScheduleId == id);
@@ -138,7 +139,7 @@ namespace WebApi.Controllers
                     schedule.EndDate = scheduleDto.EndDate;
                     schedule.Frequency = scheduleDto.Frequency;
                     schedule.PeriodStep = scheduleDto.PeriodStep;
-                    
+
                     DatabaseContext.SaveChanges();
 
                     return Ok(schedule.ToDto());
@@ -162,7 +163,7 @@ namespace WebApi.Controllers
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId == scheduleEntity.BudgetCategoryId);
 
-                    if (!CurrentUser.Budgets.Any(x=>x.BudgetId == categoryEntity.Budget.BudgetId))
+                    if (!CurrentUser.Budgets.Any(x => x.BudgetId == categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
 
                     if (deleteTransactions)
@@ -172,7 +173,7 @@ namespace WebApi.Controllers
                     else
                     {
                         // usuń klucz
-                        scheduleEntity.Transactions.ToList().ForEach(x=>x.TransactionScheduleId = null);
+                        scheduleEntity.Transactions.ToList().ForEach(x => x.TransactionScheduleId = null);
                     }
 
                     DatabaseContext.TransactionSchedules.Remove(scheduleEntity);
@@ -197,31 +198,42 @@ namespace WebApi.Controllers
                 {
                     var budget = CurrentUser.Budgets.Single(x => x.BudgetId == budgetId);
 
-                    var schedules = budget.BudgetCategories
-                                       .SelectMany(x => x.TransactionSchedules)
-                                       .Where(x => (x.EndDate == null || x.EndDate >= DateTime.Today) && x.StartDate <= endDate)
-                                       .AsEnumerable().Select(x=>x.ToDto()).ToList();
+                    var schedulesQueryable = budget.BudgetCategories
+                                                   .SelectMany(x => x.TransactionSchedules)
+                                                   .Where(x => (x.EndDate == null || x.EndDate >= DateTime.Today) && x.StartDate <= endDate);
+
+                    var schedules = schedulesQueryable.AsEnumerable().Select(x => x.ToDto()).ToList();
 
                     var occurrences = new List<TransactionDto>();
+                    var startDate = DateTime.Today.AddDays(-4);
+
                     foreach (var schedule in schedules)
                     {
-                        var scheduleOccurrences = schedule.OccurrencesInPeriod(DateTime.Today.AddDays(-4), endDate);
+                        var scheduleOccurrences = schedule.OccurrencesInPeriod(startDate, endDate);
+                        var alreadyCreatedTransactionDates = DatabaseContext.TransactionSchedules
+                                                                            .Find(schedule.TransactionScheduleId)
+                                                                            .Transactions
+                                                                            .Where(x => x.TransactionDateTime.Date >= startDate && x.TransactionDateTime.Date <= endDate)
+                                                                            .Select(x => x.TransactionDateTime)
+                                                                            .ToList();
 
-                        scheduleOccurrences.ForEach(date =>
+                        scheduleOccurrences.Except(alreadyCreatedTransactionDates)
+                                           .ToList()
+                                           .ForEach(date =>
                                                     {
                                                         occurrences.Add(new TransactionDto()
-                                                                       {
-                                                                           Amount = schedule.Amount,
-                                                                           Budget = schedule.BudgetCategory.Budget,
-                                                                           Category = schedule.BudgetCategory,
-                                                                           Date = date,
-                                                                           Description = schedule.Description,
-                                                                           TransactionSchedule = schedule
-                                                                       });
+                                                                        {
+                                                                            Amount = schedule.Amount,
+                                                                            Budget = schedule.BudgetCategory.Budget,
+                                                                            Category = schedule.BudgetCategory,
+                                                                            Date = date,
+                                                                            Description = schedule.Description,
+                                                                            TransactionSchedule = schedule
+                                                                        });
                                                     });
                     }
 
-                    return Ok(occurrences.OrderBy(x=>x.Date).ToList());
+                    return Ok(occurrences.OrderBy(x => x.Date).ToList());
                 }
                 catch (Exception ex)
                 {

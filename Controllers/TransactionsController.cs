@@ -39,7 +39,8 @@ namespace WebApi.Controllers
                                           Description = transactionDto.Description,
                                           Amount = transactionDto.Amount,
                                           CreationDateTime = DateTime.Now,
-                                          TransactionDateTime = transactionDto.Date
+                                          TransactionDateTime = transactionDto.Date,
+                                          TransactionScheduleId = transactionDto.TransactionSchedule?.TransactionScheduleId
                                       };
                     DatabaseContext.Transactions.Add(transaction);
                     DatabaseContext.SaveChanges();
