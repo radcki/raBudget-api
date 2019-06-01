@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WebApi.Contexts;
 using WebApi.Helpers;
+using WebApi.Hubs;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
 using WebApi.Models.Enum;
@@ -23,12 +24,15 @@ namespace WebApi.Controllers
     {
         private readonly ILogger Logger;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly BudgetsNotifier _budgetsNotifier;
 
-        public BudgetsController(DataContext context, ILoggerFactory loggerFactory)
+
+        public BudgetsController(DataContext context, ILoggerFactory loggerFactory, BudgetsNotifier budgetsNotifier)
         {
             DatabaseContext = context;
             _loggerFactory = loggerFactory;
             Logger = _loggerFactory.CreateLogger("BudgetsController");
+            _budgetsNotifier = budgetsNotifier;
         }
 
         [HttpGet]
@@ -190,6 +194,14 @@ namespace WebApi.Controllers
 
                 DatabaseContext.BudgetCategories.AddRange(categoryEntities);
                 DatabaseContext.SaveChanges();
+
+                _budgetsNotifier.BudgetAdded(CurrentUser.Username, DatabaseContext.Budgets
+                                                                                  .Where(x=>x.BudgetId == budgetEntity.BudgetId)
+                                                                                  .Include(b => b.BudgetCategories)
+                                                                                  .ThenInclude(b => b.BudgetCategoryAmountConfigs)
+                                                                                  .FirstOrDefault()
+                                                                                  .ToDto());
+                
                 return Ok(new {budgetEntity.BudgetId});
             }
             catch (Exception ex)
@@ -237,6 +249,9 @@ namespace WebApi.Controllers
                 budgetEntity.Currency = budgetDataDto.Currency;
                 budgetEntity.StartingDate = budgetDataDto.StartingDate.FirstDayOfMonth();
                 DatabaseContext.SaveChanges();
+
+                _budgetsNotifier.BudgetUpdated(CurrentUser.Username, budgetEntity.ToDto());
+
                 return Ok();
             }
             catch (Exception ex)
@@ -256,6 +271,9 @@ namespace WebApi.Controllers
                 var budgetEntity = DatabaseContext.Budgets.Single(x => x.BudgetId == id);
                 DatabaseContext.Budgets.Remove(budgetEntity);
                 DatabaseContext.SaveChanges();
+
+                _budgetsNotifier.BudgetRemoved(CurrentUser.Username, id);
+
                 return Ok();
             }
             catch (Exception ex)
@@ -270,7 +288,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                if (!CurrentUser.Budgets.Any(x => x.BudgetId == id))
+                if (CurrentUser.Budgets.All(x => x.BudgetId != id))
                     return BadRequest(new {message = "budgets.notFound"});
 
                 if (budgetCategoryDto.AmountConfigs.Count > 1)
@@ -305,6 +323,8 @@ namespace WebApi.Controllers
                     DatabaseContext.Add(categoryEntity);
                     DatabaseContext.SaveChanges();
                     budgetCategoryDto.CategoryId = categoryEntity.BudgetCategoryId;
+                    budgetCategoryDto.Budget = new BudgetDto(){Id = id};
+                    _budgetsNotifier.CategoryAdded(CurrentUser.Username, budgetCategoryDto);
                     return Ok(budgetCategoryDto);
                 }
                 else
@@ -326,6 +346,9 @@ namespace WebApi.Controllers
                                                                                                              }).ToList();
                     DatabaseContext.SaveChanges();
                     budgetCategoryDto.Type = categoryEntity.Type;
+                    
+                    _budgetsNotifier.CategoryUpdated(CurrentUser.Username, budgetCategoryDto);
+
                     return Ok(budgetCategoryDto);
                 }
             }
@@ -354,6 +377,8 @@ namespace WebApi.Controllers
                                                                 x.BudgetCategoryId == categoryId);
                 DatabaseContext.BudgetCategories.Remove(categoryEntity);
                 DatabaseContext.SaveChanges();
+
+                _budgetsNotifier.CategoryRemoved(CurrentUser.Username, categoryId);
                 return Ok();
             }
             catch (Exception ex)

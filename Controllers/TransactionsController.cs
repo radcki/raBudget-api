@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Contexts;
 using WebApi.Helpers;
+using WebApi.Hubs;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
 using WebApi.Models.Enum;
@@ -16,9 +17,11 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class TransactionsController : BaseController
     {
-        public TransactionsController(DataContext context)
+        private readonly TransactionsNotifier _transactionsNotifier;
+        public TransactionsController(DataContext context, TransactionsNotifier transactionsNotifier)
         {
             DatabaseContext = context;
+            _transactionsNotifier = transactionsNotifier;
         }
 
         [HttpPost("create")]
@@ -45,21 +48,25 @@ namespace WebApi.Controllers
                     DatabaseContext.Transactions.Add(transaction);
                     DatabaseContext.SaveChanges();
                     PrecalculateTransactionsSum(transaction.BudgetCategory);
-                    return Ok(new TransactionDto
-                              {
-                                  TransactionId = transaction.TransactionId,
-                                  Category = new BudgetCategoryDto
-                                             {
-                                                 CategoryId = transaction.BudgetCategory.BudgetCategoryId,
-                                                 Icon = transaction.BudgetCategory.Icon,
-                                                 Name = transaction.BudgetCategory.Name,
-                                                 Type = transaction.BudgetCategory.Type
-                                             },
-                                  Date = transaction.TransactionDateTime,
-                                  RegisteredDate = transaction.CreationDateTime,
-                                  Description = transaction.Description,
-                                  Amount = transaction.Amount
-                              });
+                    var savedTransactionDto = new TransactionDto
+                                         {
+                                             TransactionId = transaction.TransactionId,
+                                             Category = new BudgetCategoryDto
+                                                        {
+                                                            CategoryId = transaction.BudgetCategory.BudgetCategoryId,
+                                                            Icon = transaction.BudgetCategory.Icon,
+                                                            Name = transaction.BudgetCategory.Name,
+                                                            Type = transaction.BudgetCategory.Type
+                                                        },
+                                             Budget = new BudgetDto() { Id = categoryEntity.BudgetId},
+                                             Date = transaction.TransactionDateTime,
+                                             RegisteredDate = transaction.CreationDateTime,
+                                             Description = transaction.Description,
+                                             Amount = transaction.Amount
+                                         };
+                    _transactionsNotifier.TransactionAdded(CurrentUser.Username, savedTransactionDto);
+                    
+                    return Ok(savedTransactionDto);
                 }
                 catch (Exception ex)
                 {
@@ -286,21 +293,25 @@ namespace WebApi.Controllers
 
                     DatabaseContext.SaveChanges();
                     PrecalculateTransactionsSum(categoryEntity);
-                    return Ok(new TransactionDto
-                    {
-                        TransactionId = transactionEntity.TransactionId,
-                        Category = new BudgetCategoryDto
-                        {
-                            CategoryId = transactionEntity.BudgetCategory.BudgetCategoryId,
-                            Icon = transactionEntity.BudgetCategory.Icon,
-                            Name = transactionEntity.BudgetCategory.Name,
-                            Type = transactionEntity.BudgetCategory.Type
-                        },
-                        Date = transactionEntity.TransactionDateTime,
-                        RegisteredDate = transactionEntity.CreationDateTime,
-                        Description = transactionEntity.Description,
-                        Amount = transactionEntity.Amount
-                    });
+                    var updatedTransactionDto = new TransactionDto()
+                                                {
+                                                    TransactionId = transactionEntity.TransactionId,
+                                                    Category = new BudgetCategoryDto
+                                                               {
+                                                                   CategoryId = transactionEntity.BudgetCategory.BudgetCategoryId,
+                                                                   Icon = transactionEntity.BudgetCategory.Icon,
+                                                                   Name = transactionEntity.BudgetCategory.Name,
+                                                                   Type = transactionEntity.BudgetCategory.Type
+                                                               },
+                                                    Budget = new BudgetDto() { Id = categoryEntity.BudgetId },
+                                                    Date = transactionEntity.TransactionDateTime,
+                                                    RegisteredDate = transactionEntity.CreationDateTime,
+                                                    Description = transactionEntity.Description,
+                                                    Amount = transactionEntity.Amount
+                                                };
+                    _transactionsNotifier.TransactionUpdated(CurrentUser.Username, updatedTransactionDto);
+
+                    return Ok(updatedTransactionDto);
                 }
                 catch (Exception ex)
                 {
@@ -328,6 +339,8 @@ namespace WebApi.Controllers
 
                     DatabaseContext.SaveChanges();
                     PrecalculateTransactionsSum(transactionEntity.BudgetCategory);
+
+                    _transactionsNotifier.TransactionRemoved(CurrentUser.Username, id);
                     return Ok();
                 }
                 catch (Exception ex)

@@ -18,20 +18,35 @@ namespace WebApi.Helpers
         public static double TransactionsSum(this IEnumerable<BudgetCategory> categories)
         {
             double sum = 0;
+            if (categories == null)
+            {
+                return sum;
+            }
+
             foreach (var budgetCategory in categories)
             {
+                if (budgetCategory.Transactions == null) { continue;}
                 sum += budgetCategory.TransactionsSum ?? budgetCategory.Transactions.Sum(x => x.Amount);
             }
+
             return sum;
         }
 
         public static double AllocationsSum(this IEnumerable<BudgetCategory> categories)
         {
             double sum = 0;
+            if (categories == null)
+            {
+                return sum;
+            }
+
             foreach (var budgetCategory in categories)
             {
+                if (budgetCategory.Transactions == null) { continue; }
+
                 sum += budgetCategory.AllocationsSum ?? budgetCategory.Allocations.Sum(x => x.Amount);
             }
+
             return sum;
         }
 
@@ -43,14 +58,15 @@ namespace WebApi.Helpers
                        Type = entity.Type,
                        Name = entity.Name,
                        AmountConfigs = entity.BudgetCategoryAmountConfigs
-                                               .Select(x => new BudgetCategoryAmountConfigDto() {
-                                                   Amount = x.MonthlyAmount,
-                                                   ValidFrom = x.ValidFrom,
-                                                   ValidTo = x.ValidTo
-                                               })
-                                               .ToList(),
+                                             .Select(x => new BudgetCategoryAmountConfigDto()
+                                                          {
+                                                              Amount = x.MonthlyAmount,
+                                                              ValidFrom = x.ValidFrom,
+                                                              ValidTo = x.ValidTo
+                                                          })
+                                             .ToList(),
                        Icon = entity.Icon,
-                       Budget = new BudgetDto(){Id = entity.BudgetId, Name = entity.Budget.Name}
+                       Budget = new BudgetDto() {Id = entity.BudgetId, Name = entity.Budget.Name}
                    };
         }
 
@@ -58,17 +74,17 @@ namespace WebApi.Helpers
         {
             var categories = entity.BudgetCategories.Select(x => x.ToDto()).ToList();
             var budget = new BudgetDto
-                   {
-                       Name = entity.Name,
-                       Id = entity.BudgetId,
-                       Currency = entity.Currency,
-                       StartingDate = entity.StartingDate,
-                       
-                       Default = entity.BudgetId == entity.User.DefaultBudgetId,
-                       IncomeCategories = categories.Where(x=>x.Type == eBudgetCategoryType.Income).ToList(),
-                       SpendingCategories = categories.Where(x=>x.Type == eBudgetCategoryType.Spending).ToList(),
-                       SavingCategories = categories.Where(x=>x.Type == eBudgetCategoryType.Saving).ToList(),
-                   };
+                         {
+                             Name = entity.Name,
+                             Id = entity.BudgetId,
+                             Currency = entity.Currency,
+                             StartingDate = entity.StartingDate,
+
+                             Default = entity.BudgetId == entity.User.DefaultBudgetId,
+                             IncomeCategories = categories.Where(x => x.Type == eBudgetCategoryType.Income).ToList(),
+                             SpendingCategories = categories.Where(x => x.Type == eBudgetCategoryType.Spending).ToList(),
+                             SavingCategories = categories.Where(x => x.Type == eBudgetCategoryType.Saving).ToList(),
+                         };
 
             budget.Balance = BalanceHandler.CurrentFunds(entity);
 
@@ -77,34 +93,34 @@ namespace WebApi.Helpers
 
         public static TransactionScheduleDto ToDto(this TransactionSchedule entity)
         {
-             var dto = new TransactionScheduleDto()
-                       {
-                           TransactionScheduleId = entity.TransactionScheduleId,
-                           Amount = entity.Amount,
-                           BudgetCategory = entity.BudgetCategory.ToDto(),
-                           Description = entity.Description,
-                           StartDate = entity.StartDate,
-                           EndDate = entity.EndDate,
-                           Frequency = entity.Frequency,
-                           PeriodStep = entity.PeriodStep,
-                           // Lista transakcji zostaje tutaj pominięta jako zazwyczaj niepotrzebna
-                       };
-             return dto;
+            var dto = new TransactionScheduleDto()
+                      {
+                          TransactionScheduleId = entity.TransactionScheduleId,
+                          Amount = entity.Amount,
+                          BudgetCategory = entity.BudgetCategory.ToDto(),
+                          Description = entity.Description,
+                          StartDate = entity.StartDate,
+                          EndDate = entity.EndDate,
+                          Frequency = entity.Frequency,
+                          PeriodStep = entity.PeriodStep,
+                          // Lista transakcji zostaje tutaj pominięta jako zazwyczaj niepotrzebna
+                      };
+            return dto;
         }
 
-        public static BudgetCategoryAmountConfigDto ToDto (this BudgetCategoryAmountConfig entity)
+        public static BudgetCategoryAmountConfigDto ToDto(this BudgetCategoryAmountConfig entity)
         {
             return new BudgetCategoryAmountConfigDto
-            {
-                Amount = entity.MonthlyAmount,
-                ValidFrom = entity.ValidFrom,
-                ValidTo = entity.ValidTo,
-                BudgetCategory = new BudgetCategoryDto
-                {
-                    CategoryId = entity.BudgetCategory.BudgetCategoryId,
-                    Name = entity.BudgetCategory.Name
-                }
-            };
+                   {
+                       Amount = entity.MonthlyAmount,
+                       ValidFrom = entity.ValidFrom,
+                       ValidTo = entity.ValidTo,
+                       BudgetCategory = new BudgetCategoryDto
+                                        {
+                                            CategoryId = entity.BudgetCategory.BudgetCategoryId,
+                                            Name = entity.BudgetCategory.Name
+                                        }
+                   };
         }
 
         public static LogDto ToDto(this Log entity)
@@ -131,6 +147,7 @@ namespace WebApi.Helpers
                          };
             return entity.OccurrencesInPeriod(from, to);
         }
+
         public static List<DateTime> OccurrencesInPeriod(this TransactionSchedule schedule, DateTime from, DateTime to)
         {
             var start = new[] {schedule.StartDate, from}.Max();
@@ -147,7 +164,7 @@ namespace WebApi.Helpers
                     case eFrequency.Monthly:
                         current = current.AddMonths(schedule.PeriodStep);
                         break;
-                    case  eFrequency.Weekly:
+                    case eFrequency.Weekly:
                         current = current.AddDays(7 * schedule.PeriodStep);
                         break;
                     case eFrequency.Daily:
@@ -158,8 +175,11 @@ namespace WebApi.Helpers
                         exitLoop = true;
                         break;
                 }
-                
-                if (exitLoop){ break;}
+
+                if (exitLoop)
+                {
+                    break;
+                }
             }
 
             return allOccurrences.Where(x => x > start).ToList();
@@ -192,7 +212,7 @@ namespace WebApi.Helpers
                 {
                     rng.GetBytes(uintBuffer);
                     uint num = BitConverter.ToUInt32(uintBuffer, 0);
-                    res.Append(valid[(int)(num % (uint)valid.Length)]);
+                    res.Append(valid[(int) (num % (uint) valid.Length)]);
                 }
             }
 
@@ -204,17 +224,18 @@ namespace WebApi.Helpers
             return val == null || EqualityComparer<T>.Default.Equals(val, default(T));
         }
 
-        public static T Max<T>(T first, T second) {
+        public static T Max<T>(T first, T second)
+        {
             if (Comparer<T>.Default.Compare(first, second) > 0)
                 return first;
             return second;
         }
 
-        public static T Min<T>(T first, T second) {
+        public static T Min<T>(T first, T second)
+        {
             if (Comparer<T>.Default.Compare(first, second) < 0)
                 return first;
             return second;
         }
-
     }
 }

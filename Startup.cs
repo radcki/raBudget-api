@@ -22,7 +22,10 @@ using kedzior.io.ConnectionStringConverter;
 using WebApi.Contexts;
 using WebApi.Models.Enum;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.SignalR;
 using WebApi.Controllers;
+using WebApi.Hubs;
+using WebApi.Providers;
 
 namespace WebApi
 {
@@ -40,8 +43,8 @@ namespace WebApi
             
             services.AddCors();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 
-            
             services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
                                                                     .UseMySql("server=localhost;uid=root;pwd=;database=localdb"));
             /* SQL SERVER 
@@ -104,8 +107,19 @@ namespace WebApi
                                                                                              .Add("Token-Expired",
                                                                                                   "true");
                                                                                   return Task.CompletedTask;
-                                                                              }
-                                                 };
+                                                                              },
+                                                     OnMessageReceived = context =>
+                                                                         {
+                                                                             var accessToken = context.Request.Query["access_token"];
+                                                                             var path = context.HttpContext.Request.Path;
+                                                                             if (!string.IsNullOrEmpty(accessToken) &&
+                                                                                 (path.StartsWithSegments("/hubs")))
+                                                                             {
+                                                                                 context.Token = accessToken;
+                                                                             }
+                                                                             return Task.CompletedTask;
+                                                                         }
+                                      };
                                       x.RequireHttpsMetadata = !IsDebug;
                                       x.SaveToken = true;
                                       x.TokenValidationParameters = new TokenValidationParameters
@@ -132,11 +146,15 @@ namespace WebApi
 
             // DEPENDENCY INJECTION
             services.AddScoped<UserService>();
+            services.AddScoped<BudgetsNotifier>();
+            services.AddScoped<TransactionsNotifier>();
 
             services.AddSpaStaticFiles(config =>
                                        {
                                            config.RootPath = @"./wwwroot";
                                        });
+            services.AddSignalR();
+            
         }
 
 
@@ -183,6 +201,12 @@ namespace WebApi
             app.UseAuthentication();
             app.UseMvc();
             app.UseHttpsRedirection();
+
+            app.UseSignalR(routes =>
+                           {
+                               routes.MapHub<BudgetsHub>("/hubs/budgets");
+                               routes.MapHub<TransactionsHub>("/hubs/transactions");
+                           });
 
             if (!IsDebug)
             {                
