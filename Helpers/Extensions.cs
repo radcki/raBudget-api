@@ -156,6 +156,7 @@ namespace WebApi.Helpers
             var allOccurrences = new List<DateTime>();
             var current = new DateTime(schedule.StartDate.Ticks);
             bool exitLoop = false;
+
             while (current <= end)
             {
                 allOccurrences.Add(current);
@@ -182,7 +183,7 @@ namespace WebApi.Helpers
                 }
             }
 
-            return allOccurrences.Where(x => x > start).ToList();
+            return allOccurrences.Where(x => x >= start).Distinct().ToList();
         }
 
         public static DateTime FirstDayOfMonth(this DateTime value)
