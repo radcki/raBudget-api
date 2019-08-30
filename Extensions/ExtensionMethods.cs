@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Logging;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
 using WebApi.Models.Enum;
-using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
-namespace WebApi.Helpers
+namespace WebApi.Extensions
 {
-    public static class Extensions
+    public static class ExtensionMethods
     {
         public static double TransactionsSum(this IEnumerable<BudgetCategory> categories)
         {
@@ -50,91 +46,7 @@ namespace WebApi.Helpers
             return sum;
         }
 
-        public static BudgetCategoryDto ToDto(this BudgetCategory entity)
-        {
-            return new BudgetCategoryDto
-                   {
-                       CategoryId = entity.BudgetCategoryId,
-                       Type = entity.Type,
-                       Name = entity.Name,
-                       AmountConfigs = entity.BudgetCategoryAmountConfigs
-                                             .Select(x => new BudgetCategoryAmountConfigDto()
-                                                          {
-                                                              Amount = x.MonthlyAmount,
-                                                              ValidFrom = x.ValidFrom,
-                                                              ValidTo = x.ValidTo
-                                                          })
-                                             .ToList(),
-                       Icon = entity.Icon,
-                       Budget = new BudgetDto() {Id = entity.BudgetId, Name = entity.Budget.Name}
-                   };
-        }
-
-        public static BudgetDto ToDto(this Budget entity)
-        {
-            var categories = entity.BudgetCategories.Select(x => x.ToDto()).ToList();
-            var budget = new BudgetDto
-                         {
-                             Name = entity.Name,
-                             Id = entity.BudgetId,
-                             Currency = entity.Currency,
-                             StartingDate = entity.StartingDate,
-
-                             Default = entity.BudgetId == entity.User.DefaultBudgetId,
-                             IncomeCategories = categories.Where(x => x.Type == eBudgetCategoryType.Income).ToList(),
-                             SpendingCategories = categories.Where(x => x.Type == eBudgetCategoryType.Spending).ToList(),
-                             SavingCategories = categories.Where(x => x.Type == eBudgetCategoryType.Saving).ToList(),
-                         };
-
-            budget.Balance = BalanceHandler.CurrentFunds(entity);
-
-            return budget;
-        }
-
-        public static TransactionScheduleDto ToDto(this TransactionSchedule entity)
-        {
-            var dto = new TransactionScheduleDto()
-                      {
-                          TransactionScheduleId = entity.TransactionScheduleId,
-                          Amount = entity.Amount,
-                          BudgetCategory = entity.BudgetCategory.ToDto(),
-                          Description = entity.Description,
-                          StartDate = entity.StartDate,
-                          EndDate = entity.EndDate,
-                          Frequency = entity.Frequency,
-                          PeriodStep = entity.PeriodStep,
-                          // Lista transakcji zostaje tutaj pominięta jako zazwyczaj niepotrzebna
-                      };
-            return dto;
-        }
-
-        public static BudgetCategoryAmountConfigDto ToDto(this BudgetCategoryAmountConfig entity)
-        {
-            return new BudgetCategoryAmountConfigDto
-                   {
-                       Amount = entity.MonthlyAmount,
-                       ValidFrom = entity.ValidFrom,
-                       ValidTo = entity.ValidTo,
-                       BudgetCategory = new BudgetCategoryDto
-                                        {
-                                            CategoryId = entity.BudgetCategory.BudgetCategoryId,
-                                            Name = entity.BudgetCategory.Name
-                                        }
-                   };
-        }
-
-        public static LogDto ToDto(this Log entity)
-        {
-            var dto = new LogDto()
-                      {
-                          Id = entity.Id,
-                          Message = entity.Message,
-                          Name = entity.Name,
-                          Level = (LogLevel) entity.Level,
-                          TimeStamp = entity.TimeStamp
-                      };
-            return dto;
-        }
+        
 
         public static List<DateTime> OccurrencesInPeriod(this TransactionScheduleDto schedule, DateTime from, DateTime to)
         {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Contexts;
+using WebApi.Extensions;
 using WebApi.Helpers;
 using WebApi.Hubs;
 using WebApi.Models.Dtos;
@@ -64,7 +65,7 @@ namespace WebApi.Controllers
                                              Description = transaction.Description,
                                              Amount = transaction.Amount
                                          };
-                    _transactionsNotifier.TransactionAdded(CurrentUser.Username, savedTransactionDto);
+                    _ = _transactionsNotifier.TransactionAdded(CurrentUser.Username, savedTransactionDto);
                     
                     return Ok(savedTransactionDto);
                 }
@@ -108,22 +109,16 @@ namespace WebApi.Controllers
                                                IncomeCategories = transaction.BudgetCategory.Budget
                                                                              .BudgetCategories
                                                                              .Where(x => x.Type == eBudgetCategoryType.Income)
-                                                                             .AsEnumerable()
-                                                                             .Select(x => x.ToDto())
-                                                                             .ToList(),
+                                                                             .ToDtoList(),
                                                SavingCategories = transaction.BudgetCategory.Budget
                                                                              .BudgetCategories
                                                                              .Where(x => x.Type == eBudgetCategoryType.Saving)
-                                                                             .AsEnumerable()
-                                                                             .Select(x => x.ToDto())
-                                                                             .ToList(),
+                                                                             .ToDtoList(),
                                                SpendingCategories = transaction.BudgetCategory.Budget
                                                                                .BudgetCategories
                                                                                .Where(x => x.Type == eBudgetCategoryType.Spending)
-                                                                               .AsEnumerable()
-                                                                               .Select(x => x.ToDto())
-                                                                               .ToList()
-                                           }
+                                                                               .ToDtoList()
+                                  }
                               });
                 }
                 catch (Exception ex)
@@ -309,7 +304,7 @@ namespace WebApi.Controllers
                                                     Description = transactionEntity.Description,
                                                     Amount = transactionEntity.Amount
                                                 };
-                    _transactionsNotifier.TransactionUpdated(CurrentUser.Username, updatedTransactionDto);
+                    _ = _transactionsNotifier.TransactionUpdated(CurrentUser.Username, updatedTransactionDto);
 
                     return Ok(updatedTransactionDto);
                 }
@@ -340,7 +335,7 @@ namespace WebApi.Controllers
                     DatabaseContext.SaveChanges();
                     PrecalculateTransactionsSum(transactionEntity.BudgetCategory);
 
-                    _transactionsNotifier.TransactionRemoved(CurrentUser.Username, id);
+                    _ = _transactionsNotifier.TransactionRemoved(CurrentUser.Username, id);
                     return Ok();
                 }
                 catch (Exception ex)

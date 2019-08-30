@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,10 +16,6 @@ using Microsoft.IdentityModel.Tokens;
 using WebApi.Filters;
 using WebApi.Helpers;
 using WebApi.Services;
-using Microsoft.AspNetCore.SpaServices.Webpack;
-using System;
-using System.Collections.Generic;
-using kedzior.io.ConnectionStringConverter;
 using WebApi.Contexts;
 using WebApi.Models.Enum;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -58,10 +55,14 @@ namespace WebApi
             services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
                                                                     .UseMySql(AzureMySQL.ToMySQLStandard(connectionString) + ";CHARSET=utf8;"));
                                                                     */
-            
+
             /* AUTOMIGRATION
             services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
             */
+            services.AddSwaggerGen(c =>
+                                   {
+                                       c.SwaggerDoc("v1", new OpenApiInfo { Title = "raBudget API", Version = "v1" });
+                                   });
 
             services.AddMvc(options => { options.Filters.Add(typeof(ValidateModelStateAttribute)); });
             services.AddAutoMapper(typeof(UsersController));
@@ -72,6 +73,7 @@ namespace WebApi
             // jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+
             services.AddAuthentication(x =>
                                        {
                                            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -149,10 +151,6 @@ namespace WebApi
             services.AddScoped<BudgetsNotifier>();
             services.AddScoped<TransactionsNotifier>();
 
-            services.AddSpaStaticFiles(config =>
-                                       {
-                                           config.RootPath = @"./wwwroot";
-                                       });
             services.AddSignalR();
             
         }
@@ -160,11 +158,6 @@ namespace WebApi
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-          
-            /*
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-            */
             /* FOR NGINX REVERSE PROXY */
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
@@ -199,6 +192,13 @@ namespace WebApi
             }
 
             app.UseAuthentication();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+                             {
+                                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "raBudget API V1");
+                             });
+
             app.UseMvc();
             app.UseHttpsRedirection();
 
@@ -208,12 +208,6 @@ namespace WebApi
                                routes.MapHub<TransactionsHub>("/hubs/transactions");
                            });
 
-            if (!IsDebug)
-            {                
-                app.UseStaticFiles();
-                app.UseSpaStaticFiles();
-                app.UseSpa(config => { });
-            }
         }
 
         public static bool IsDebug

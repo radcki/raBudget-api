@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using WebApi.Extensions;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
 

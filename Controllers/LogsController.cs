@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Contexts;
+using WebApi.Extensions;
 using WebApi.Helpers;
 using WebApi.Models.Enum;
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using WebApi.Extensions;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
 using WebApi.Models.Enum;

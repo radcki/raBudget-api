@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using WebApi.Contexts;
+using WebApi.Extensions;
 using WebApi.Helpers;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
@@ -295,7 +296,7 @@ namespace WebApi.Services
             {
                 return new BaseResult(){Result = eResultType.NotFound};
             }
-            var emailConfirmString = Extensions.RandomString(6);
+            var emailConfirmString = ExtensionMethods.RandomString(6);
             userEntity.EmailVerificationCode = emailConfirmString;
             userEntity.EmailVerified = false;
             DatabaseContext.SaveChanges();
@@ -312,7 +313,7 @@ namespace WebApi.Services
             {
                 return new BaseResult() { Result = eResultType.NotFound };
             }
-            var passwordResetToken = Extensions.RandomString(20);
+            var passwordResetToken = ExtensionMethods.RandomString(20);
             
 
             userEntity.PasswordResets.Add(new PasswordReset()

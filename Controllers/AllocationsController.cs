@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Contexts;
+using WebApi.Extensions;
 using WebApi.Helpers;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
@@ -130,7 +131,7 @@ namespace WebApi.Controllers
                                                                                              CategoryId = x.BudgetCategoryId,
                                                                                              Type = x.Type,
                                                                                              Name = x.Name,
-                                                                                             AmountConfigs = x.BudgetCategoryAmountConfigs.AsEnumerable().Select(s=>s.ToDto()).ToList(),
+                                                                                             AmountConfigs = x.BudgetCategoryAmountConfigs.ToDtoList(),
                                                                                              Icon = x.Icon
                                                                                          })
                                                                             .ToList(),
@@ -142,7 +143,7 @@ namespace WebApi.Controllers
                                                                                              CategoryId = x.BudgetCategoryId,
                                                                                              Type = x.Type,
                                                                                              Name = x.Name,
-                                                                                             AmountConfigs = x.BudgetCategoryAmountConfigs.AsEnumerable().Select(s => s.ToDto()).ToList(),
+                                                                                             AmountConfigs = x.BudgetCategoryAmountConfigs.ToDtoList(),
                                                                                              Icon = x.Icon
                                                                                          })
                                                                             .ToList(),
@@ -154,7 +155,7 @@ namespace WebApi.Controllers
                                                                                                CategoryId = x.BudgetCategoryId,
                                                                                                Type = x.Type,
                                                                                                Name = x.Name,
-                                                                                               AmountConfigs = x.BudgetCategoryAmountConfigs.AsEnumerable().Select(s => s.ToDto()).ToList(),
+                                                                                               AmountConfigs = x.BudgetCategoryAmountConfigs.ToDtoList(),
                                                                                                Icon = x.Icon
                                                                                            })
                                                                               .ToList()

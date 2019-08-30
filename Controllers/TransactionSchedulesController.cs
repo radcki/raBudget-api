@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WebApi.Contexts;
+using WebApi.Extensions;
 using WebApi.Helpers;
 using WebApi.Models.Dtos;
 using WebApi.Models.Entities;
@@ -110,7 +111,7 @@ namespace WebApi.Controllers
 
                     schedules = schedules.OrderByDescending(x => x.Description);
 
-                    return Ok(schedules.AsEnumerable().Select(x => x.ToDto()).ToList());
+                    return Ok(schedules.ToDtoEnumerable());
                 }
                 catch (Exception ex)
                 {
@@ -202,7 +203,7 @@ namespace WebApi.Controllers
                                                    .SelectMany(x => x.TransactionSchedules)
                                                    .Where(x => (x.EndDate == null || x.EndDate >= DateTime.Today) && x.StartDate <= endDate);
 
-                    var schedules = schedulesQueryable.AsEnumerable().Select(x => x.ToDto()).ToList();
+                    var schedules = schedulesQueryable.ToDtoEnumerable();
 
                     var occurrences = new List<TransactionDto>();
                     var startDate = DateTime.Today.AddDays(-4);

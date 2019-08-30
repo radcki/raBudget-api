@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WebApi.Contexts;
+using WebApi.Extensions;
 using WebApi.Helpers;
 using WebApi.Hubs;
 using WebApi.Models.Dtos;
@@ -49,7 +50,7 @@ namespace WebApi.Controllers
                 var budgets = DatabaseContext.Budgets.Where(x => x.UserId == CurrentUser.UserId)
                                           .Include(b => b.BudgetCategories).ThenInclude(b => b.BudgetCategoryAmountConfigs)
                                           .Include(b => b.BudgetCategories).ThenInclude(b => b.Transactions);
-                var budgetDtos = budgets.Select(budget => budget.ToDto()).ToList();
+                var budgetDtos = budgets.ToDtoEnumerable();
 
                 return Ok(budgetDtos);
             }
@@ -82,24 +83,18 @@ namespace WebApi.Controllers
                                         IncomeCategories = budget
                                                        .BudgetCategories
                                                        .Where(x => x.Type == eBudgetCategoryType.Income)
-                                                       .AsEnumerable()
-                                                       .Select(x => x.ToDto())
-                                                       .ToList(),
+                                                       .ToDtoList(),
 
                                         SavingCategories = budget
                                                        .BudgetCategories
                                                        .Where(x => x.Type == eBudgetCategoryType.Saving)
-                                                       .AsEnumerable()
-                                                       .Select(x => x.ToDto())
-                                                       .ToList(),
+                                                       .ToDtoList(),
 
                                         SpendingCategories = budget
                                                          .BudgetCategories
                                                          .Where(x => x.Type == eBudgetCategoryType.Spending)
-                                                         .AsEnumerable()
-                                                         .Select(x => x.ToDto())
-                                                         .ToList()
-                                    };
+                                                         .ToDtoList()
+                    };
                     return Ok(budgetDto);
                 }
                 catch (Exception ex)
@@ -195,8 +190,8 @@ namespace WebApi.Controllers
                 DatabaseContext.BudgetCategories.AddRange(categoryEntities);
                 DatabaseContext.SaveChanges();
 
-                _budgetsNotifier.BudgetAdded(CurrentUser.Username, DatabaseContext.Budgets
-                                                                                  .Where(x=>x.BudgetId == budgetEntity.BudgetId)
+                _ = _budgetsNotifier.BudgetAdded(CurrentUser.Username, DatabaseContext.Budgets
+                                                                                  .Where(x => x.BudgetId == budgetEntity.BudgetId)
                                                                                   .Include(b => b.BudgetCategories)
                                                                                   .ThenInclude(b => b.BudgetCategoryAmountConfigs)
                                                                                   .FirstOrDefault()
@@ -250,7 +245,7 @@ namespace WebApi.Controllers
                 budgetEntity.StartingDate = budgetDataDto.StartingDate.FirstDayOfMonth();
                 DatabaseContext.SaveChanges();
 
-                _budgetsNotifier.BudgetUpdated(CurrentUser.Username, budgetEntity.ToDto());
+                _ = _budgetsNotifier.BudgetUpdated(CurrentUser.Username, budgetEntity.ToDto());
 
                 return Ok();
             }
@@ -272,7 +267,7 @@ namespace WebApi.Controllers
                 DatabaseContext.Budgets.Remove(budgetEntity);
                 DatabaseContext.SaveChanges();
 
-                _budgetsNotifier.BudgetRemoved(CurrentUser.Username, id);
+                _ = _budgetsNotifier.BudgetRemoved(CurrentUser.Username, id);
 
                 return Ok();
             }
@@ -324,7 +319,7 @@ namespace WebApi.Controllers
                     DatabaseContext.SaveChanges();
                     budgetCategoryDto.CategoryId = categoryEntity.BudgetCategoryId;
                     budgetCategoryDto.Budget = new BudgetDto(){Id = id};
-                    _budgetsNotifier.CategoryAdded(CurrentUser.Username, budgetCategoryDto);
+                    _ = _budgetsNotifier.CategoryAdded(CurrentUser.Username, budgetCategoryDto);
                     return Ok(budgetCategoryDto);
                 }
                 else
@@ -346,8 +341,8 @@ namespace WebApi.Controllers
                                                                                                              }).ToList();
                     DatabaseContext.SaveChanges();
                     budgetCategoryDto.Type = categoryEntity.Type;
-                    
-                    _budgetsNotifier.CategoryUpdated(CurrentUser.Username, budgetCategoryDto);
+
+                    _ = _budgetsNotifier.CategoryUpdated(CurrentUser.Username, budgetCategoryDto);
 
                     return Ok(budgetCategoryDto);
                 }
@@ -364,7 +359,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                if (!CurrentUser.Budgets.Any(x => x.BudgetId == budgetId))
+                if (CurrentUser.Budgets.All(x => x.BudgetId != budgetId))
                     return BadRequest(new {message = "budgets.notFound"});
 
                 if (!DatabaseContext.BudgetCategories.Any(x => x.BudgetId == budgetId &&
@@ -378,7 +373,7 @@ namespace WebApi.Controllers
                 DatabaseContext.BudgetCategories.Remove(categoryEntity);
                 DatabaseContext.SaveChanges();
 
-                _budgetsNotifier.CategoryRemoved(CurrentUser.Username, categoryId);
+                _ = _budgetsNotifier.CategoryRemoved(CurrentUser.Username, categoryId);
                 return Ok();
             }
             catch (Exception ex)
