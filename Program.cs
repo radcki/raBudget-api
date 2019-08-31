@@ -25,7 +25,7 @@ namespace WebApi
                                                 logging.AddConsole();
                                             })
                           .UseStartup<Startup>()
-                          .UseUrls("http://localhost:4000")
+                          .UseUrls("http://localhost:4002")
                           .Build();
         }
     }
