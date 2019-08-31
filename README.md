@@ -1,7 +1,7 @@
 [![buddy pipeline](https://app.buddy.works/radekadamczewski/rabudget-api/pipelines/pipeline/207338/badge.svg?token=e526fabfec06767eae9d1e35382fa7f4a8db20b4cb73226ce7a174a6b0823957 "buddy pipeline")](https://app.buddy.works/radekadamczewski/rabudget-api/pipelines/pipeline/207338)
 # raBudget - Api
 
-WepApi application for budgeting app. Live version available at https://budget.rabt.pl/api
+WepApi application for budgeting app. Live version available at https://budget.rabt.pl/api.  Spa client for appliaction is available in repository https://github.com/radcki/raBudget-client-vue.
 
 EntityFramework supported database is required for application, by default MySql is expected to be available at localhost, with option to easily switch connection string or sever type to Sql Server via appsettings.json. 
 
@@ -11,7 +11,7 @@ Run latest version from registry:
 $ docker pull radekadamczewski/rabudget-api:latest
 $ docker run -d --network host --name rabudget-api radekadamczewski/rabudget-api
 ```
-Application is expecting MySql server to be available at localhost and listens on 4002 port by default. If you do not want to use 'host' network, you might want to edit connection string in appsettings.json, and build container manuall:
+Application is expecting MySql server to be available at localhost and listens on 4002 port by default. If you do not want to use 'host' network, you might want to edit connection string in appsettings.json, and build container manually:
 
 ``` console
 $ docker build -t rabudget-api .
