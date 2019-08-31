@@ -167,7 +167,7 @@ namespace WebApi
         {
             /* FOR NGINX REVERSE PROXY */
             app.UseForwardedHeaders();
-            app.UsePathBase("/api");
+            //app.UsePathBase("/api");
 
             /*
              * CORS
@@ -193,16 +193,16 @@ namespace WebApi
                                 .AllowCredentials()
                                 .WithExposedHeaders("Token-Expired")
                            );
-                //app.UseHsts();
+                app.UseHsts();
             }
 
             app.UseAuthentication();
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "raBudget API V1"); });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "raBudget API V1"); });
 
             app.UseMvc();
-           //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             app.UseSignalR(routes =>
                            {
