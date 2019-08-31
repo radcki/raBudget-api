@@ -67,6 +67,11 @@ namespace WebApi
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "raBudget API", Version = "v1"}); });
 
             services.AddMvc(options => { options.Filters.Add(typeof(ValidateModelStateAttribute)); });
+            services.Configure<ForwardedHeadersOptions>(options =>
+                                                        {
+                                                            options.ForwardedHeaders =
+                                                                ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                                                        });
             services.AddAutoMapper(typeof(UsersController));
 
             var appSettingsSection = Configuration.GetSection("AppSettings");
@@ -161,10 +166,8 @@ namespace WebApi
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             /* FOR NGINX REVERSE PROXY */
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
-                                    {
-                                        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-                                    });
+            app.UseForwardedHeaders();
+            app.UsePathBase("/api");
 
             /*
              * CORS
