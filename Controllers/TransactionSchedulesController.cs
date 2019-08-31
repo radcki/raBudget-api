@@ -23,7 +23,7 @@ namespace WebApi.Controllers
             DatabaseContext = context;
         }
 
-        [HttpPost("create")]
+        [HttpPost]
         public IActionResult CreateSchedule([FromBody] TransactionScheduleDto transactionScheduleDto)
         {
             if (User != null)
@@ -121,7 +121,7 @@ namespace WebApi.Controllers
             return Unauthorized();
         }
 
-        [HttpPost("{id}/update")]
+        [HttpPost("{id}")]
         public IActionResult UpdateSchedule(int id, [FromBody] TransactionScheduleDto scheduleDto)
         {
             if (User != null)
@@ -153,7 +153,7 @@ namespace WebApi.Controllers
             return Unauthorized();
         }
 
-        [HttpDelete("{id}/delete/{deleteTransactions?}")]
+        [HttpDelete("{id}/{deleteTransactions?}")]
         public IActionResult DeleteSchedule(int id, bool deleteTransactions)
         {
             if (User != null)

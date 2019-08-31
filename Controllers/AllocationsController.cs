@@ -21,7 +21,7 @@ namespace WebApi.Controllers
             DatabaseContext = context;
         }
 
-        [HttpPost("create")]
+        [HttpPost]
         public IActionResult CreateAllocation([FromBody] AllocationDto allocationDto)
         {
             if (User != null)
@@ -226,7 +226,7 @@ namespace WebApi.Controllers
             return Unauthorized();
         }
 
-        [HttpPost("{id}/update")]
+        [HttpPost("{id}")]
         public IActionResult UpdateAllocation(int id, [FromBody] AllocationDto allocationDto)
         {
             if (User != null)
@@ -270,7 +270,7 @@ namespace WebApi.Controllers
             return Unauthorized();
         }
 
-        [HttpDelete("{id}/delete")]
+        [HttpDelete("{id}")]
         public IActionResult DeleteAllocation(int id)
         {
             if (User != null)

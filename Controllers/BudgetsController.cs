@@ -41,15 +41,16 @@ namespace WebApi.Controllers
         {
             try
             {
-
                 if (CurrentUser.Budgets == null || !CurrentUser.Budgets.Any())
                 {
                     return NotFound();
                 }
 
                 var budgets = DatabaseContext.Budgets.Where(x => x.UserId == CurrentUser.UserId)
-                                          .Include(b => b.BudgetCategories).ThenInclude(b => b.BudgetCategoryAmountConfigs)
-                                          .Include(b => b.BudgetCategories).ThenInclude(b => b.Transactions);
+                                             .Include(b => b.BudgetCategories)
+                                             .ThenInclude(b => b.BudgetCategoryAmountConfigs)
+                                             .Include(b => b.BudgetCategories)
+                                             .ThenInclude(b => b.Transactions);
                 var budgetDtos = budgets.ToDtoEnumerable();
 
                 return Ok(budgetDtos);
@@ -81,20 +82,20 @@ namespace WebApi.Controllers
                                         Default = budget.BudgetId == CurrentUser.DefaultBudgetId,
 
                                         IncomeCategories = budget
-                                                       .BudgetCategories
-                                                       .Where(x => x.Type == eBudgetCategoryType.Income)
-                                                       .ToDtoList(),
+                                                          .BudgetCategories
+                                                          .Where(x => x.Type == eBudgetCategoryType.Income)
+                                                          .ToDtoList(),
 
                                         SavingCategories = budget
-                                                       .BudgetCategories
-                                                       .Where(x => x.Type == eBudgetCategoryType.Saving)
-                                                       .ToDtoList(),
+                                                          .BudgetCategories
+                                                          .Where(x => x.Type == eBudgetCategoryType.Saving)
+                                                          .ToDtoList(),
 
                                         SpendingCategories = budget
-                                                         .BudgetCategories
-                                                         .Where(x => x.Type == eBudgetCategoryType.Spending)
-                                                         .ToDtoList()
-                    };
+                                                            .BudgetCategories
+                                                            .Where(x => x.Type == eBudgetCategoryType.Spending)
+                                                            .ToDtoList()
+                                    };
                     return Ok(budgetDto);
                 }
                 catch (Exception ex)
@@ -105,13 +106,7 @@ namespace WebApi.Controllers
             return Unauthorized();
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            return Ok();
-        }
-
-        [HttpPut("create")]
+        [HttpPost]
         public IActionResult Create([FromBody] BudgetDto budgetDto)
         {
             try
@@ -134,69 +129,69 @@ namespace WebApi.Controllers
                 // dodanie kategorii budżetowych
                 var categoryEntities = new List<BudgetCategory>();
                 categoryEntities.AddRange(budgetDto
-                                      .IncomeCategories
-                                      .Select(x => new BudgetCategory
-                                                   {
-                                                       BudgetId = budgetEntity.BudgetId,
-                                                       Icon = x.Icon,
-                                                       BudgetCategoryAmountConfigs = new List<BudgetCategoryAmountConfig>
-                                                                                     {
-                                                                                         new BudgetCategoryAmountConfig
-                                                                                         {
-                                                                                             ValidFrom = budgetDto.StartingDate.FirstDayOfMonth(),
-                                                                                             MonthlyAmount = x.Amount
-                                                                                         }
-                                                                                     },
-                                                       Name = x.Name,
-                                                       Type = eBudgetCategoryType.Income
-                                                   }));
+                                         .IncomeCategories
+                                         .Select(x => new BudgetCategory
+                                                      {
+                                                          BudgetId = budgetEntity.BudgetId,
+                                                          Icon = x.Icon,
+                                                          BudgetCategoryAmountConfigs = new List<BudgetCategoryAmountConfig>
+                                                                                        {
+                                                                                            new BudgetCategoryAmountConfig
+                                                                                            {
+                                                                                                ValidFrom = budgetDto.StartingDate.FirstDayOfMonth(),
+                                                                                                MonthlyAmount = x.Amount
+                                                                                            }
+                                                                                        },
+                                                          Name = x.Name,
+                                                          Type = eBudgetCategoryType.Income
+                                                      }));
 
                 categoryEntities.AddRange(budgetDto
-                                      .SpendingCategories
-                                      .Select(x => new BudgetCategory
-                                                   {
-                                                       BudgetId = budgetEntity.BudgetId,
-                                                       Icon = x.Icon,
-                                                       BudgetCategoryAmountConfigs = new List<BudgetCategoryAmountConfig>
-                                                                                     {
-                                                                                         new BudgetCategoryAmountConfig
-                                                                                         {
-                                                                                             ValidFrom = budgetDto.StartingDate.FirstDayOfMonth(),
-                                                                                             MonthlyAmount = x.Amount
-                                                                                         }
-                                                                                     },
-                                                       Name = x.Name,
-                                                       Type = eBudgetCategoryType.Spending
-                                                   }));
+                                         .SpendingCategories
+                                         .Select(x => new BudgetCategory
+                                                      {
+                                                          BudgetId = budgetEntity.BudgetId,
+                                                          Icon = x.Icon,
+                                                          BudgetCategoryAmountConfigs = new List<BudgetCategoryAmountConfig>
+                                                                                        {
+                                                                                            new BudgetCategoryAmountConfig
+                                                                                            {
+                                                                                                ValidFrom = budgetDto.StartingDate.FirstDayOfMonth(),
+                                                                                                MonthlyAmount = x.Amount
+                                                                                            }
+                                                                                        },
+                                                          Name = x.Name,
+                                                          Type = eBudgetCategoryType.Spending
+                                                      }));
 
                 categoryEntities.AddRange(budgetDto
-                                      .SavingCategories
-                                      .Select(x => new BudgetCategory
-                                                   {
-                                                       BudgetId = budgetEntity.BudgetId,
-                                                       Icon = x.Icon,
-                                                       BudgetCategoryAmountConfigs = new List<BudgetCategoryAmountConfig>
-                                                                                     {
-                                                                                         new BudgetCategoryAmountConfig
-                                                                                         {
-                                                                                             ValidFrom = budgetDto.StartingDate.FirstDayOfMonth(),
-                                                                                             MonthlyAmount = x.Amount
-                                                                                         }
-                                                                                     },
-                                                       Name = x.Name,
-                                                       Type = eBudgetCategoryType.Saving
-                                                   }));
+                                         .SavingCategories
+                                         .Select(x => new BudgetCategory
+                                                      {
+                                                          BudgetId = budgetEntity.BudgetId,
+                                                          Icon = x.Icon,
+                                                          BudgetCategoryAmountConfigs = new List<BudgetCategoryAmountConfig>
+                                                                                        {
+                                                                                            new BudgetCategoryAmountConfig
+                                                                                            {
+                                                                                                ValidFrom = budgetDto.StartingDate.FirstDayOfMonth(),
+                                                                                                MonthlyAmount = x.Amount
+                                                                                            }
+                                                                                        },
+                                                          Name = x.Name,
+                                                          Type = eBudgetCategoryType.Saving
+                                                      }));
 
                 DatabaseContext.BudgetCategories.AddRange(categoryEntities);
                 DatabaseContext.SaveChanges();
 
                 _ = _budgetsNotifier.BudgetAdded(CurrentUser.Username, DatabaseContext.Budgets
-                                                                                  .Where(x => x.BudgetId == budgetEntity.BudgetId)
-                                                                                  .Include(b => b.BudgetCategories)
-                                                                                  .ThenInclude(b => b.BudgetCategoryAmountConfigs)
-                                                                                  .FirstOrDefault()
-                                                                                  .ToDto());
-                
+                                                                                      .Where(x => x.BudgetId == budgetEntity.BudgetId)
+                                                                                      .Include(b => b.BudgetCategories)
+                                                                                      .ThenInclude(b => b.BudgetCategoryAmountConfigs)
+                                                                                      .FirstOrDefault()
+                                                                                      .ToDto());
+
                 return Ok(new {budgetEntity.BudgetId});
             }
             catch (Exception ex)
@@ -225,7 +220,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpPost("{id}/update")]
+        [HttpPost("{id}")]
         public IActionResult UpdateBudget(int id, [FromBody] BudgetDataDto budgetDataDto)
         {
             try
@@ -255,7 +250,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpDelete("{id}/delete")]
+        [HttpDelete("{id}")]
         public IActionResult DeleteBudget(int id)
         {
             try
@@ -278,8 +273,8 @@ namespace WebApi.Controllers
         }
 
 
-        [HttpPost("{id}/savecategory")]
-        public IActionResult SaveBudgetCategory(int id, [FromBody] BudgetCategoryDto budgetCategoryDto)
+        [HttpPost("{id}/categories")]
+        public IActionResult CreateBudgetCategory(int id, [FromBody] BudgetCategoryDto budgetCategoryDto)
         {
             try
             {
@@ -300,52 +295,27 @@ namespace WebApi.Controllers
                 // usunięcie daty validto z ostatniego okresu, potrzebne dla usuwania okresu
                 budgetCategoryDto.AmountConfigs.Where(x => x.ValidFrom == budgetCategoryDto.AmountConfigs.Max(m => m.ValidFrom)).FirstOrDefault().ValidTo = null;
 
-                if (budgetCategoryDto.CategoryId == 0)
-                {
-                    var categoryEntity = new BudgetCategory
-                                         {
-                                             BudgetId = id,
-                                             Name = budgetCategoryDto.Name,
-                                             BudgetCategoryAmountConfigs = budgetCategoryDto.AmountConfigs.Select(s => new BudgetCategoryAmountConfig
-                                                                                                                       {
-                                                                                                                           MonthlyAmount = s.Amount,
-                                                                                                                           ValidFrom = s.ValidFrom,
-                                                                                                                           ValidTo = s.ValidTo
-                                                                                                                       }).ToList(),
-                                             Icon = budgetCategoryDto.Icon ?? "",
-                                             Type = budgetCategoryDto.Type
-                                         };
-                    DatabaseContext.Add(categoryEntity);
-                    DatabaseContext.SaveChanges();
-                    budgetCategoryDto.CategoryId = categoryEntity.BudgetCategoryId;
-                    budgetCategoryDto.Budget = new BudgetDto(){Id = id};
-                    _ = _budgetsNotifier.CategoryAdded(CurrentUser.Username, budgetCategoryDto);
-                    return Ok(budgetCategoryDto);
-                }
-                else
-                {
-                    if (!DatabaseContext.BudgetCategories.Any(x => x.BudgetCategoryId == budgetCategoryDto.CategoryId))
-                        return BadRequest(new {message = "categories.notFound"});
-
-                    var categoryEntity =
-                        DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     budgetCategoryDto.CategoryId);
-                    categoryEntity.Name = budgetCategoryDto.Name;
-                    categoryEntity.Icon = budgetCategoryDto.Icon ?? "";
-                    DatabaseContext.BudgetCategoryAmountConfigs.RemoveRange(categoryEntity.BudgetCategoryAmountConfigs);
-                    categoryEntity.BudgetCategoryAmountConfigs = budgetCategoryDto.AmountConfigs.Select(s => new BudgetCategoryAmountConfig
-                                                                                                             {
-                                                                                                                 MonthlyAmount = s.Amount,
-                                                                                                                 ValidFrom = s.ValidFrom,
-                                                                                                                 ValidTo = s.ValidTo
-                                                                                                             }).ToList();
-                    DatabaseContext.SaveChanges();
-                    budgetCategoryDto.Type = categoryEntity.Type;
-
-                    _ = _budgetsNotifier.CategoryUpdated(CurrentUser.Username, budgetCategoryDto);
-
-                    return Ok(budgetCategoryDto);
-                }
+                var categoryEntity = new BudgetCategory
+                                     {
+                                         BudgetId = id,
+                                         Name = budgetCategoryDto.Name,
+                                         BudgetCategoryAmountConfigs = budgetCategoryDto.AmountConfigs
+                                                                                        .Select(s => new BudgetCategoryAmountConfig
+                                                                                                     {
+                                                                                                         MonthlyAmount = s.Amount,
+                                                                                                         ValidFrom = s.ValidFrom,
+                                                                                                         ValidTo = s.ValidTo
+                                                                                                     })
+                                                                                        .ToList(),
+                                         Icon = budgetCategoryDto.Icon ?? "",
+                                         Type = budgetCategoryDto.Type
+                                     };
+                DatabaseContext.Add(categoryEntity);
+                DatabaseContext.SaveChanges();
+                budgetCategoryDto.CategoryId = categoryEntity.BudgetCategoryId;
+                budgetCategoryDto.Budget = new BudgetDto() {Id = id};
+                _ = _budgetsNotifier.CategoryAdded(CurrentUser.Username, budgetCategoryDto);
+                return Ok(budgetCategoryDto);
             }
             catch (Exception ex)
             {
@@ -354,7 +324,71 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpDelete("{budgetId}/deletecategory/{categoryId}")]
+        [HttpPost("{id}/categories/{categoryId}")]
+        public IActionResult UpdateBudgetCategory(int id, int categoryId, [FromBody] BudgetCategoryDto budgetCategoryDto)
+        {
+            try
+            {
+                if (CurrentUser.Budgets.All(x => x.BudgetId != id))
+                    return BadRequest(new {message = "budgets.notFound"});
+
+                if (budgetCategoryDto.CategoryId == 0
+                    || categoryId == 0
+                    || !DatabaseContext.BudgetCategories.Any(x => x.BudgetCategoryId == budgetCategoryDto.CategoryId))
+                {
+                    return BadRequest(new {message = "categories.notFound"});
+                }
+
+                if (budgetCategoryDto.AmountConfigs.Count > 1)
+                {
+                    budgetCategoryDto.AmountConfigs = budgetCategoryDto.AmountConfigs.OrderBy(x => x.ValidFrom).ToList();
+
+                    for (int i = 0; i < budgetCategoryDto.AmountConfigs.Count - 1; i++)
+                    {
+                        budgetCategoryDto.AmountConfigs[i + 1].ValidTo = null;
+                        budgetCategoryDto.AmountConfigs[i].ValidTo = budgetCategoryDto.AmountConfigs[i + 1].ValidFrom.AddDays(-1).FirstDayOfMonth();
+                    }
+                }
+
+                // usunięcie daty validto z ostatniego okresu, potrzebne dla usuwania okresu
+                budgetCategoryDto.AmountConfigs
+                                 .Where(x => x.ValidFrom == budgetCategoryDto.AmountConfigs.Max(m => m.ValidFrom))
+                                 .FirstOrDefault()
+                                 .ValidTo = null;
+
+
+                var categoryEntity = DatabaseContext.BudgetCategories
+                                                    .Single(x => x.BudgetCategoryId == budgetCategoryDto.CategoryId);
+
+                categoryEntity.Name = budgetCategoryDto.Name;
+                categoryEntity.Icon = budgetCategoryDto.Icon ?? "";
+                DatabaseContext.BudgetCategoryAmountConfigs
+                               .RemoveRange(categoryEntity.BudgetCategoryAmountConfigs);
+
+                categoryEntity.BudgetCategoryAmountConfigs = budgetCategoryDto.AmountConfigs
+                                                                              .Select(s => new BudgetCategoryAmountConfig
+                                                                                           {
+                                                                                               MonthlyAmount = s.Amount,
+                                                                                               ValidFrom = s.ValidFrom,
+                                                                                               ValidTo = s.ValidTo
+                                                                                           })
+                                                                              .ToList();
+                DatabaseContext.SaveChanges();
+                budgetCategoryDto.Type = categoryEntity.Type;
+
+                _ = _budgetsNotifier.CategoryUpdated(CurrentUser.Username, budgetCategoryDto);
+
+                return Ok(budgetCategoryDto);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(LogLevel.Warning, "Exception during category save: " + ex + "; " + (ex.InnerException.Message != null ? ex.InnerException.Message : ex.Message));
+                return BadRequest(new {message = ex.InnerException.Message ?? ex.Message});
+            }
+        }
+
+
+        [HttpDelete("{budgetId}/categories/{categoryId}")]
         public IActionResult DeleteBudgetCategory(int budgetId, int categoryId)
         {
             try

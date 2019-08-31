@@ -25,7 +25,7 @@ namespace WebApi.Controllers
             _transactionsNotifier = transactionsNotifier;
         }
 
-        [HttpPost("create")]
+        [HttpPost]
         public IActionResult CreateTransaction([FromBody] TransactionDto transactionDto)
         {
             if (User != null)
@@ -268,7 +268,7 @@ namespace WebApi.Controllers
             return Unauthorized();
         }
 
-        [HttpPost("{id}/update")]
+        [HttpPost("{id}")]
         public IActionResult UpdateTransaction(int id, [FromBody] TransactionDto transactionDto)
         {
             if (User != null)
@@ -316,7 +316,7 @@ namespace WebApi.Controllers
             return Unauthorized();
         }
 
-        [HttpDelete("{id}/delete")]
+        [HttpDelete("{id}")]
         public IActionResult DeleteTransaction(int id)
         {
             if (User != null)

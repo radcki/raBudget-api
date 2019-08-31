@@ -1,5 +1,4 @@
-﻿using System.IO;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,18 +36,22 @@ namespace WebApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            
             services.AddCors();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 
-            services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
-                                                                    .UseMySql("server=localhost;uid=root;pwd=;database=localdb"));
-            /* SQL SERVER 
-            services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
-                                                                    .UseSqlServer(Configuration
-                                                                                    ["Data:DefaultConnection:ConnectionString"]));
-            */
+            switch (Configuration["Data:ServerType"])
+            {
+                case "mysql":
+                    services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
+                                                                         .UseMySql(Configuration["Data:ConnectionString"]));
+                    break;
+
+                case "sqlserver":
+                    services.AddDbContext<DataContext>(options => options.UseLazyLoadingProxies()
+                                                                         .UseSqlServer(Configuration["Data:ConnectionString"]));
+                    break;
+            }
 
             /* AZURE IN-APP MYSQL
             string connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_localdb");
@@ -56,13 +59,12 @@ namespace WebApi
                                                                     .UseMySql(AzureMySQL.ToMySQLStandard(connectionString) + ";CHARSET=utf8;"));
                                                                     */
 
-            /* AUTOMIGRATION
-            services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
-            */
-            services.AddSwaggerGen(c =>
-                                   {
-                                       c.SwaggerDoc("v1", new OpenApiInfo { Title = "raBudget API", Version = "v1" });
-                                   });
+            if (Configuration.GetSection("Data").GetValue<bool>("AutoMigration"))
+            {
+                services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
+            }
+
+            services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "raBudget API", Version = "v1"}); });
 
             services.AddMvc(options => { options.Filters.Add(typeof(ValidateModelStateAttribute)); });
             services.AddAutoMapper(typeof(UsersController));
@@ -119,9 +121,10 @@ namespace WebApi
                                                                              {
                                                                                  context.Token = accessToken;
                                                                              }
+
                                                                              return Task.CompletedTask;
                                                                          }
-                                      };
+                                                 };
                                       x.RequireHttpsMetadata = !IsDebug;
                                       x.SaveToken = true;
                                       x.TokenValidationParameters = new TokenValidationParameters
@@ -152,7 +155,6 @@ namespace WebApi
             services.AddScoped<TransactionsNotifier>();
 
             services.AddSignalR();
-            
         }
 
 
@@ -160,9 +162,9 @@ namespace WebApi
         {
             /* FOR NGINX REVERSE PROXY */
             app.UseForwardedHeaders(new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            });
+                                    {
+                                        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+                                    });
 
             /*
              * CORS
@@ -194,10 +196,7 @@ namespace WebApi
             app.UseAuthentication();
 
             app.UseSwagger();
-            app.UseSwaggerUI(c =>
-                             {
-                                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "raBudget API V1");
-                             });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "raBudget API V1"); });
 
             app.UseMvc();
             app.UseHttpsRedirection();
@@ -207,7 +206,6 @@ namespace WebApi
                                routes.MapHub<BudgetsHub>("/hubs/budgets");
                                routes.MapHub<TransactionsHub>("/hubs/transactions");
                            });
-
         }
 
         public static bool IsDebug

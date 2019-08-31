@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using WebApi.Models.Enum;
 
 namespace WebApi.Models.Dtos
