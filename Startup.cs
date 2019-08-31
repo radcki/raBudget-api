@@ -190,7 +190,7 @@ namespace WebApi
                                 .AllowCredentials()
                                 .WithExposedHeaders("Token-Expired")
                            );
-                app.UseHsts();
+                //app.UseHsts();
             }
 
             app.UseAuthentication();
@@ -199,7 +199,7 @@ namespace WebApi
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "raBudget API V1"); });
 
             app.UseMvc();
-            app.UseHttpsRedirection();
+           //app.UseHttpsRedirection();
 
             app.UseSignalR(routes =>
                            {
