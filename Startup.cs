@@ -167,7 +167,7 @@ namespace WebApi
         {
             /* FOR NGINX REVERSE PROXY */
             app.UseForwardedHeaders();
-            //app.UsePathBase("/api");
+            app.UsePathBase("/api");
 
             /*
              * CORS
