@@ -40,13 +40,7 @@ namespace WebApi
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 
-            services.AddLogging(builder =>
-                                    builder
-                                       .AddDebug()
-                                       .AddConsole()
-                                       .AddConfiguration(Configuration.GetSection("Logging"))
-                                       .SetMinimumLevel(LogLevel.Debug)
-                               );
+
             switch (Configuration["Data:ServerType"])
             {
                 case "mysql":
