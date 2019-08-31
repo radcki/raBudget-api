@@ -19,9 +19,9 @@ namespace WebApi
             return WebHost.CreateDefaultBuilder(args)
                           .ConfigureLogging((hostingContext, logging) =>
                                             {
-                                                logging.AddFilter<EntityFrameworkLoggerProvider<DataContext>>("Microsoft", LogLevel.Warning);
-                                                logging.AddFilter<EntityFrameworkLoggerProvider<DataContext>>("System", LogLevel.Warning);
-                                                logging.AddEntityFramework<DataContext>();
+                                                //logging.AddFilter<EntityFrameworkLoggerProvider<DataContext>>("Microsoft", LogLevel.Warning);
+                                                //logging.AddFilter<EntityFrameworkLoggerProvider<DataContext>>("System", LogLevel.Warning);
+                                                //logging.AddEntityFramework<DataContext>();
                                                 logging.AddConsole();
                                             })
                           .UseStartup<Startup>()
