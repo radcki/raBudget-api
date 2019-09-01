@@ -207,8 +207,8 @@ namespace WebApi
 
             app.UseSignalR(routes =>
                            {
-                               routes.MapHub<BudgetsHub>("/api/hubs/budgets");
-                               routes.MapHub<TransactionsHub>("/api/hubs/transactions");
+                               routes.MapHub<BudgetsHub>("/hubs/budgets");
+                               routes.MapHub<TransactionsHub>("/hubs/transactions");
                            });
         }
 
