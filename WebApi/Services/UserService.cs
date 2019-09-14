@@ -1,27 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net.Mail;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using WebApi.Contexts;
-using WebApi.Extensions;
-using WebApi.Helpers;
-using WebApi.Models.Dtos;
-using WebApi.Models.Entities;
-using WebApi.Models.Enum;
-
 namespace WebApi.Services
 {
     public class UserService
     {
+        /*
         private readonly DataContext DatabaseContext;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
@@ -56,12 +37,12 @@ namespace WebApi.Services
 
             var user =  GetById(userId.Value).Data;
 
-            /* Store new user */
+            
             if (user == null)
             {
                 user = new User()
                        {
-                           UserId = userId.Value,
+                           Id = userId.Value,
                            CreationTime = DateTime.Now,
                            Email = email
                        };
@@ -82,7 +63,7 @@ namespace WebApi.Services
             {
                 return new BaseResult() { Result = eResultType.NotFound };
             }
-            var userBudgets = DatabaseContext.Budgets.Where(x => x.UserId == userId);
+            var userBudgets = DatabaseContext.Budgets.Where(x => x.Id == userId);
 
             DatabaseContext.Budgets.RemoveRange(userBudgets);
             DatabaseContext.Users.Remove(userEntity);
@@ -97,5 +78,6 @@ namespace WebApi.Services
                 return new BaseResult() { Result = eResultType.Error };
             }
         }
+        */
     }
 }

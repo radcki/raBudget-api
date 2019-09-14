@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using WebApi.Models.Entities;
-using WebApi.Models.Enum;
+using raBudget.Domain.Enum;
 
 namespace WebApi.Models.Dtos
 {
     public class TransactionScheduleDto
     {
+        #region Properties
+
         public int TransactionScheduleId { get; set; }
 
         public string Description { get; set; }
@@ -20,12 +19,14 @@ namespace WebApi.Models.Dtos
         public int PeriodStep { get; set; }
 
         public DateTime StartDate { get; set; }
-        
+
         public DateTime? EndDate { get; set; }
 
 
         public virtual BudgetCategoryDto BudgetCategory { get; set; }
 
         public virtual List<TransactionDto> Transactions { get; set; }
+
+        #endregion
     }
 }

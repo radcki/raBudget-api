@@ -1,14 +1,8 @@
-﻿using System;
-using System.Linq;
-using WebApi.Extensions;
-using WebApi.Models.Dtos;
-using WebApi.Models.Entities;
-using WebApi.Models.Enum;
-
-namespace WebApi.Helpers
+﻿namespace WebApi.Helpers
 {
     public class BudgetCategoryBalance
     {
+        /*
         public BudgetCategoryBalance(BudgetCategory category)
         {
             Category = category;
@@ -156,6 +150,6 @@ namespace WebApi.Helpers
 
             return (12*(end.Year-start.Year) + end.Month - start.Month) + 1;
         }
-
+        */
     }
 }

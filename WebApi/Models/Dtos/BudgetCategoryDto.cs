@@ -1,11 +1,12 @@
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using WebApi.Models.Enum;
+using raBudget.Domain.Enum;
 
 namespace WebApi.Models.Dtos
 {
     public class BudgetCategoryDto
     {
+        #region Properties
+
         public int CategoryId { get; set; }
         public string Name { get; set; }
         public string Icon { get; set; }
@@ -13,5 +14,7 @@ namespace WebApi.Models.Dtos
         public List<BudgetCategoryAmountConfigDto> AmountConfigs { get; set; }
         public eBudgetCategoryType Type { get; set; }
         public BudgetDto Budget { get; set; }
+
+        #endregion
     }
 }

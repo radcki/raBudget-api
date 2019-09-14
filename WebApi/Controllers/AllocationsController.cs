@@ -1,14 +1,5 @@
-﻿using System;
-using System.Linq;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Contexts;
-using WebApi.Extensions;
-using WebApi.Helpers;
-using WebApi.Models.Dtos;
-using WebApi.Models.Entities;
-using WebApi.Models.Enum;
-using WebApi.Services;
 
 namespace WebApi.Controllers
 {
@@ -17,6 +8,7 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class AllocationsController : BaseController
     {
+        /*
         private readonly UserService _userService;
         private User UserEntity => _userService.GetByClaimsPrincipal(User).Data;
         public AllocationsController(DataContext context, UserService userService)
@@ -285,5 +277,6 @@ namespace WebApi.Controllers
                         .AllocationsSum = category.Allocations.Sum(x => x.Amount);
             DatabaseContext.SaveChanges();
         }
+        */
     }
 }

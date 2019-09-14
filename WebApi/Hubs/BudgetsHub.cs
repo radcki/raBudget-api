@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -11,17 +9,27 @@ namespace WebApi.Hubs
     [Authorize]
     public class BudgetsHub : Hub
     {
-
     }
 
     public class BudgetsNotifier
     {
+        #region Privates
+
         private readonly IHubContext<BudgetsHub> _hubContext;
+
+        #endregion
+
+        #region Constructors
 
         public BudgetsNotifier(IHubContext<BudgetsHub> hubContext)
         {
             _hubContext = hubContext;
         }
+
+        #endregion
+
+        #region Methods
+
         public async Task BudgetAdded(Guid userId, BudgetDto newBudget)
         {
             await _hubContext.Clients.User(userId.ToString()).SendAsync("BudgetAdded", newBudget);
@@ -50,7 +58,8 @@ namespace WebApi.Hubs
         public async Task CategoryUpdated(Guid userId, BudgetCategoryDto updatedCategory)
         {
             await _hubContext.Clients.User(userId.ToString()).SendAsync("CategoryUpdated", updatedCategory);
-
         }
+
+        #endregion
     }
 }

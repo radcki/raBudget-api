@@ -1,10 +1,11 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace WebApi.Models.Dtos
 {
     public class TransactionDto
     {
+        #region Properties
+
         public int TransactionId { get; set; }
         public BudgetCategoryDto Category { get; set; }
         public string Description { get; set; }
@@ -13,5 +14,7 @@ namespace WebApi.Models.Dtos
         public DateTime Date { get; set; }
         public DateTime RegisteredDate { get; set; }
         public TransactionScheduleDto TransactionSchedule { get; set; }
+
+        #endregion
     }
 }

@@ -1,18 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using WebApi.Helpers;
-using WebApi.Models.Dtos;
-using WebApi.Models.Entities;
-using WebApi.Models.Enum;
-using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
-
-namespace WebApi.Extensions
+﻿namespace WebApi.Extensions
 {
     public static class EntityDtoConverters
     {
+        /*
         #region Budget category
 
         public static List<BudgetCategoryDto> ToDtoList(this IEnumerable<BudgetCategory> entities)
@@ -169,5 +159,6 @@ namespace WebApi.Extensions
                       };
             return dto;
         }
+        */
     }
 }

@@ -1,16 +1,5 @@
-﻿using System;
-using System.Linq;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebApi.Contexts;
-using WebApi.Extensions;
-using WebApi.Helpers;
-using WebApi.Hubs;
-using WebApi.Models.Dtos;
-using WebApi.Models.Entities;
-using WebApi.Models.Enum;
-using WebApi.Services;
 
 namespace WebApi.Controllers
 {
@@ -19,6 +8,7 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class TransactionsController : BaseController
     {
+        /*
         private readonly TransactionsNotifier _transactionsNotifier;
         private readonly UserService _userService;
         private User UserEntity => _userService.GetByClaimsPrincipal(User).Data;
@@ -361,5 +351,6 @@ namespace WebApi.Controllers
                         .TransactionsSum = category.Transactions.Sum(x => x.Amount);
             DatabaseContext.SaveChanges();
         }
+        */
     }
 }

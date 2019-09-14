@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using WebApi.Models.Dtos;
-using WebApi.Models.Entities;
-using WebApi.Models.Enum;
+﻿using System.Collections.Generic;
 
 namespace WebApi.Extensions
 {
     public static class ExtensionMethods
     {
+        #region Methods
+
+        /*
         public static Guid? UserId(this ClaimsPrincipal claimsPrincipal)
         {
             var claimId = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -141,10 +136,11 @@ namespace WebApi.Extensions
 
             return res.ToString();
         }
+        */
 
         public static bool IsNullOrDefault<T>(this T val)
         {
-            return val == null || EqualityComparer<T>.Default.Equals(val, default(T));
+            return val == null || EqualityComparer<T>.Default.Equals(val, default);
         }
 
         public static T Max<T>(T first, T second)
@@ -160,5 +156,7 @@ namespace WebApi.Extensions
                 return first;
             return second;
         }
+
+        #endregion
     }
 }

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using WebApi.Models.Entities;
-using WebApi.Models.Enum;
-
-namespace WebApi.Helpers
+﻿namespace WebApi.Helpers
 {
     public class ReportHandler
     {
+        /*
         public ReportHandler(Budget budget, DateTime startDate, DateTime endDate)
         {
             Budget = budget;
@@ -37,5 +32,7 @@ namespace WebApi.Helpers
         public List<PeriodMonthlyReport> SpendingCategoriesByMonth => SpendingCategories.Select(x => BudgetCategoryReport.GetMonthByMonth(x, StartDate, EndDate)).ToList();
         public List<PeriodMonthlyReport> IncomeCategoriesByMonth => IncomeCategories.Select(x => BudgetCategoryReport.GetMonthByMonth(x, StartDate, EndDate)).ToList();
         public List<PeriodMonthlyReport> SavingCategoriesByMonth => SavingCategories.Select(x => BudgetCategoryReport.GetMonthByMonth(x, StartDate, EndDate)).ToList();
+    }
+    */
     }
 }

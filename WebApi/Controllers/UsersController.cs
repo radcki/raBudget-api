@@ -1,17 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using WebApi.Contexts;
-using WebApi.Extensions;
-using WebApi.Models.Dtos;
-using WebApi.Models.Entities;
-using WebApi.Models.Enum;
-using WebApi.Services;
 
 namespace WebApi.Controllers
 {
@@ -20,6 +8,7 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class UsersController : BaseController
     {
+        /*
         private readonly IMapper _mapper;
         private readonly UserService _userService;
         private readonly ILogger _logger;
@@ -85,5 +74,6 @@ namespace WebApi.Controllers
                 return BadRequest(new {message = operationResult.Message});
             }
         }
+        */
     }
 }

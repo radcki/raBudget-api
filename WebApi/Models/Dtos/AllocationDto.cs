@@ -4,6 +4,8 @@ namespace WebApi.Models.Dtos
 {
     public class AllocationDto
     {
+        #region Properties
+
         public int AllocationId { get; set; }
         public BudgetCategoryDto SourceCategory { get; set; }
         public BudgetCategoryDto DestinationCategory { get; set; }
@@ -12,5 +14,7 @@ namespace WebApi.Models.Dtos
         public BudgetDataDto Budget { get; set; }
         public DateTime Date { get; set; }
         public DateTime RegisteredDate { get; set; }
+
+        #endregion
     }
 }

@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using WebApi.Extensions;
-using WebApi.Models.Dtos;
-using WebApi.Models.Entities;
-
-namespace WebApi.Helpers
+﻿namespace WebApi.Helpers
 {
     public class BudgetCategoryReport
     {
+        /*
         public BudgetCategoryReport(BudgetCategory category, DateTime startDate, DateTime endDate)
         {
             Category = category;
@@ -121,5 +115,7 @@ namespace WebApi.Helpers
         public double BudgetAmount { get; set; }
         public double AveragePerDay { get; set; }
         public double AveragePerMonth { get; set; }
+    }
+    */
     }
 }

@@ -1,13 +1,18 @@
 ﻿using System;
-using AutoMapper.Mappers;
-using WebApi.Models.Enum;
+using raBudget.Domain.Enum;
 
 namespace WebApi.Models.Dtos
 {
     public class BaseResult : IEquatable<bool>
     {
+        #region Properties
+
         public eResultType Result { get; set; }
         public string Message { get; set; }
+
+        #endregion
+
+        #region Methods
 
         public bool Equals(bool other)
         {
@@ -19,14 +24,22 @@ namespace WebApi.Models.Dtos
         {
             return me.Equals(true);
         }
+
+        #endregion
     }
 
     public class BaseResult<T> : IEquatable<bool>
     {
+        #region Properties
+
         public T Data { get; set; }
         public eResultType Result { get; set; }
         public string Message { get; set; }
-        
+
+        #endregion
+
+        #region Methods
+
         public bool Equals(bool other)
         {
             return Result == eResultType.Success;
@@ -46,5 +59,7 @@ namespace WebApi.Models.Dtos
         {
             return me.Data;
         }
+
+        #endregion
     }
 }

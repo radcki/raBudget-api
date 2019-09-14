@@ -1,21 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using WebApi.Contexts;
-using WebApi.Extensions;
-using WebApi.Helpers;
-using WebApi.Hubs;
-using WebApi.Models.Dtos;
-using WebApi.Models.Entities;
-using WebApi.Models.Enum;
-using WebApi.Services;
+using raBudget.Core.Dto.Budget.Request;
+using raBudget.Core.Dto.Budget.Response;
+using raBudget.Core.Dto.User;
 
 namespace WebApi.Controllers
 {
@@ -24,6 +13,18 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class BudgetsController : BaseController
     {
+        [HttpGet]
+        public async Task<ActionResult<ListAvailableBudgetsResponse>> Get()
+        {
+            return Ok(await Mediator.Send(new ListAvailableBudgetsRequest()));
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ListAvailableBudgetsResponse>> GetById(int id)
+        {
+            return Ok(await Mediator.Send(new ListAvailableBudgetsRequest()));
+        }
+        /*
         private readonly ILogger Logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly BudgetsNotifier _budgetsNotifier;
@@ -47,19 +48,21 @@ namespace WebApi.Controllers
             {
                 var userEntity = _userService.GetByClaimsPrincipal(User).Data;
 
-                if (userEntity.Budgets == null || !userEntity.Budgets.Any())
+                if (userEntity.OwnedBudgets == null || !userEntity.OwnedBudgets.Any())
                 {
                     return NotFound();
                 }
 
-                var budgets = DatabaseContext.Budgets.Where(x => x.UserId == userEntity.UserId)
+                var budgets = DatabaseContext.Budgets
+                                             .Where(x => x.OwnedByUserId == userEntity.Id)
                                              .Include(b => b.BudgetCategories)
-                                             .ThenInclude(b => b.BudgetCategoryAmountConfigs)
+                                             .ThenInclude(b => b.BudgetCategoryBudgetedAmounts)
                                              .Include(b => b.BudgetCategories)
                                              .ThenInclude(b => b.Transactions);
-                var budgetDtos = budgets.ToDtoEnumerable();
 
-                return Ok(budgetDtos);
+                //var budgetDtos = budgets.ToDtoEnumerable();
+
+                return Ok(budgets);
             }
             catch (Exception ex)
             {
@@ -75,17 +78,17 @@ namespace WebApi.Controllers
                 {
                     var userId = User.UserId();
 
-                    var budget = UserEntity.Budgets.Single(x => x.BudgetId == id);
+                    var budget = UserEntity.OwnedBudgets.Single(x => x.Id == id);
 
                     var balanceHandler = new BalanceHandler(budget);
                     var budgetDto = new BudgetDto
                                     {
-                                        Id = budget.BudgetId,
+                                        BudgetId = budget.Id,
                                         Name = budget.Name,
                                         Currency = budget.Currency,
                                         StartingDate = budget.StartingDate,
                                         Balance = balanceHandler.CurrentFunds(),
-                                        Default = budget.BudgetId == UserEntity.DefaultBudgetId,
+                                        Default = budget.Id == UserEntity.DefaultBudgetId,
 
                                         IncomeCategories = budget
                                                           .BudgetCategories
@@ -192,7 +195,7 @@ namespace WebApi.Controllers
                 DatabaseContext.SaveChanges();
 
                 _ = _budgetsNotifier.BudgetAdded(UserEntity.UserId, DatabaseContext.Budgets
-                                                                                   .Where(x => x.BudgetId == budgetEntity.BudgetId)
+                                                                                   .Where(x => x.id == budgetEntity.BudgetId)
                                                                                    .Include(b => b.BudgetCategories)
                                                                                    .ThenInclude(b => b.BudgetCategoryAmountConfigs)
                                                                                    .FirstOrDefault()
@@ -368,11 +371,11 @@ namespace WebApi.Controllers
 
                 categoryEntity.Name = budgetCategoryDto.Name;
                 categoryEntity.Icon = budgetCategoryDto.Icon ?? "";
-                DatabaseContext.BudgetCategoryAmountConfigs
-                               .RemoveRange(categoryEntity.BudgetCategoryAmountConfigs);
+                DatabaseContext.BudgetCategoryBudgetedAmounts
+                               .RemoveRange(categoryEntity.BudgetCategoryBudgetedAmounts);
 
-                categoryEntity.BudgetCategoryAmountConfigs = budgetCategoryDto.AmountConfigs
-                                                                              .Select(s => new BudgetCategoryAmountConfig
+                categoryEntity.BudgetCategoryBudgetedAmounts = budgetCategoryDto.AmountConfigs
+                                                                              .Select(s => new BudgetCategoryBudgetedAmount()
                                                                                            {
                                                                                                MonthlyAmount = s.Amount,
                                                                                                ValidFrom = s.ValidFrom,
@@ -382,7 +385,7 @@ namespace WebApi.Controllers
                 DatabaseContext.SaveChanges();
                 budgetCategoryDto.Type = categoryEntity.Type;
 
-                _ = _budgetsNotifier.CategoryUpdated(UserEntity.UserId, budgetCategoryDto);
+                _ = _budgetsNotifier.CategoryUpdated(UserEntity.Id, budgetCategoryDto);
 
                 return Ok(budgetCategoryDto);
             }
@@ -399,7 +402,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                if (UserEntity.Budgets.All(x => x.BudgetId != budgetId))
+                if (UserEntity.OwnedBudgets.All(x => x.Id != budgetId))
                     return BadRequest(new {message = "budgets.notFound"});
 
                 if (!DatabaseContext.BudgetCategories.Any(x => x.BudgetId == budgetId &&
@@ -413,7 +416,7 @@ namespace WebApi.Controllers
                 DatabaseContext.BudgetCategories.Remove(categoryEntity);
                 DatabaseContext.SaveChanges();
 
-                _ = _budgetsNotifier.CategoryRemoved(UserEntity.UserId, categoryId);
+                _ = _budgetsNotifier.CategoryRemoved(UserEntity.Id, categoryId);
                 return Ok();
             }
             catch (Exception ex)
@@ -430,7 +433,7 @@ namespace WebApi.Controllers
             try
             {
                 var userId = User.UserId();
-                var budget = DatabaseContext.Budgets.Single(x => x.BudgetId == budgetId && x.UserId == userId);
+                var budget = DatabaseContext.Budgets.Single(x => x.Id == budgetId && x.Id == userId);
                 var balanceHandler = new BalanceHandler(budget, eBudgetCategoryType.Spending);
 
                 return Ok(balanceHandler.SpendingCategoriesBalance);
@@ -545,5 +548,6 @@ namespace WebApi.Controllers
                 return BadRequest(new {message = ex.Message});
             }
         }
+        */
     }
 }

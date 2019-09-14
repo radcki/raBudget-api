@@ -2,6 +2,8 @@ namespace WebApi.Models.Dtos
 {
     public class BudgetCategoryBalanceDto
     {
+        #region Properties
+
         public BudgetCategoryDto BudgetCategory { get; set; }
 
         public double OverallBudgetBalance { get; set; }
@@ -19,5 +21,7 @@ namespace WebApi.Models.Dtos
 
         public double TotalTransactionsSum { get; set; }
         public double TotalAllocationsSum { get; set; }
+
+        #endregion
     }
 }

@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using WebApi.Extensions;
-using WebApi.Models.Dtos;
-using WebApi.Models.Entities;
-using WebApi.Models.Enum;
-
-namespace WebApi.Helpers
+﻿namespace WebApi.Helpers
 {
     public class BalanceHandler
     {
+        /*
         public BalanceHandler(Budget budget, eBudgetCategoryType limitCategoryType)
         {
             Budget = budget;
@@ -70,5 +63,6 @@ namespace WebApi.Helpers
             var budgeted = SpendingCategories.Select(x=>BudgetCategoryBalance.BalanceDto(x,eBudgetCategoryBalanceIncluded.OverallBalance).OverallBudgetBalance).Where(x=>x > 0).Sum();
             return CurrentFunds() - budgeted;
         }
+        */
     }
 }
