@@ -5,7 +5,7 @@
         Error = 0,
         Success = 1,
         Unauthorized = 2,
-        NotFound = 3,
+        NoDataFound = 3,
     }
 
     public static class eResponseTypeExtensions

@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Interfaces.Mapping;
 
 namespace raBudget.Core.Dto.User
@@ -21,7 +22,10 @@ namespace raBudget.Core.Dto.User
         {
             // dto -> entity
             configuration.CreateMap<UserDto, Domain.Entities.User>()
-                         .ForMember(entity => entity.Id, opt => opt.MapFrom(dto => dto.UserId));
+                         .ForMember(entity => entity.Id, opt => opt.MapFrom(dto => dto.UserId))
+                         .ForMember(entity => entity.CreationTime, opt => opt.MapFrom(dto => dto.CreationDate.IsNullOrDefault() 
+                                                                                                 ? DateTime.Now 
+                                                                                                 : dto.CreationDate));
 
             // entity -> dto
             configuration.CreateMap<Domain.Entities.User, UserDto>()

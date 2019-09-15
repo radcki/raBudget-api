@@ -32,7 +32,7 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<DateTime>("CreationDateTime")
                         .ValueGeneratedOnAdd()
-                        .HasDefaultValue(new DateTime(2019, 9, 14, 12, 49, 57, 877, DateTimeKind.Local).AddTicks(6390));
+                        .HasDefaultValue(new DateTime(2019, 9, 15, 23, 21, 26, 122, DateTimeKind.Local).AddTicks(4651));
 
                     b.Property<string>("Description")
                         .IsRequired();
@@ -71,7 +71,7 @@ namespace raBudget.EfPersistence.Migrations
 
             modelBuilder.Entity("raBudget.Domain.Entities.BudgetCategory", b =>
                 {
-                    b.Property<int>("BudgetCategoryId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("BudgetId");
@@ -83,7 +83,7 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<int>("Type");
 
-                    b.HasKey("BudgetCategoryId");
+                    b.HasKey("Id");
 
                     b.HasIndex("BudgetId");
 
@@ -92,7 +92,7 @@ namespace raBudget.EfPersistence.Migrations
 
             modelBuilder.Entity("raBudget.Domain.Entities.BudgetCategoryBudgetedAmount", b =>
                 {
-                    b.Property<int>("BudgetCategoryBudgetedAmountId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("BudgetCategoryId");
@@ -103,7 +103,7 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<DateTime?>("ValidTo");
 
-                    b.HasKey("BudgetCategoryBudgetedAmountId");
+                    b.HasKey("Id");
 
                     b.HasIndex("BudgetCategoryId");
 
@@ -926,7 +926,7 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<DateTime>("CreationDateTime")
                         .ValueGeneratedOnAdd()
-                        .HasDefaultValue(new DateTime(2019, 9, 14, 12, 49, 58, 26, DateTimeKind.Local).AddTicks(2984));
+                        .HasDefaultValue(new DateTime(2019, 9, 15, 23, 21, 26, 265, DateTimeKind.Local).AddTicks(8532));
 
                     b.Property<string>("Description")
                         .IsRequired();
@@ -986,7 +986,8 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<int?>("DefaultBudgetId");
 
-                    b.Property<string>("Email");
+                    b.Property<string>("Email")
+                        .IsRequired();
 
                     b.HasKey("Id");
 

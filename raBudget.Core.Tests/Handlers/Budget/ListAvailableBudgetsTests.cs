@@ -1,31 +1,28 @@
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using Moq.Language.Flow;
+using Moq;
 using raBudget.Core.Dto.Budget;
-using raBudget.Core.Dto.Budget.Request;
-using raBudget.Core.Dto.Budget.Response;
 using raBudget.Core.Dto.User;
-using raBudget.Core.Handlers.Budget;
+using raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
 using raBudget.Domain.Enum;
 using Xunit;
 
-namespace raBudget.Core.Tests
+namespace raBudget.Core.Tests.Handlers.Budget
 {
     public class ListAvailableBudgetsFixture : IDisposable
     {
-        public readonly Mock<IBudgetRepository<Budget>> RepoMock;
+        public readonly Mock<IBudgetRepository> RepoMock;
         public readonly Mock<IMapper> MapperMock;
         public readonly Mock<IAuthenticationProvider> AuthenticationProviderMock;
 
-        public List<Budget> SampleBudgetEntities;
+        public List<Domain.Entities.Budget> SampleBudgetEntities;
         public List<BudgetDto> SampleBudgetDtoEntities;
 
         public ListAvailableBudgetsHandler RequestHandler;
@@ -33,13 +30,13 @@ namespace raBudget.Core.Tests
 
         public ListAvailableBudgetsFixture()
         {
-            RepoMock = new Mock<IBudgetRepository<Budget>>();
+            RepoMock = new Mock<IBudgetRepository>();
             MapperMock = new Mock<IMapper>();
             AuthenticationProviderMock = new Mock<IAuthenticationProvider>();
 
-            SampleBudgetEntities = new List<Budget>()
+            SampleBudgetEntities = new List<Domain.Entities.Budget>()
                                    {
-                                       new Budget()
+                                       new Domain.Entities.Budget()
                                        {
                                            Id = It.IsAny<int>(),
                                            Name = It.IsAny<string>(),
@@ -66,7 +63,7 @@ namespace raBudget.Core.Tests
 
             MapperMock.Setup(m => m.Map<User>(It.IsAny<UserDto>()))
                       .Returns(mockUser.Object);
-            MapperMock.Setup(m => m.Map<IEnumerable<BudgetDto>>(It.IsAny<IEnumerable<Budget>>()))
+            MapperMock.Setup(m => m.Map<IEnumerable<BudgetDto>>(It.IsAny<IEnumerable<Domain.Entities.Budget>>()))
                       .Returns(SampleBudgetDtoEntities);
 
             AuthenticationProviderMock.Setup(m => m.User).Returns(mockUserDto.Object);
@@ -114,7 +111,7 @@ namespace raBudget.Core.Tests
         {
             foreach (var data in fixture.RequestResponse.Result.Data)
             {
-                Assert.False(data.GetType().IsSubclassOf(typeof(BaseEntity<Budget>)));
+                Assert.False(data.GetType().IsSubclassOf(typeof(BaseEntity<Domain.Entities.Budget>)));
             }
         }
     }

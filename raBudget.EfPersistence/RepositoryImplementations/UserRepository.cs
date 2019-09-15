@@ -6,15 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using raBudget.Core.Dto.User.Response;
-using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
 using raBudget.EfPersistence.Contexts;
 
 namespace raBudget.EfPersistence.RepositoryImplementations
 {
-    public class UserRepository : IUserRepository<User>
+    public class UserRepository : IUserRepository
     {
         private readonly DataContext _db;
 

@@ -7,7 +7,7 @@ using raBudget.Domain.Entities;
 
 namespace raBudget.Core.Interfaces.Repository
 {
-    public interface IBudgetRepository<T> : IAsyncRepository<T, int> where T : Budget
+    public interface IBudgetRepository : IAsyncRepository<Budget, int>
     {
         /// <summary>
         /// Find all budgets available for user - owned and shared.

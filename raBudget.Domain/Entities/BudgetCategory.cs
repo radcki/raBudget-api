@@ -3,7 +3,7 @@ using raBudget.Domain.Enum;
 
 namespace raBudget.Domain.Entities
 {
-    public class BudgetCategory
+    public class BudgetCategory : BaseEntity<int>
     {
         public BudgetCategory()
         {
@@ -12,7 +12,6 @@ namespace raBudget.Domain.Entities
             BudgetCategoryBudgetedAmounts = new HashSet<BudgetCategoryBudgetedAmount>();
             TransactionSchedules = new HashSet<TransactionSchedule>();
         }
-        public int BudgetCategoryId { get; set; }
 
         public eBudgetCategoryType Type { get; set; }
 

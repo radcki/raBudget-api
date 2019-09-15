@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
@@ -7,6 +8,7 @@ using FluentValidation;
 using Hellang.Middleware.ProblemDetails;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -21,21 +23,21 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using raBudget.Core.Dto.Base;
-using raBudget.Core.Dto.User;
-using raBudget.Core.Dto.User.Response;
+using raBudget.Core.Handlers.UserHandlers.RegisterUser;
 using raBudget.Core.Infrastructure;
 using raBudget.Core.Infrastructure.AutoMapper;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
-using raBudget.Domain.Entities;
 using raBudget.Domain.Enum;
 using raBudget.EfPersistence.Contexts;
 using raBudget.EfPersistence.RepositoryImplementations;
+using raBudget.WebApi.Handlers;
 using raBudget.WebApi.Providers;
+using Serilog;
 using WebApi.Filters;
 using WebApi.Hubs;
 using WebApi.Providers;
-using WebApi.Services;
+using ILogger = Serilog.ILogger;
 using ValidationProblemDetails = raBudget.WebApi.Models.ValidationProblemDetails;
 using ValidationException = raBudget.Core.Exceptions.ValidationException;
 
@@ -57,19 +59,7 @@ namespace WebApi
 
         public IConfiguration Configuration { get; }
         private IHostingEnvironment Environment { get; }
-
-        public static bool IsDebug
-        {
-            get
-            {
-                bool isDebug = false;
-#if DEBUG
-                isDebug = true;
-#endif
-                return isDebug;
-            }
-        }
-
+        
         #endregion
 
         #region Methods
@@ -78,17 +68,16 @@ namespace WebApi
         {
             services.AddCors();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 
 
             switch (Configuration["Data:ServerType"])
             {
-                case "mysql":
-                    services.AddDbContext<IDataContext, DataContext>(options => options.UseMySql(Configuration.GetConnectionString("mysql")));
+                case "MySql":
+                    services.AddDbContext<IDataContext, DataContext>(options => options.UseMySql(Configuration.GetConnectionString("MySql")));
                     break;
 
-                case "sqlserver":
-                    services.AddDbContext<IDataContext, DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("sqlserver")));
+                case "SqlServer":
+                    services.AddDbContext<IDataContext, DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("SqlServer")));
                     break;
             }
 
@@ -107,12 +96,12 @@ namespace WebApi
             services.AddAutoMapper(typeof(AutoMapperProfile).GetTypeInfo().Assembly);
 
             // DataContext for DI
-            services.AddScoped(typeof(IDataContext), typeof(DataContext));
-            services.AddScoped(typeof(DataContext), typeof(DataContext));
+            services.AddTransient(typeof(IDataContext), typeof(DataContext));
+            services.AddTransient(typeof(DataContext), typeof(DataContext));
 
             // Repositiories for DI
-            services.AddScoped(typeof(IBudgetRepository<Budget>), typeof(BudgetRepository));
-            services.AddScoped(typeof(IUserRepository<User>), typeof(UserRepository));
+            services.AddScoped(typeof(IBudgetRepository), typeof(BudgetRepository));
+            services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
 
             // User identity provider for DI
             services.AddScoped<IAuthenticationProvider, AuthenticationProvider>();
@@ -120,21 +109,32 @@ namespace WebApi
             AssemblyScanner.FindValidatorsInAssembly(typeof(BaseResponse).Assembly)
                            .ForEach(result =>
                                     {
-                                        //services.AddScoped(result.InterfaceType, result.ValidatorType);
                                         services.AddTransient(result.InterfaceType, result.ValidatorType);
                                     }
                                    );
 
             // Add MediatR
-            services.AddMediatR(typeof(AddUserResponse).GetTypeInfo().Assembly);
-
+            services.AddMediatR(typeof(CheckInUserHandler).GetTypeInfo().Assembly);
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestPerformanceBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>));
 
-            services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "raBudget API", Version = "v1"}); });
+            services.AddSwaggerGen(c =>
+                                   {
+                                       c.SwaggerDoc("v1", new OpenApiInfo {Title = "raBudget API", Version = "v1"});
+
+                                       var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                                       var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                                       c.IncludeXmlComments(xmlPath);
+                                   });
 
             services.AddMvc(options => { options.Filters.Add(typeof(ValidateModelStateAttribute)); })
-                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                    .AddJsonOptions(options =>
+                                    {
+                                        options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+                                        options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                                    }); ;
+
 
             services.Configure<ForwardedHeadersOptions>(options =>
                                                         {
@@ -143,57 +143,7 @@ namespace WebApi
                                                         });
             // jwt authentication
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddJwtBearer(options =>
-                                  {
-                                      options.Authority = Configuration["Authentication:Authority"];
-                                      options.Audience = Configuration["Authentication:Audience"];
-                                      if (IsDebug)
-                                      {
-                                          options.RequireHttpsMetadata = false;
-                                          options.Events = new JwtBearerEvents
-                                                           {
-                                                               OnTokenValidated = async c =>
-                                                                                  {
-                                                                                      // Update authentication provider
-                                                                                      var authProvider = c.HttpContext
-                                                                                                          .RequestServices
-                                                                                                          .GetRequiredService<IAuthenticationProvider>();
-
-                                                                                      authProvider.FromAuthenticationResult(c.Principal);
-                                                                                  },
-#if DEBUG
-                                                               OnAuthenticationFailed = c =>
-                                                                                        {
-                                                                                            ProblemDetails problem;
-                                                                                            if (c.Exception.GetType() == typeof(SecurityTokenExpiredException))
-                                                                                            {
-                                                                                                problem = new ProblemDetails()
-                                                                                                              {
-                                                                                                                  Title = "Token has expired",
-                                                                                                                  Status = StatusCodes.Status401Unauthorized,
-                                                                                                                  Detail = Environment.IsDevelopment() 
-                                                                                                                               ? c.Exception.Message 
-                                                                                                                               : null
-                                                                                                              };
-                                                                                            }
-                                                                                            else
-                                                                                            {
-                                                                                                problem = new ExceptionProblemDetails(c.Exception);
-                                                                                            }
-
-                                                                                            c.NoResult();
-                                                                                            c.Response.StatusCode = 401;
-                                                                                            c.Response.ContentType = "application/json";
-                                                                                            return c.Response.WriteAsync(JsonConvert.SerializeObject(problem));
-                                                                                        }
-#endif
-                                                           };
-                                      }
-
-                                      options.SaveToken = true;
-                                      options.Validate();
-                                  });
-
+                    .AddJwtBearer(ConfigureJwtBearer);
 
             services.AddAuthorization(options =>
                                       {
@@ -202,12 +152,15 @@ namespace WebApi
                                                                                           eRole.Admin.ToString()));
                                       }
                                      );
-            
-            services.AddProblemDetails(ConfigureProblemDetails).AddMvcCore().AddJsonFormatters(x => x.NullValueHandling = NullValueHandling.Ignore);
+            services.AddScoped<IAuthorizationHandler, UserRegisteredHandler>();
+
+            services.AddProblemDetails(ConfigureProblemDetails)
+                    .AddMvcCore()
+                    .AddJsonFormatters(x => x.NullValueHandling = NullValueHandling.Ignore);
 
 
-
-            // DEPENDENCY INJECTION
+            // SignalR
+            services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
             services.AddScoped<BudgetsNotifier>();
             services.AddScoped<TransactionsNotifier>();
 
@@ -215,16 +168,16 @@ namespace WebApi
         }
 
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseSerilogRequestLogging();
+
             /* FOR NGINX REVERSE PROXY */
             app.UseForwardedHeaders();
             app.UsePathBase("/api");
 
-            /*
-             * CORS
-             */
-            if (IsDebug)
+            /* CORS */
+            if (Environment.IsDevelopment())
             {
                 app.UseCors(x => x
                                 .WithOrigins("http://localhost:8080")
@@ -235,7 +188,7 @@ namespace WebApi
                            );
 
                 //app.UseDeveloperExceptionPage();
-                app.UseProblemDetails();
+                app.UseProblemDetails(); // Write exceptions into json response
             }
             else
             {
@@ -252,7 +205,10 @@ namespace WebApi
             app.UseAuthentication();
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "raBudget API V1"); });
+            app.UseSwaggerUI(c =>
+                             {
+                                 c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "raBudget API V1");
+                             });
 
             app.UseMvc();
             app.UseHttpsRedirection();
@@ -263,6 +219,7 @@ namespace WebApi
                                routes.MapHub<TransactionsHub>("/hubs/transactions");
                            });
         }
+
         private void ConfigureProblemDetails(ProblemDetailsOptions options)
         {
             options.IncludeExceptionDetails = ctx => Environment.IsDevelopment();
@@ -274,6 +231,53 @@ namespace WebApi
             options.Map<Exception>(ex => new ExceptionProblemDetails(ex, StatusCodes.Status500InternalServerError));
         }
 
+        private void ConfigureJwtBearer(JwtBearerOptions options)
+        {
+            options.Authority = Configuration["Authentication:Authority"];
+            options.Audience = Configuration["Authentication:Audience"];
+
+            options.RequireHttpsMetadata = Environment.IsProduction();
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = async c =>
+                {
+                    // Update authentication provider with authentication result
+                    var authProvider = c.HttpContext
+                                        .RequestServices
+                                        .GetRequiredService<IAuthenticationProvider>();
+
+                    authProvider.FromAuthenticationResult(c.Principal);
+                },
+
+                OnAuthenticationFailed = c =>
+                {
+                    ProblemDetails problem;
+                    if (c.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                    {
+                        problem = new ProblemDetails()
+                        {
+                            Title = "Token has expired",
+                            Status = StatusCodes.Status401Unauthorized,
+                            Detail = Environment.IsDevelopment()
+                                                   ? c.Exception.Message
+                                                   : null
+                        };
+                    }
+                    else
+                    {
+                        problem = new ExceptionProblemDetails(c.Exception);
+                    }
+
+                    c.NoResult();
+                    c.Response.StatusCode = 401;
+                    c.Response.ContentType = "application/json";
+                    return c.Response.WriteAsync(JsonConvert.SerializeObject(problem));
+                }
+            };
+
+            options.SaveToken = true;
+            options.Validate();
+        }
         #endregion
     }
 }

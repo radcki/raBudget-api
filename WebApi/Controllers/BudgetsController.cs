@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using raBudget.Core.Dto.Budget.Request;
-using raBudget.Core.Dto.Budget.Response;
-using raBudget.Core.Dto.User;
+using raBudget.Core.Dto.Budget;
+using raBudget.Core.Handlers.BudgetHandlers.GetBudget;
+using raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets;
+using raBudget.Domain.Enum;
 
 namespace WebApi.Controllers
 {
@@ -13,17 +15,60 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class BudgetsController : BaseController
     {
+        /// <summary>
+        /// Get list of budgets available for user - both owned and shared
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<ListAvailableBudgetsResponse>> Get()
         {
-            return Ok(await Mediator.Send(new ListAvailableBudgetsRequest()));
+            var response = await Mediator.Send(new ListAvailableBudgetsRequest());
+            return Ok(response);
         }
 
+        /// <summary>
+        ///  Get details of specific budget, identified by id
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ListAvailableBudgetsResponse>> GetById(int id)
+        public async Task<ActionResult<GetBudgetResponse>> GetById(int id)
         {
-            return Ok(await Mediator.Send(new ListAvailableBudgetsRequest()));
+            var response = await Mediator.Send(new GetBudgetRequest(id));
+            return Ok(response);
         }
+
+        /// <summary>
+        /// Create new budget
+        /// </summary>
+        /// <param name="budgetDto"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ActionResult> Create([FromBody] BudgetDetailsDto budgetDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Update budget parameters. Budget in request body will be ignored
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update([FromBody] BudgetDto budgetDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Sets budget as default. Only one budget can be default and a time.
+        /// </summary>
+        /// <returns></returns>
+        [HttpPatch("{id}/default")]
+        public async Task<ActionResult> SetDefault()
+        {
+            throw new NotImplementedException();
+        }
+
+
         /*
         private readonly ILogger Logger;
         private readonly ILoggerFactory _loggerFactory;
@@ -50,7 +95,7 @@ namespace WebApi.Controllers
 
                 if (userEntity.OwnedBudgets == null || !userEntity.OwnedBudgets.Any())
                 {
-                    return NotFound();
+                    return NoDataFound();
                 }
 
                 var budgets = DatabaseContext.Budgets

@@ -7,6 +7,7 @@ namespace raBudget.Domain.Entities
     {
         public User()
         {
+            CreationTime = DateTime.Now;
             OwnedBudgets = new HashSet<Budget>();
             BudgetShares = new HashSet<BudgetShare>();
         }

@@ -12,7 +12,7 @@ using raBudget.EfPersistence.Contexts;
 
 namespace raBudget.EfPersistence.RepositoryImplementations
 {
-    public class BudgetRepository : IBudgetRepository<Budget>
+    public class BudgetRepository : IBudgetRepository
     {
         private readonly DataContext _db;
 
@@ -43,7 +43,11 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         /// <inheritdoc />
         public async Task<Budget> GetByIdAsync(int id)
         {
-            return await _db.Budgets.FindAsync(id);
+            return await _db.Budgets
+                            .Include(x=>x.BudgetCategories)
+                            .Include(x=>x.BudgetShares).ThenInclude(x=>x.SharedWithUser)
+                            .Include(x=>x.OwnedByUser)
+                            .FirstOrDefaultAsync(x=>x.Id == id);
         }
         /// <inheritdoc />
         public async Task<IReadOnlyList<Budget>> ListAllAsync()

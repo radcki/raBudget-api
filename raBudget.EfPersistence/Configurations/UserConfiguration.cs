@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using raBudget.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,7 +13,7 @@ namespace raBudget.EfPersistence.Configurations
             // TransactionScheduleId
             builder.HasKey(f => f.Id);
             builder.Property(f=>f.Id).IsRequired();
-
+            builder.Property(f=>f.Email).IsRequired();
         }
     }
     

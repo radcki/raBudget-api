@@ -15,8 +15,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dto\User\Request\" />
-    <Folder Include="Handlers\User\" />
+    <Folder Include="Handlers\BudgetHandlers\CreateBudget\" />
+    <Folder Include="Handlers\BudgetHandlers\DeleteBudget\" />
+    <Folder Include="Handlers\BudgetHandlers\RevokeBudgetAccess\" />
+    <Folder Include="Handlers\BudgetHandlers\ShareBudget\" />
+    <Folder Include="Handlers\BudgetHandlers\UpdateBudget\" />
+    <Folder Include="Handlers\AllocationHandlers\" />
+    <Folder Include="Handlers\TransactionScheduleHandlers\" />
+    <Folder Include="Handlers\TransactionHandlers\" />
+    <Folder Include="Handlers\UserHandlers\DeleteUserData\" />
   </ItemGroup>
 
   <ItemGroup>

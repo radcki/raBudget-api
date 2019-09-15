@@ -28,7 +28,7 @@ namespace WebApi.Controllers
                 }
                 else
                 {
-                    return NotFound();
+                    return NoDataFound();
                 }
 
             }
@@ -55,7 +55,7 @@ namespace WebApi.Controllers
                 }
                 else
                 {
-                    return NotFound();
+                    return NoDataFound();
                 }
 
             }

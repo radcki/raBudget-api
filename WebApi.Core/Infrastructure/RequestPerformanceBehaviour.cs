@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using raBudget.Core.Interfaces;
 
 namespace raBudget.Core.Infrastructure
 {
@@ -10,12 +11,14 @@ namespace raBudget.Core.Infrastructure
     {
         private readonly Stopwatch _timer;
         private readonly ILogger<TRequest> _logger;
+        private readonly IAuthenticationProvider _authenticationProvider;
 
-        public RequestPerformanceBehaviour(ILogger<TRequest> logger)
+        public RequestPerformanceBehaviour(ILogger<TRequest> logger, IAuthenticationProvider authenticationProvider)
         {
             _timer = new Stopwatch();
 
             _logger = logger;
+            _authenticationProvider = authenticationProvider;
         }
 
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
@@ -26,14 +29,19 @@ namespace raBudget.Core.Infrastructure
 
             _timer.Stop();
 
+            var user =  _authenticationProvider.IsAuthenticated 
+                            ?_authenticationProvider.User.UserId.ToString() 
+                            : "<not signed in>";
+            var requestName = typeof(TRequest).Name;
             if (_timer.ElapsedMilliseconds > 500)
             {
-                var name = typeof(TRequest).Name;
-
-                // TODO: Add User Details
-
-                _logger.LogWarning("Northwind Long Running Request: {Name} ({ElapsedMilliseconds} milliseconds) {@Request}", name, _timer.ElapsedMilliseconds, request);
+                _logger.LogWarning("Request {Name} by {@User} took {ElapsedMilliseconds} ms {@Request}", requestName, user, _timer.ElapsedMilliseconds, request);
             }
+            else
+            {
+                _logger.LogDebug("Request {Name} by {@User} took {ElapsedMilliseconds} ms {@Request}", requestName, user, _timer.ElapsedMilliseconds, request);
+            }
+
 
             return response;
         }

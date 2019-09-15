@@ -2,9 +2,8 @@ using System;
 
 namespace raBudget.Domain.Entities
 {
-    public class BudgetCategoryBudgetedAmount
+    public class  BudgetCategoryBudgetedAmount : BaseEntity<int>
     {
-        public int BudgetCategoryBudgetedAmountId { get; set; }
 
         public double MonthlyAmount { get; set; }
 

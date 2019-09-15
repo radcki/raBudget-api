@@ -21,7 +21,7 @@ namespace WebApi.Services
             return new BaseResult<User>()
                    {
                        Data = user,
-                       Result = user != null ? eResultType.Success : eResultType.NotFound
+                       Result = user != null ? eResultType.Success : eResultType.NoDataFound
                    };
         }
 
@@ -32,7 +32,7 @@ namespace WebApi.Services
             
             if (userId.IsNullOrDefault())
             {
-                return new BaseResult<User>(){Result = eResultType.NotFound};
+                return new BaseResult<User>(){Result = eResultType.NoDataFound};
             }
 
             var user =  GetById(userId.Value).Data;
@@ -61,7 +61,7 @@ namespace WebApi.Services
             var userEntity = GetById(userId).Data;
             if (userEntity == null)
             {
-                return new BaseResult() { Result = eResultType.NotFound };
+                return new BaseResult() { Result = eResultType.NoDataFound };
             }
             var userBudgets = DatabaseContext.Budgets.Where(x => x.Id == userId);
 

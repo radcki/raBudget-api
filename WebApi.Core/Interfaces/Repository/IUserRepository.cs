@@ -6,7 +6,7 @@ using raBudget.Domain.Entities;
 
 namespace raBudget.Core.Interfaces.Repository
 {
-    public interface IUserRepository<T> : IAsyncRepository<T, Guid> where T : User
+    public interface IUserRepository : IAsyncRepository<User, Guid>
     {
     }
 }

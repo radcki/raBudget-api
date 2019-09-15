@@ -1,31 +1,55 @@
-﻿using Microsoft.AspNetCore;
+﻿using System;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using raBudget.EfPersistence.Contexts;
-using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
+using Serilog;
+using Serilog.Events;
+using WebApi;
 
-namespace WebApi
+namespace raBudget.WebApi
 {
     public class Program
     {
         #region Methods
 
-        public static void Main(string[] args)
+        /// <summary>
+        /// Application entry point
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static int Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            Log.Logger = new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                        .Enrich.FromLogContext()
+                        .WriteTo.Console()
+                        .CreateLogger();
+
+            try
+            {
+                Log.Information("Starting web host");
+                BuildWebHost(args).Run();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Host terminated unexpectedly");
+                return 1;
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         public static IWebHost BuildWebHost(string[] args)
         {
             return WebHost.CreateDefaultBuilder(args)
-                          .ConfigureLogging((hostingContext, logging) =>
-                                            {
-                                                logging.AddFilter<EntityFrameworkLoggerProvider<DataContext>>("Microsoft", LogLevel.Warning);
-                                                logging.AddFilter<EntityFrameworkLoggerProvider<DataContext>>("System", LogLevel.Warning);
-                                                logging.AddConsole();
-                                            })
                           .UseStartup<Startup>()
                           .UseUrls("http://localhost:4002")
+                          .UseSerilog()
                           .Build();
         }
 

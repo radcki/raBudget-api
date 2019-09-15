@@ -6,9 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using raBudget.Core.Dto.Budget;
-using raBudget.Core.Dto.Budget.Request;
 using raBudget.Core.Dto.User;
-using raBudget.Core.Handlers.Budget;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
 using raBudget.Domain.Enum;
@@ -18,12 +16,12 @@ namespace raBudget.Core.Tests
 {
     public class RegisterUserTests
     {
-        private readonly Mock<IUserRepository<User>> _repoMock;
+        private readonly Mock<IUserRepository> _repoMock;
         private Mock<IMapper> _mapperMock;
 
         public RegisterUserTests()
         {
-            _repoMock = new Mock<IUserRepository<User>>();
+            _repoMock = new Mock<IUserRepository>();
             _mapperMock = new Mock<IMapper>();
         }
 
@@ -41,7 +39,7 @@ namespace raBudget.Core.Tests
                        .Returns(mockUserDto.Object);
             /*
             var handler = new RegisterUserHandler(_repoMock.Object, _mapperMock.Object);
-            var response = handler.Handle(new RegisterUserRequest(mockUserDto.Object));
+            var response = handler.Handle(new CheckInUserRequest(mockUserDto.Object));
             
             Assert.Equal(mockUserDto.Object, response.Result.Data);
             */
