@@ -15,15 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Handlers\BudgetHandlers\CreateBudget\" />
-    <Folder Include="Handlers\BudgetHandlers\DeleteBudget\" />
-    <Folder Include="Handlers\BudgetHandlers\RevokeBudgetAccess\" />
-    <Folder Include="Handlers\BudgetHandlers\ShareBudget\" />
-    <Folder Include="Handlers\BudgetHandlers\UpdateBudget\" />
-    <Folder Include="Handlers\AllocationHandlers\" />
+    <Folder Include="Handlers\AllocationHandlers\CreateAllocation\" />
+    <Folder Include="Handlers\AllocationHandlers\DeleteAllocation\" />
+    <Folder Include="Handlers\AllocationHandlers\ListAllocation\" />
+    <Folder Include="Handlers\AllocationHandlers\GetAllocation\" />
+    <Folder Include="Handlers\AllocationHandlers\UpdateAllocation\" />
     <Folder Include="Handlers\TransactionScheduleHandlers\" />
-    <Folder Include="Handlers\TransactionHandlers\" />
-    <Folder Include="Handlers\UserHandlers\DeleteUserData\" />
+    <Folder Include="Handlers\UserHandlers\ListUsers\" />
   </ItemGroup>
 
   <ItemGroup>

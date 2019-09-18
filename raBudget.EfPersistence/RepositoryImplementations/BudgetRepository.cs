@@ -24,20 +24,22 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         #region Implementation of IBudgetRepository
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Budget>> ListAvailableBudgets(User user)
+        public async Task<IEnumerable<Budget>> ListAvailableBudgets(Guid userId)
         {
             return await Task.FromResult(_db.Budgets
                                             .Include(x => x.BudgetShares)
-                                            .Where(x => x.OwnedByUserId == user.Id
-                                                        || x.BudgetShares.Any(s => s.SharedWithUserId == user.Id)));
+                                            .Include(x=>x.BudgetCategories)
+                                            .Where(x => x.OwnedByUserId == userId
+                                                        || x.BudgetShares.Any(s => s.SharedWithUserId == userId)));
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Budget>> ListOwnedBudgets(User user)
+        public async Task<IEnumerable<Budget>> ListOwnedBudgets(Guid userId)
         {
             return await Task.FromResult(_db.Budgets
                                             .Include(x => x.BudgetShares)
-                                            .Where(x => x.OwnedByUserId == user.Id));
+                                            .Include(x => x.BudgetCategories)
+                                            .Where(x => x.OwnedByUserId == userId));
         }
 
         /// <inheritdoc />

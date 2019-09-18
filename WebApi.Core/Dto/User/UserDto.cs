@@ -1,19 +1,22 @@
 ﻿using System;
-using System.Security.Claims;
-using System.Security.Principal;
 using AutoMapper;
-using Microsoft.AspNetCore.Identity;
 using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Interfaces.Mapping;
 
 namespace raBudget.Core.Dto.User
 {
-    public class UserDto: IHaveCustomMapping
+    public class UserDto : IHaveCustomMapping
     {
+        #region Properties
+
         public Guid UserId { get; set; }
         public string Email { get; set; }
         public int? DefaultBudgetId { get; set; }
         public DateTime CreationDate { get; set; }
+
+        #endregion
+
+        #region Methods
 
         #region Implementation of IHaveCustomMapping
 
@@ -23,8 +26,8 @@ namespace raBudget.Core.Dto.User
             // dto -> entity
             configuration.CreateMap<UserDto, Domain.Entities.User>()
                          .ForMember(entity => entity.Id, opt => opt.MapFrom(dto => dto.UserId))
-                         .ForMember(entity => entity.CreationTime, opt => opt.MapFrom(dto => dto.CreationDate.IsNullOrDefault() 
-                                                                                                 ? DateTime.Now 
+                         .ForMember(entity => entity.CreationTime, opt => opt.MapFrom(dto => dto.CreationDate.IsNullOrDefault()
+                                                                                                 ? DateTime.Now
                                                                                                  : dto.CreationDate));
 
             // entity -> dto
@@ -34,5 +37,6 @@ namespace raBudget.Core.Dto.User
 
         #endregion
 
+        #endregion
     }
 }

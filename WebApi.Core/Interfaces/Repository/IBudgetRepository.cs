@@ -9,18 +9,19 @@ namespace raBudget.Core.Interfaces.Repository
 {
     public interface IBudgetRepository : IAsyncRepository<Budget, int>
     {
-        /// <summary>
+
+        ///  /// <summary>
         /// Find all budgets available for user - owned and shared.
         /// </summary>
-        /// <param name="user"></param>
         /// <returns>Collection of budget entities</returns>
-        Task<IEnumerable<Budget>> ListAvailableBudgets(User user);
+        Task<IEnumerable<Budget>> ListAvailableBudgets(Guid userId);
+
 
         /// <summary>
         /// Find budgets owned by user.
         /// </summary>
-        /// <param name="user"></param>
         /// <returns>Collection of budget entities</returns>
-        Task<IEnumerable<Budget>> ListOwnedBudgets(User user);
+        Task<IEnumerable<Budget>> ListOwnedBudgets(Guid userId);
+
     }
 }

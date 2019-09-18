@@ -12,6 +12,13 @@ namespace raBudget.Domain.Entities
             BudgetShares = new HashSet<BudgetShare>();
         }
 
+        public Budget(int budgetId)
+        {
+            BudgetCategories = new HashSet<BudgetCategory>();
+            BudgetShares = new HashSet<BudgetShare>();
+            Id = budgetId;
+        }
+
         public string Name { get; set; }
         public eCurrency CurrencyCode { get; set; }
         public virtual Currency Currency => Currency.Get(CurrencyCode);

@@ -4,8 +4,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using raBudget.Core.Dto.Budget;
+using raBudget.Core.Handlers.BudgetHandlers.CreateBudget;
+using raBudget.Core.Handlers.BudgetHandlers.DeleteBudget;
 using raBudget.Core.Handlers.BudgetHandlers.GetBudget;
 using raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets;
+using raBudget.Core.Handlers.BudgetHandlers.UpdateBudget;
+using raBudget.Core.Handlers.UserHandlers.SetDefaultBudget;
 using raBudget.Domain.Enum;
 
 namespace WebApi.Controllers
@@ -15,6 +19,8 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class BudgetsController : BaseController
     {
+        #region Budgets CRUD
+
         /// <summary>
         /// Get list of budgets available for user - both owned and shared
         /// </summary>
@@ -45,28 +51,46 @@ namespace WebApi.Controllers
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] BudgetDetailsDto budgetDto)
         {
-            throw new NotImplementedException();
+            budgetDto.OwnedByUser = AuthenticationProvider.User;
+            var response = await Mediator.Send(new CreateBudgetRequest(budgetDto));
+            return Ok(response);
         }
 
         /// <summary>
-        /// Update budget parameters. Budget in request body will be ignored
+        /// Update budget parameters. Budget id in request body will be ignored
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update([FromBody] BudgetDto budgetDto)
+        public async Task<ActionResult> Update([FromBody] BudgetDto budgetDto, int id)
         {
-            throw new NotImplementedException();
+            budgetDto.BudgetId = id;
+            var response = await Mediator.Send(new UpdateBudgetRequest(budgetDto));
+            return Ok(response);
         }
-
+        
+        /// <summary>
+        /// Delete budget with all related data
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var response = await Mediator.Send(new DeleteBudgetRequest(id));
+            return Ok(response);
+        }
+        
         /// <summary>
         /// Sets budget as default. Only one budget can be default and a time.
         /// </summary>
         /// <returns></returns>
         [HttpPatch("{id}/default")]
-        public async Task<ActionResult> SetDefault()
+        public async Task<ActionResult> SetDefault(int id)
         {
-            throw new NotImplementedException();
+            var response = await Mediator.Send(new SetDefaultBudgetRequest(id));
+            return Ok(response);
         }
+
+        #endregion
 
 
         /*

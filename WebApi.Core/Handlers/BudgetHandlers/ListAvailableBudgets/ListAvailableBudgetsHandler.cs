@@ -17,7 +17,9 @@ namespace raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets
         private readonly IMapper _mapper;
         private readonly IAuthenticationProvider _authenticationProvider;
 
-        public ListAvailableBudgetsHandler(IBudgetRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider)
+        public ListAvailableBudgetsHandler(IBudgetRepository repository, 
+                                           IMapper mapper, 
+                                           IAuthenticationProvider authenticationProvider)
         {
             _repository = repository;
             _mapper = mapper;
@@ -28,7 +30,7 @@ namespace raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets
         public async Task<ListAvailableBudgetsResponse> Handle(ListAvailableBudgetsRequest request, CancellationToken cancellationToken)
         {
             
-            var repositoryResult = await _repository.ListAvailableBudgets(_mapper.Map<Domain.Entities.User>(_authenticationProvider.User));
+            var repositoryResult = await _repository.ListAvailableBudgets(_authenticationProvider.User.UserId);
 
             return new ListAvailableBudgetsResponse()
                    {

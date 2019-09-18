@@ -51,14 +51,14 @@ namespace raBudget.Core.Tests.Handlers.Budget
                                           {
                                               BudgetId = It.IsAny<int>(),
                                               Name = It.IsAny<string>(),
-                                              Currency = It.IsAny<string>(),
+                                              Currency = It.IsAny<Currency>(),
                                               StartingDate = It.IsAny<DateTime>()
                                           }
                                       };
 
             var mockUser = new Mock<User>();
             var mockUserDto = new Mock<UserDto>();
-            RepoMock.Setup(x => x.ListAvailableBudgets(mockUser.Object))
+            RepoMock.Setup(x => x.ListAvailableBudgets(It.IsAny<Guid>()))
                     .ReturnsAsync(SampleBudgetEntities);
 
             MapperMock.Setup(m => m.Map<User>(It.IsAny<UserDto>()))

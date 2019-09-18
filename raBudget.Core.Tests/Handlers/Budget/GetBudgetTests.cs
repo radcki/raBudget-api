@@ -45,7 +45,7 @@ namespace raBudget.Core.Tests.Handlers.Budget
                            {
                                BudgetId = It.IsAny<int>(),
                                Name = It.IsAny<string>(),
-                               Currency = It.IsAny<string>(),
+                               Currency = It.IsAny<Currency>(),
                                StartingDate = It.IsAny<DateTime>()
                            };
 

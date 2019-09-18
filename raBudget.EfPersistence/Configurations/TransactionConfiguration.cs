@@ -11,8 +11,8 @@ namespace raBudget.EfPersistence.Configurations
         public void Configure(EntityTypeBuilder<Transaction> builder)
         {
             // TransactionId
-            builder.HasKey(f => f.TransactionId);
-            builder.Property(f=>f.TransactionId).IsRequired().ValueGeneratedOnAdd();
+            builder.HasKey(f => f.Id);
+            builder.Property(f=>f.Id).IsRequired().ValueGeneratedOnAdd();
 
             // TransactionDateTime
             builder.HasIndex(f => f.TransactionDateTime);

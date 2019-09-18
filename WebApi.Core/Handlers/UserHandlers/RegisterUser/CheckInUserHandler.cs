@@ -41,9 +41,8 @@ namespace raBudget.Core.Handlers.UserHandlers.RegisterUser
                     _logger.LogInformation("Saving user {@User} to repository: {@Request}", _authenticationProvider.User, request);
                     var result = await _repository.SaveChangesAsync(cancellationToken);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    _logger.LogError(e, "Exception when saving user {@User} to repository: {@Request}", mappedUser, request);
                     return new CheckInUserResponse()
                            {
                                ResponseType = eResponseType.Error
