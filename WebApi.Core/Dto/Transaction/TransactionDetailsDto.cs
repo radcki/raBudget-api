@@ -5,7 +5,7 @@ using raBudget.Core.Interfaces.Mapping;
 
 namespace raBudget.Core.Dto.Transaction
 {
-    class TransactionDetailsDto : TransactionDto, IHaveCustomMapping
+    public class TransactionDetailsDto : TransactionDto, IHaveCustomMapping
     {
         #region Properties
 

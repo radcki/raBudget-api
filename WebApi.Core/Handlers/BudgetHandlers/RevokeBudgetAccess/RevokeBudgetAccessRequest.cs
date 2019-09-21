@@ -5,7 +5,7 @@ using raBudget.Core.Dto.Budget;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.RevokeBudgetAccess
 {
-    public class RevokeBudgetShareRequest : IRequest<RevokeBudgetShareResponse>
+    public class RevokeBudgetShareRequest : IRequest
     {
         public BudgetShareDto Data;
 
@@ -15,10 +15,7 @@ namespace raBudget.Core.Handlers.BudgetHandlers.RevokeBudgetAccess
         }
     }
 
-    public class RevokeBudgetShareResponse : BaseResponse<BudgetCategoryDto>
-    {
-    }
-
+  
     public class RevokeBudgetShareRequestValidator : AbstractValidator<RevokeBudgetShareRequest>
     {
         public RevokeBudgetShareRequestValidator()

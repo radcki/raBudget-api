@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
-using raBudget.Core.Handlers.BudgetCategoriesHandlers.DeleteBudgetCategory;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 
-namespace raBudget.Core.Handlers.BudgetCategoriesHandlers
+namespace raBudget.Core.Handlers.BudgetHandlers
 {
     public abstract class BaseBudgetHandler<TRequest, TResponse> : IRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
     {
-        protected readonly IBudgetRepository BudgetCategoryRepository;
+        protected readonly IBudgetRepository BudgetRepository;
         protected readonly IMapper Mapper;
         protected readonly IAuthenticationProvider AuthenticationProvider;
 
@@ -22,7 +18,7 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers
          IMapper mapper,
          IAuthenticationProvider authenticationProvider)
         {
-            BudgetCategoryRepository = budgetRepository;
+            BudgetRepository = budgetRepository;
             Mapper = mapper;
             AuthenticationProvider = authenticationProvider;
         }

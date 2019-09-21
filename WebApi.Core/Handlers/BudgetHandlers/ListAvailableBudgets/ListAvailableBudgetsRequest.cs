@@ -8,11 +8,7 @@ using raBudget.Core.Interfaces.Repository;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets
 {
-    public class ListAvailableBudgetsRequest : IRequest<ListAvailableBudgetsResponse>
-    {
-    }
-
-    public class ListAvailableBudgetsResponse : BaseResponse<IEnumerable<BudgetDto>>
+    public class ListAvailableBudgetsRequest : IRequest<IEnumerable<BudgetDto>>
     {
     }
     

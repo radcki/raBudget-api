@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System.Data;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using raBudget.Core.Dto.Budget;
+using raBudget.Core.Exceptions;
 using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
@@ -11,37 +13,26 @@ using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.GetBudget
 {
-    public class GetBudgetHandler : IRequestHandler<GetBudgetRequest, GetBudgetResponse>
+    public class GetBudgetHandler : BaseBudgetHandler<GetBudgetRequest, BudgetDetailsDto>
     {
-        private readonly IBudgetRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly IAuthenticationProvider _authenticationProvider;
-
-        public GetBudgetHandler(IBudgetRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider)
+        public GetBudgetHandler(IBudgetRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider) : base(repository,mapper, authenticationProvider)
         {
-            _repository = repository;
-            _mapper = mapper;
-            _authenticationProvider = authenticationProvider;
         }
 
         /// <inheritdoc />
-        public async Task<GetBudgetResponse> Handle(GetBudgetRequest request, CancellationToken cancellationToken)
+        public override async Task<BudgetDetailsDto> Handle(GetBudgetRequest request, CancellationToken cancellationToken)
         {
-            var repositoryResult = await _repository.GetByIdAsync(request.Id);
-            if (repositoryResult.IsNullOrDefault()
-                || (repositoryResult.OwnedByUserId != _authenticationProvider.User.UserId
-                    && repositoryResult.BudgetShares.All(x=>x.SharedWithUserId != _authenticationProvider.User.UserId)))
+            var availableBudgets =  await BudgetRepository.ListAvailableBudgets(AuthenticationProvider.User.UserId);
+            if (availableBudgets.All(s => s.Id != request.BudgetId))
             {
-                return new GetBudgetResponse() {ResponseType = eResponseType.NoDataFound };
+                throw new NotFoundException("Budget was not found");
             }
 
-            var dto = _mapper.Map<BudgetDetailsDto>(repositoryResult);
+            var repositoryResult = await BudgetRepository.GetByIdAsync(request.BudgetId);
+            
+            var dto = Mapper.Map<BudgetDetailsDto>(repositoryResult);
 
-            return new GetBudgetResponse()
-                   {
-                       ResponseType = eResponseType.Success,
-                       Data = dto
-                   };
+            return dto;
         }
     }
     

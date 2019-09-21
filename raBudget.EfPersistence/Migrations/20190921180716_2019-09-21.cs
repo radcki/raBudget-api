@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace raBudget.EfPersistence.Migrations
 {
-    public partial class _20190915 : Migration
+    public partial class _20190921 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -85,14 +85,14 @@ namespace raBudget.EfPersistence.Migrations
                 name: "BudgetShares",
                 columns: table => new
                 {
-                    BudgetShareId = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     BudgetId = table.Column<int>(nullable: false),
                     SharedWithUserId = table.Column<Guid>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BudgetShares", x => x.BudgetShareId);
+                    table.PrimaryKey("PK_BudgetShares", x => x.Id);
                     table.ForeignKey(
                         name: "FK_BudgetShares_Budget_BudgetId",
                         column: x => x.BudgetId,
@@ -116,7 +116,7 @@ namespace raBudget.EfPersistence.Migrations
                     Description = table.Column<string>(nullable: false),
                     Amount = table.Column<double>(nullable: false),
                     AllocationDateTime = table.Column<DateTime>(nullable: false),
-                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 9, 15, 23, 21, 26, 122, DateTimeKind.Local).AddTicks(4651)),
+                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 9, 21, 20, 7, 15, 678, DateTimeKind.Local).AddTicks(2340)),
                     CreatedByUserId = table.Column<Guid>(nullable: false),
                     BudgetCategoryId = table.Column<int>(nullable: false)
                 },
@@ -188,19 +188,19 @@ namespace raBudget.EfPersistence.Migrations
                 name: "Transactions",
                 columns: table => new
                 {
-                    TransactionId = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(nullable: false),
                     Amount = table.Column<double>(nullable: false),
                     TransactionDateTime = table.Column<DateTime>(nullable: false),
-                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 9, 15, 23, 21, 26, 265, DateTimeKind.Local).AddTicks(8532)),
+                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 9, 21, 20, 7, 15, 822, DateTimeKind.Local).AddTicks(7742)),
                     CreatedByUserId = table.Column<Guid>(nullable: false),
                     BudgetCategoryId = table.Column<int>(nullable: false),
                     TransactionScheduleId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Transactions", x => x.TransactionId);
+                    table.PrimaryKey("PK_Transactions", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Transactions_BudgetCategories_BudgetCategoryId",
                         column: x => x.BudgetCategoryId,

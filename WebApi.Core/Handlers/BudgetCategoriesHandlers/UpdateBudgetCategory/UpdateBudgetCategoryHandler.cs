@@ -11,7 +11,7 @@ using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.UpdateBudgetCategory
 {
-    public class UpdateBudgetCategoryHandler : BaseBudgetCategoryHandler<UpdateBudgetCategoryRequest, UpdateBudgetCategoryResponse>
+    public class UpdateBudgetCategoryHandler : BaseBudgetCategoryHandler<UpdateBudgetCategoryRequest, BudgetCategoryDto>
     {
         public UpdateBudgetCategoryHandler
         (IBudgetCategoryRepository budgetCategoryRepository,
@@ -20,12 +20,20 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.UpdateBudgetCategory
         {
         }
 
-        public override async Task<UpdateBudgetCategoryResponse> Handle(UpdateBudgetCategoryRequest request, CancellationToken cancellationToken)
+        public override async Task<BudgetCategoryDto> Handle(UpdateBudgetCategoryRequest request, CancellationToken cancellationToken)
         {
+            var isAccessible = BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.Data.CategoryId);
+
             var budgetCategoryEntity = await BudgetCategoryRepository.GetByIdAsync(request.Data.CategoryId);
 
             budgetCategoryEntity.Name = request.Data.Name;
             budgetCategoryEntity.Icon = request.Data.Icon;
+
+            if (!(await isAccessible))
+            {
+                throw new NotFoundException("Budget category was not found");
+            }
+
             await BudgetCategoryRepository.UpdateAsync(budgetCategoryEntity);
 
             var addedRows = await BudgetCategoryRepository.SaveChangesAsync(cancellationToken);
@@ -34,11 +42,7 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.UpdateBudgetCategory
                 throw new SaveFailureException(nameof(budgetCategoryEntity), budgetCategoryEntity);
             }
 
-            return new UpdateBudgetCategoryResponse
-                   {
-                       Data = Mapper.Map<BudgetCategoryDto>(budgetCategoryEntity),
-                       ResponseType = eResponseType.Success
-                   };
+            return Mapper.Map<BudgetCategoryDto>(budgetCategoryEntity);
         }
     }
 }

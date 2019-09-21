@@ -26,7 +26,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<ListAvailableBudgetsResponse>> Get()
+        public async Task<ActionResult> Get()
         {
             var response = await Mediator.Send(new ListAvailableBudgetsRequest());
             return Ok(response);
@@ -37,7 +37,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<GetBudgetResponse>> GetById(int id)
+        public async Task<ActionResult> GetById([FromRoute] int id)
         {
             var response = await Mediator.Send(new GetBudgetRequest(id));
             return Ok(response);
@@ -61,7 +61,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update([FromBody] BudgetDto budgetDto, int id)
+        public async Task<ActionResult> Update([FromBody] BudgetDto budgetDto, [FromRoute] int id)
         {
             budgetDto.BudgetId = id;
             var response = await Mediator.Send(new UpdateBudgetRequest(budgetDto));
@@ -73,7 +73,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
+        public async Task<ActionResult> Delete([FromRoute] int id)
         {
             var response = await Mediator.Send(new DeleteBudgetRequest(id));
             return Ok(response);
@@ -84,7 +84,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPatch("{id}/default")]
-        public async Task<ActionResult> SetDefault(int id)
+        public async Task<ActionResult> SetDefault([FromRoute] int id)
         {
             var response = await Mediator.Send(new SetDefaultBudgetRequest(id));
             return Ok(response);

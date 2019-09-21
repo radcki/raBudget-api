@@ -3,27 +3,36 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
+using raBudget.Core.Dto.Transaction;
+using raBudget.Core.Exceptions;
+using raBudget.Core.ExtensionMethods;
+using raBudget.Core.Handlers.BudgetCategoriesHandlers;
+using raBudget.Core.Handlers.TransactionHandlers.DeleteTransaction;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
+using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.GetTransaction
 {
-    public class GetTransactionHandler : IRequestHandler<GetTransactionRequest, GetTransactionResponse>
+    public class GetTransactionHandler : BaseTransactionHandler<GetTransactionRequest, TransactionDetailsDto>
     {
-        private readonly ITransactionRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly IAuthenticationProvider _authenticationProvider;
-
-        public GetTransactionHandler(ITransactionRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider)
+        public GetTransactionHandler
+        (IBudgetCategoryRepository budgetCategoryRepository,
+         ITransactionRepository transactionRepository,
+         IMapper mapper,
+         IAuthenticationProvider authenticationProvider) : base(budgetCategoryRepository, transactionRepository, mapper, authenticationProvider)
         {
-            _repository = repository;
-            _mapper = mapper;
-            _authenticationProvider = authenticationProvider;
         }
 
-        public async Task<GetTransactionResponse> Handle(GetTransactionRequest request, CancellationToken cancellationToken)
+        public override async Task<TransactionDetailsDto> Handle(GetTransactionRequest request, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var transactionEntity = await TransactionRepository.GetByIdAsync(request.TransactionId);
+            if (transactionEntity.IsNullOrDefault() || !await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, transactionEntity.Id))
+            {
+                throw new NotFoundException("Target transaction was not found.");
+            }
+
+            return Mapper.Map<TransactionDetailsDto>(transactionEntity);
         }
     }
 }

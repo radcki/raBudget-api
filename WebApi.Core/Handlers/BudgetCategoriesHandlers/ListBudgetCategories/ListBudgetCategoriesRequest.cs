@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using FluentValidation;
 using MediatR;
 using raBudget.Core.Dto.Base;
@@ -9,7 +10,7 @@ using raBudget.Core.Interfaces.Repository;
 
 namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.ListBudgetCategories
 {
-    public class ListBudgetCategoriesRequest : IRequest<ListBudgetCategoriesResponse>
+    public class ListBudgetCategoriesRequest : IRequest<IEnumerable<BudgetCategoryDto>>
     {
         public int BudgetId;
 
@@ -18,21 +19,12 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.ListBudgetCategories
             BudgetId = budgetId;
         }
     }
-
-    public class ListBudgetCategoriesResponse : BaseResponse<BudgetCategoryDto>
-    {
-    }
-
+    
     public class ListBudgetCategoriesValidator : AbstractValidator<ListBudgetCategoriesRequest>
     {
-        public ListBudgetCategoriesValidator(IBudgetRepository budgetRepository, IAuthenticationProvider authenticationProvider)
+        public ListBudgetCategoriesValidator()
         {
-            var task = budgetRepository.ListAvailableBudgets(authenticationProvider.User.UserId);
-            task.Wait();
-            var availableBudgets = task.Result;
-            RuleFor(x => availableBudgets.Any(s => s.Id == x.BudgetId))
-               .NotEqual(false)
-               .WithMessage("Specified budget does not exist");
+            RuleFor(x => x.BudgetId).NotEmpty();
         }
     }
 }

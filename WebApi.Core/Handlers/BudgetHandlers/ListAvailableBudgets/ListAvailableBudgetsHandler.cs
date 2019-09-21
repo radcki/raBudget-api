@@ -11,35 +11,20 @@ using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets
 {
-    public class ListAvailableBudgetsHandler : IRequestHandler<ListAvailableBudgetsRequest, ListAvailableBudgetsResponse>
+    public class ListAvailableBudgetsHandler : BaseBudgetHandler<ListAvailableBudgetsRequest, IEnumerable<BudgetDto>>
     {
-        private readonly IBudgetRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly IAuthenticationProvider _authenticationProvider;
-
         public ListAvailableBudgetsHandler(IBudgetRepository repository, 
                                            IMapper mapper, 
-                                           IAuthenticationProvider authenticationProvider)
+                                           IAuthenticationProvider authenticationProvider) : base(repository, mapper, authenticationProvider)
         {
-            _repository = repository;
-            _mapper = mapper;
-            _authenticationProvider = authenticationProvider;
         }
 
         /// <inheritdoc />
-        public async Task<ListAvailableBudgetsResponse> Handle(ListAvailableBudgetsRequest request, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<BudgetDto>> Handle(ListAvailableBudgetsRequest request, CancellationToken cancellationToken)
         {
-            
-            var repositoryResult = await _repository.ListAvailableBudgets(_authenticationProvider.User.UserId);
+            var repositoryResult = await BudgetRepository.ListAvailableBudgets(AuthenticationProvider.User.UserId);
 
-            return new ListAvailableBudgetsResponse()
-                   {
-                       ResponseType = repositoryResult.Any()
-                                          ? eResponseType.Success
-                                          : eResponseType.NoDataFound,
-
-                       Data = _mapper.Map<IEnumerable<BudgetDto>>(repositoryResult)
-                   }; ;
+            return Mapper.Map<IEnumerable<BudgetDto>>(repositoryResult);
         }
     }
     

@@ -9,7 +9,7 @@ using raBudget.Core.Interfaces.Repository;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.UpdateBudget
 {
-    public class UpdateBudgetRequest : IRequest<UpdateBudgetResponse>
+    public class UpdateBudgetRequest : IRequest
     {
         public BudgetDto Data;
 
@@ -19,24 +19,15 @@ namespace raBudget.Core.Handlers.BudgetHandlers.UpdateBudget
         }
     }
 
-    public class UpdateBudgetResponse : BaseResponse<BudgetDto>
-    {
-    }
-
     public class UpdateBudgetRequestValidator : AbstractValidator<UpdateBudgetRequest>
     {
-        public UpdateBudgetRequestValidator(IBudgetRepository budgetRepository, IAuthenticationProvider authenticationProvider)
+        public UpdateBudgetRequestValidator()
         {
             RuleFor(x => x.Data.BudgetId).NotEmpty();
             RuleFor(x => x.Data.Name).NotEmpty();
             RuleFor(x => x.Data.OwnedByUser).NotEmpty();
             RuleFor(x => x.Data.Currency).NotEmpty();
             RuleFor(x => x.Data.StartingDate).NotEmpty();
-
-            var task = budgetRepository.ListAvailableBudgets(authenticationProvider.User.UserId);
-            task.Wait();
-            var availableBudgets = task.Result;
-            RuleFor(x => availableBudgets.Any(s=> s.Id == x.Data.BudgetId)).NotEqual(false);
         }
 
     }

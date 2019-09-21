@@ -6,7 +6,7 @@ using raBudget.Core.Dto.Transaction;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.DeleteTransaction
 {
-    public class DeleteTransactionRequest : IRequest<DeleteTransactionResponse>
+    public class DeleteTransactionRequest : IRequest<TransactionDto>
     {
         public int TransactionId;
 
@@ -14,10 +14,6 @@ namespace raBudget.Core.Handlers.TransactionHandlers.DeleteTransaction
         {
             TransactionId = transactionId;
         }
-    }
-
-    public class DeleteTransactionResponse : BaseResponse<TransactionDto>
-    {
     }
 
     public class DeleteTransactionRequestValidator : AbstractValidator<DeleteTransactionRequest>

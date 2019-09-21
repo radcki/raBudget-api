@@ -6,7 +6,7 @@ using raBudget.Core.Dto.Transaction;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.GetTransaction
 {
-    public class GetTransactionRequest : IRequest<GetTransactionResponse>
+    public class GetTransactionRequest : IRequest<TransactionDetailsDto>
     {
         public int TransactionId;
 
@@ -14,10 +14,6 @@ namespace raBudget.Core.Handlers.TransactionHandlers.GetTransaction
         {
             TransactionId = transactionId;
         }
-    }
-
-    public class GetTransactionResponse : BaseResponse<TransactionDto>
-    {
     }
 
     public class GetTransactionRequestValidator : AbstractValidator<GetTransactionRequest>

@@ -5,7 +5,7 @@ using raBudget.Core.Dto.Budget;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.ShareBudget
 {
-    public class ShareBudgetRequest : IRequest<ShareBudgetResponse>
+    public class ShareBudgetRequest : IRequest
     {
         public BudgetShareDto Data;
 
@@ -15,9 +15,6 @@ namespace raBudget.Core.Handlers.BudgetHandlers.ShareBudget
         }
     }
 
-    public class ShareBudgetResponse : BaseResponse<BudgetCategoryDto>
-    {
-    }
 
     public class ShareBudgetRequestValidator : AbstractValidator<ShareBudgetRequest>
     {

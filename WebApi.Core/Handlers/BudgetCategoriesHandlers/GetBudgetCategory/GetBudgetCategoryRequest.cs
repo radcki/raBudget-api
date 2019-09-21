@@ -9,7 +9,7 @@ using raBudget.Core.Interfaces.Repository;
 
 namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.GetBudgetCategory
 {
-    public class GetBudgetCategoryRequest : IRequest<GetBudgetCategoryResponse>
+    public class GetBudgetCategoryRequest : IRequest<BudgetCategoryDto>
     {
         public int BudgetCategoryId;
         public int BudgetId;
@@ -21,22 +21,13 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.GetBudgetCategory
         }
     }
 
-    public class GetBudgetCategoryResponse : BaseResponse<BudgetCategoryDto>
-    {
-    }
 
     public class GetBudgetCategoryRequestValidator : AbstractValidator<GetBudgetCategoryRequest>
     {
-        public GetBudgetCategoryRequestValidator(IBudgetRepository budgetRepository, IAuthenticationProvider authenticationProvider)
+        public GetBudgetCategoryRequestValidator()
         {
             RuleFor(x => x.BudgetCategoryId).NotEmpty();
-
-            var task = budgetRepository.ListAvailableBudgets(authenticationProvider.User.UserId);
-            task.Wait();
-            var availableBudgets = task.Result;
-            RuleFor(x => availableBudgets.Any(s => s.Id == x.BudgetId))
-               .NotEqual(false)
-               .WithMessage("Specified budget does not exist");
+            
         }
     }
 

@@ -1,13 +1,84 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using raBudget.Core.Dto.Budget;
+using raBudget.Core.Dto.Transaction;
+using raBudget.Core.Handlers.TransactionHandlers.CreateTransaction;
+using raBudget.Core.Handlers.TransactionHandlers.DeleteTransaction;
+using raBudget.Core.Handlers.TransactionHandlers.GetTransaction;
+using raBudget.Core.Handlers.TransactionHandlers.ListTransactions;
+using raBudget.Core.Handlers.TransactionHandlers.UpdateTransaction;
+using raBudget.Core.Handlers.UserHandlers.SetDefaultBudget;
 
 namespace WebApi.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("[controller]")]
+    [Route("/budget/{budgetId}/[controller]")]
     public class TransactionsController : BaseController
     {
+        #region Transactions CRUD
+
+        /// <summary>
+        /// Get list of transactions available for user - both owned and shared
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<ActionResult> Get([FromRoute] int budgetId)
+        {
+            var response = await Mediator.Send(new ListTransactionsRequest(new BudgetDto() {BudgetId = budgetId}));
+            return Ok(response);
+        }
+
+        /// <summary>
+        ///  Get details of specific transaction, identified by id
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        public async Task<ActionResult> GetById([FromRoute] int id)
+        {
+            var response = await Mediator.Send(new GetTransactionRequest(id));
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Create new transaction
+        /// </summary>
+        /// <param name="transactionDto"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ActionResult> Create([FromBody] TransactionDto transactionDto)
+        {
+            var response = await Mediator.Send(new CreateTransactionRequest(transactionDto));
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Update transaction parameters. Transaction id in request body will be ignored
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update([FromBody] TransactionDetailsDto transactionDto, [FromRoute] int id)
+        {
+            transactionDto.TransactionId = id;
+            var response = await Mediator.Send(new UpdateTransactionRequest(transactionDto));
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Delete transaction
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete([FromRoute] int id)
+        {
+            var response = await Mediator.Send(new DeleteTransactionRequest(id));
+            return Ok(response);
+        }
+
+        #endregion
+
+
         /*
         private readonly TransactionsNotifier _transactionsNotifier;
         private readonly UserService _userService;

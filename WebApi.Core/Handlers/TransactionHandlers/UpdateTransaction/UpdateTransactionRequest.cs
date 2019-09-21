@@ -6,19 +6,16 @@ using raBudget.Core.Dto.Transaction;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.UpdateTransaction
 {
-    public class UpdateTransactionRequest : IRequest<UpdateTransactionResponse>
+    public class UpdateTransactionRequest : IRequest<TransactionDetailsDto>
     {
-        public TransactionDto Data;
+        public TransactionDetailsDto Data;
 
-        public UpdateTransactionRequest(TransactionDto transaction)
+        public UpdateTransactionRequest(TransactionDetailsDto transaction)
         {
             Data = transaction;
         }
     }
 
-    public class UpdateTransactionResponse : BaseResponse<TransactionDto>
-    {
-    }
 
     public class UpdateTransactionRequestValidator : AbstractValidator<UpdateTransactionRequest>
     {
@@ -26,6 +23,7 @@ namespace raBudget.Core.Handlers.TransactionHandlers.UpdateTransaction
         {
             RuleFor(x => x.Data.Description).NotEmpty();
             RuleFor(x => x.Data.BudgetCategory).NotEmpty();
+            RuleFor(x => x.Data.Amount).NotEmpty();
         }
     }
     

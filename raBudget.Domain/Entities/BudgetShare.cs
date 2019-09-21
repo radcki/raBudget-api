@@ -4,9 +4,8 @@ using System.Text;
 
 namespace raBudget.Domain.Entities
 {
-    public class BudgetShare
+    public class BudgetShare : BaseEntity<int>
     {
-        public int BudgetShareId { get; set; }
         public int BudgetId { get; set; }
         public Guid SharedWithUserId { get; set; }
 

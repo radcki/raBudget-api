@@ -14,7 +14,6 @@ namespace raBudget.Core.Infrastructure.AutoMapper
 
         private void LoadConverters()
         {
-
         }
 
         private void LoadStandardMappings()

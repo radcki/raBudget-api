@@ -1,30 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
+using raBudget.Core.Dto.Transaction;
+using raBudget.Core.Handlers.BudgetCategoriesHandlers;
 using raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets;
+using raBudget.Core.Infrastructure.AutoMapper;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
+using raBudget.Domain.Entities;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.ListTransactions
 {
-    public class ListTransactionsHandler : IRequestHandler<ListTransactionsRequest, ListTransactionsResponse>
+    public class ListTransactionsHandler : BaseTransactionHandler<ListTransactionsRequest, IEnumerable<TransactionDto>>
     {
-        private readonly ITransactionRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly IAuthenticationProvider _authenticationProvider;
 
-        public ListTransactionsHandler(ITransactionRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider)
+        public ListTransactionsHandler(IBudgetCategoryRepository budgetCategoryRepository,
+                                       ITransactionRepository transactionRepository,
+                                       IMapper mapper,
+                                       IAuthenticationProvider authenticationProvider) : base(budgetCategoryRepository, transactionRepository, mapper, authenticationProvider)
         {
-            _repository = repository;
-            _mapper = mapper;
-            _authenticationProvider = authenticationProvider;
         }
 
-        public async Task<ListTransactionsResponse> Handle(ListTransactionsRequest request, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<TransactionDto>> Handle(ListTransactionsRequest request, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var transactions = await TransactionRepository.ListWithFilter(Mapper.Map<Budget>(request.Budget), null);
+            
+            return Mapper.Map<IEnumerable<TransactionDetailsDto>>(transactions);
         }
     }
 }

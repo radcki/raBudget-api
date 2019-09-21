@@ -101,6 +101,22 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             return await categories.ToListAsync();
         }
 
+
+        public async Task<bool> IsAccessibleToUser(User user, int budgetCategoryId)
+        {
+            return await IsAccessibleToUser(user.Id, budgetCategoryId);
+        }
+
+        public async Task<bool> IsAccessibleToUser(Guid userId, int budgetCategoryId)
+        {
+            return await _db.Budgets.AsNoTracking()
+                            .Include(x => x.BudgetCategories)
+                            .Include(x => x.BudgetShares)
+                            .Where(x => x.OwnedByUserId == userId || x.BudgetShares.Any(s => s.SharedWithUserId == userId))
+                            .SelectMany(x => x.BudgetCategories)
+                            .AnyAsync(x => x.Id == budgetCategoryId);
+        }
+
         #endregion
     }
 }

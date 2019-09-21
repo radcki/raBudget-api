@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using raBudget.Core.Dto.Budget;
+using raBudget.Core.Exceptions;
 using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
@@ -9,7 +10,7 @@ using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.GetBudgetCategory
 {
-    public class GetBudgetCategoryHandler : BaseBudgetCategoryHandler<GetBudgetCategoryRequest, GetBudgetCategoryResponse>
+    public class GetBudgetCategoryHandler : BaseBudgetCategoryHandler<GetBudgetCategoryRequest, BudgetCategoryDto>
     {
         public GetBudgetCategoryHandler
         (IBudgetCategoryRepository budgetCategoryRepository,
@@ -18,19 +19,17 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.GetBudgetCategory
         {
         }
 
-        public override async Task<GetBudgetCategoryResponse> Handle(GetBudgetCategoryRequest request, CancellationToken cancellationToken)
+        public override async Task<BudgetCategoryDto> Handle(GetBudgetCategoryRequest request, CancellationToken cancellationToken)
         {
-            var budgetCategory = await BudgetCategoryRepository.GetByIdAsync(request.BudgetCategoryId);
-            if (budgetCategory.IsNullOrDefault())
+            var isAccessible = await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.BudgetCategoryId);
+            if (!isAccessible)
             {
-                return new GetBudgetCategoryResponse {ResponseType = eResponseType.NoDataFound};
+                throw new NotFoundException("Specified budget does not exist");
             }
 
-            return new GetBudgetCategoryResponse
-                   {
-                       ResponseType = eResponseType.Success,
-                       Data = Mapper.Map<BudgetCategoryDto>(budgetCategory)
-                   };
+            var budgetCategory = await BudgetCategoryRepository.GetByIdAsync(request.BudgetCategoryId);
+
+            return Mapper.Map<BudgetCategoryDto>(budgetCategory);
         }
     }
 }

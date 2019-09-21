@@ -3,27 +3,42 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
+using raBudget.Core.Dto.Transaction;
+using raBudget.Core.Exceptions;
+using raBudget.Core.ExtensionMethods;
+using raBudget.Core.Handlers.BudgetCategoriesHandlers;
+using raBudget.Core.Handlers.TransactionHandlers.CreateTransaction;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
+using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.DeleteTransaction
 {
-    public class DeleteTransactionHandler : IRequestHandler<DeleteTransactionRequest, DeleteTransactionResponse>
+    /// <summary>
+    /// Delete transaction by its id. In case of success, deleted transaction data is returned
+    /// </summary>
+    public class DeleteTransactionHandler : BaseTransactionHandler<DeleteTransactionRequest, TransactionDto>
     {
-        private readonly ITransactionRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly IAuthenticationProvider _authenticationProvider;
-
-        public DeleteTransactionHandler(ITransactionRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider)
+        public DeleteTransactionHandler
+        (IBudgetCategoryRepository budgetCategoryRepository,
+         ITransactionRepository transactionRepository,
+         IMapper mapper,
+         IAuthenticationProvider authenticationProvider) : base(budgetCategoryRepository, transactionRepository, mapper, authenticationProvider)
         {
-            _repository = repository;
-            _mapper = mapper;
-            _authenticationProvider = authenticationProvider;
         }
 
-        public async Task<DeleteTransactionResponse> Handle(DeleteTransactionRequest request, CancellationToken cancellationToken)
+        public override async Task<TransactionDto> Handle(DeleteTransactionRequest request, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var transactionEntity = await TransactionRepository.GetByIdAsync(request.TransactionId);
+            if (transactionEntity.IsNullOrDefault() || !await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, transactionEntity.Id))
+            {
+                throw new NotFoundException("Target transaction was not found.");
+            }
+
+            await TransactionRepository.DeleteAsync(transactionEntity);
+            await TransactionRepository.SaveChangesAsync(cancellationToken);
+
+            return Mapper.Map<TransactionDto>(transactionEntity);
         }
     }
 }

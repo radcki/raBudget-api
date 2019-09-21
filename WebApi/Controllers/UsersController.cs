@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using raBudget.Core.Dto.User;
+using raBudget.Core.Handlers.UserHandlers.DeleteUserData;
 
 namespace WebApi.Controllers
 {
@@ -8,6 +12,12 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class UsersController : BaseController
     {
+        [HttpDelete("{userId}")]
+        public async Task<ActionResult> Delete([FromRoute] Guid userId)
+        {
+            var response = await Mediator.Send(new DeleteUserDataRequest(new UserDto(){UserId = userId}));
+            return Ok(response);
+        }
         /*
         private readonly IMapper _mapper;
         private readonly UserService _userService;

@@ -26,7 +26,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<ListBudgetCategoriesResponse>> Get(int budgetId)
+        public async Task<ActionResult<IEnumerable<BudgetCategoryDto>>> Get([FromRoute] int budgetId)
         {
             var response = await Mediator.Send(new ListBudgetCategoriesRequest(budgetId));
             return Ok(response);
@@ -37,7 +37,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<GetBudgetCategoryResponse>> GetById(int id, int budgetId)
+        public async Task<ActionResult<BudgetCategoryDto>> GetById([FromRoute] int id, [FromRoute] int budgetId)
         {
             var response = await Mediator.Send(new GetBudgetCategoryRequest(id, budgetId));
             return Ok(response);
@@ -49,9 +49,9 @@ namespace WebApi.Controllers
         /// <param name="budgetDto"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult<CreateBudgetCategoryResponse>> Create([FromBody] BudgetCategoryDto budgetCategoryDto, int budgetId)
+        public async Task<ActionResult<BudgetCategoryDto>> Create([FromBody] BudgetCategoryDto budgetCategoryDto, [FromRoute] int budgetId)
         {
-            budgetCategoryDto.Budget = new BudgetDto(){BudgetId = budgetId};
+            budgetCategoryDto.Budget = new BudgetDto() {BudgetId = budgetId};
             var response = await Mediator.Send(new CreateBudgetCategoryRequest(budgetCategoryDto));
             return Ok();
         }
@@ -61,9 +61,9 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult<UpdateBudgetCategoryResponse>> Update([FromBody] BudgetCategoryDto budgetCategoryDto, int budgetId)
+        public async Task<ActionResult<BudgetCategoryDto>> Update([FromBody] BudgetCategoryDto budgetCategoryDto, [FromRoute] int budgetId)
         {
-            budgetCategoryDto.Budget = new BudgetDto() { BudgetId = budgetId };
+            budgetCategoryDto.Budget = new BudgetDto() {BudgetId = budgetId};
 
             var response = await Mediator.Send(new UpdateBudgetCategoryRequest(budgetCategoryDto));
             return Ok(response);
@@ -74,7 +74,7 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<UpdateBudgetCategoryResponse>> Delete(int id, int budgetId)
+        public async Task<ActionResult> Delete(int id, int budgetId)
         {
             var response = await Mediator.Send(new DeleteBudgetCategoryRequest(id));
             return Ok(response);

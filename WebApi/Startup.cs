@@ -92,8 +92,12 @@ namespace WebApi
                 services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
             }
 
-            // Add AutoMapper
+            // AutoMapper
             services.AddAutoMapper(typeof(AutoMapperProfile).GetTypeInfo().Assembly);
+            var config = new MapperConfiguration(cfg => {
+                                                     cfg.AddProfile(new AutoMapperProfile());
+                                                 });
+            services.AddSingleton(config);
 
             // DataContext for DI
             services.AddTransient(typeof(IDataContext), typeof(DataContext));
@@ -106,6 +110,7 @@ namespace WebApi
             // User identity provider for DI
             services.AddScoped<IAuthenticationProvider, AuthenticationProvider>();
 
+            // FluentValidator
             AssemblyScanner.FindValidatorsInAssembly(typeof(BaseResponse).Assembly)
                            .ForEach(result =>
                                     {
@@ -118,6 +123,7 @@ namespace WebApi
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestPerformanceBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>));
 
+            // Swagger
             services.AddSwaggerGen(c =>
                                    {
                                        c.SwaggerDoc("v1", new OpenApiInfo {Title = "raBudget API", Version = "v1"});
@@ -127,6 +133,7 @@ namespace WebApi
                                        c.IncludeXmlComments(xmlPath);
                                    });
 
+            // MVC
             services.AddMvc(options => { options.Filters.Add(typeof(ValidateModelStateAttribute)); })
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                     .AddJsonOptions(options =>
@@ -135,16 +142,17 @@ namespace WebApi
                                         options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                                     }); ;
 
-
+            // Headers
             services.Configure<ForwardedHeadersOptions>(options =>
                                                         {
                                                             options.ForwardedHeaders =
                                                                 ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
                                                         });
-            // jwt authentication
+            // JWT authentication
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(ConfigureJwtBearer);
 
+            // Authorization
             services.AddAuthorization(options =>
                                       {
                                           options.AddPolicy("admin",
@@ -152,18 +160,17 @@ namespace WebApi
                                                                                           eRole.Admin.ToString()));
                                       }
                                      );
-            services.AddScoped<IAuthorizationHandler, UserRegisteredHandler>();
+            services.AddScoped<IAuthorizationHandler, UserRegisteredHandler>(); // automatic registration of authenticated
 
+            // Exception handling
             services.AddProblemDetails(ConfigureProblemDetails)
                     .AddMvcCore()
                     .AddJsonFormatters(x => x.NullValueHandling = NullValueHandling.Ignore);
-
-
+            
             // SignalR
             services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
             services.AddScoped<BudgetsNotifier>();
             services.AddScoped<TransactionsNotifier>();
-
             services.AddSignalR();
         }
 
@@ -203,7 +210,6 @@ namespace WebApi
             }
 
             app.UseAuthentication();
-
             app.UseSwagger();
             app.UseSwaggerUI(c =>
                              {

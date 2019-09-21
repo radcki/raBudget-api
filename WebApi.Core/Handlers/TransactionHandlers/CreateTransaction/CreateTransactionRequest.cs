@@ -9,7 +9,7 @@ using raBudget.Core.Interfaces.Repository;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.CreateTransaction
 {
-    public class CreateTransactionRequest : IRequest<CreateTransactionResponse>
+    public class CreateTransactionRequest : IRequest<TransactionDetailsDto>
     {
         public TransactionDto Data;
 
@@ -19,24 +19,13 @@ namespace raBudget.Core.Handlers.TransactionHandlers.CreateTransaction
         }
     }
 
-    public class CreateTransactionResponse : BaseResponse<TransactionDto>
-    {
-    }
-
+   
     public class CreateTransactionRequestValidator : AbstractValidator<CreateTransactionRequest>
     {
-        public CreateTransactionRequestValidator(IBudgetRepository budgetRepository, IAuthenticationProvider authenticationProvider)
+        public CreateTransactionRequestValidator()
         {
             RuleFor(x => x.Data.Description).NotEmpty();
             RuleFor(x => x.Data.BudgetCategory).NotEmpty();
-
-            var accessibleCategories = budgetRepository.ListAvailableBudgets(authenticationProvider.User.UserId)
-                                                       .Result
-                                                       .SelectMany(x => x.BudgetCategories);
-
-            RuleFor(x => accessibleCategories.Any(s => s.Id == x.Data.BudgetCategory.CategoryId))
-               .NotEqual(false)
-               .WithMessage("Specified budget category does not exist");
         }
     }
 }

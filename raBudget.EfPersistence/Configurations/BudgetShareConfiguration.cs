@@ -10,8 +10,8 @@ namespace raBudget.EfPersistence.Configurations
         public void Configure(EntityTypeBuilder<BudgetShare> builder)
         {
             // BudgetId
-            builder.HasKey(f => f.BudgetShareId);
-            builder.Property(f=>f.BudgetShareId).IsRequired().ValueGeneratedOnAdd();
+            builder.HasKey(f => f.Id);
+            builder.Property(f=>f.Id).IsRequired().ValueGeneratedOnAdd();
 
             // Budget
             builder.HasIndex(f => f.BudgetId);

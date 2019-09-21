@@ -19,7 +19,7 @@ namespace raBudget.Core.Dto.TransactionSchedule
 
         #region Methods
 
-        public void CreateMappings(Profile configuration)
+        public new void CreateMappings(Profile configuration)
         {
             
         }

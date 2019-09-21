@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
+using raBudget.Core.Exceptions;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Core.Handlers.BudgetCategoriesHandlers;
@@ -11,7 +12,7 @@ using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.DeleteBudgetCategory
 {
-    public class DeleteBudgetCategoryHandler : BaseBudgetCategoryHandler<DeleteBudgetCategoryRequest, DeleteBudgetCategoryResponse>
+    public class DeleteBudgetCategoryHandler : BaseBudgetCategoryHandler<DeleteBudgetCategoryRequest, Unit>
     {
         public DeleteBudgetCategoryHandler
         (IBudgetCategoryRepository budgetCategoryRepository,
@@ -21,17 +22,17 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.DeleteBudgetCategory
         }
 
 
-        public override async Task<DeleteBudgetCategoryResponse> Handle(DeleteBudgetCategoryRequest request, CancellationToken cancellationToken)
+        public override async Task<Unit> Handle(DeleteBudgetCategoryRequest request, CancellationToken cancellationToken)
         {
+            var isAccessible = await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.BudgetCategoryId);
+            if (!isAccessible) {
+                throw new NotFoundException("Specified budget category does not exist");
+            }
+
             var budgetCategoryToDelete = await BudgetCategoryRepository.GetByIdAsync(request.BudgetCategoryId);
             await BudgetCategoryRepository.DeleteAsync(budgetCategoryToDelete);
-            int changesCount = await BudgetCategoryRepository.SaveChangesAsync(cancellationToken);
-            return new DeleteBudgetCategoryResponse()
-                   {
-                       ResponseType = changesCount > 0
-                                          ? eResponseType.Success
-                                          : eResponseType.Error,
-                   };
+            await BudgetCategoryRepository.SaveChangesAsync(cancellationToken);
+            return new Unit();
         }
     }
 }

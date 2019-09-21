@@ -32,7 +32,7 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<DateTime>("CreationDateTime")
                         .ValueGeneratedOnAdd()
-                        .HasDefaultValue(new DateTime(2019, 9, 15, 23, 21, 26, 122, DateTimeKind.Local).AddTicks(4651));
+                        .HasDefaultValue(new DateTime(2019, 9, 21, 20, 7, 15, 678, DateTimeKind.Local).AddTicks(2340));
 
                     b.Property<string>("Description")
                         .IsRequired();
@@ -112,14 +112,14 @@ namespace raBudget.EfPersistence.Migrations
 
             modelBuilder.Entity("raBudget.Domain.Entities.BudgetShare", b =>
                 {
-                    b.Property<int>("BudgetShareId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("BudgetId");
 
                     b.Property<Guid>("SharedWithUserId");
 
-                    b.HasKey("BudgetShareId");
+                    b.HasKey("Id");
 
                     b.HasIndex("BudgetId");
 
@@ -915,7 +915,7 @@ namespace raBudget.EfPersistence.Migrations
 
             modelBuilder.Entity("raBudget.Domain.Entities.Transaction", b =>
                 {
-                    b.Property<int>("TransactionId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<double>("Amount");
@@ -926,7 +926,7 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<DateTime>("CreationDateTime")
                         .ValueGeneratedOnAdd()
-                        .HasDefaultValue(new DateTime(2019, 9, 15, 23, 21, 26, 265, DateTimeKind.Local).AddTicks(8532));
+                        .HasDefaultValue(new DateTime(2019, 9, 21, 20, 7, 15, 822, DateTimeKind.Local).AddTicks(7742));
 
                     b.Property<string>("Description")
                         .IsRequired();
@@ -935,7 +935,7 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<int?>("TransactionScheduleId");
 
-                    b.HasKey("TransactionId");
+                    b.HasKey("Id");
 
                     b.HasIndex("BudgetCategoryId");
 

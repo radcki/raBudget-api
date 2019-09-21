@@ -17,5 +17,6 @@ namespace raBudget.Core.Interfaces.Repository
         /// <returns>Collection of budget entities</returns>
         Task<IReadOnlyList<Transaction>> ListWithFilter(Budget budget, TransactionsFilterModel filters);
 
+      
     }
 }

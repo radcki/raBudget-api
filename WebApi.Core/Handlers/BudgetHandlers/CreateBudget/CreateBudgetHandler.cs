@@ -12,35 +12,26 @@ using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.CreateBudget
 {
-    public class CreateBudgetHandler : IRequestHandler<CreateBudgetRequest, CreateBudgetResponse>
+    public class CreateBudgetHandler : BaseBudgetHandler<CreateBudgetRequest, BudgetDetailsDto>
     {
-        private readonly IBudgetRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly IAuthenticationProvider _authenticationProvider;
 
-        public CreateBudgetHandler(IBudgetRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider)
+        public CreateBudgetHandler(IBudgetRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider) : base(repository, mapper, authenticationProvider)
         {
-            _repository = repository;
-            _mapper = mapper;
-            _authenticationProvider = authenticationProvider;
         }
 
-        public async Task<CreateBudgetResponse> Handle(CreateBudgetRequest request, CancellationToken cancellationToken)
+        public override async Task<BudgetDetailsDto> Handle(CreateBudgetRequest request, CancellationToken cancellationToken)
         {
-            var budgetEntity = _mapper.Map<Budget>(request.Data);
-            var savedBudget = await _repository.AddAsync(budgetEntity);
+            request.Data.OwnedByUser = AuthenticationProvider.User;
+            var budgetEntity = Mapper.Map<Budget>(request.Data);
+            var savedBudget = await BudgetRepository.AddAsync(budgetEntity);
 
-            var addedRows = await _repository.SaveChangesAsync(cancellationToken);
+            var addedRows = await BudgetRepository.SaveChangesAsync(cancellationToken);
             if (addedRows.IsNullOrDefault())
             {
                 throw new SaveFailureException(nameof(budgetEntity), budgetEntity);
             }
 
-            return new CreateBudgetResponse
-                   {
-                       Data = _mapper.Map<BudgetDetailsDto>(savedBudget),
-                       ResponseType = eResponseType.Success
-                   };
+            return  Mapper.Map<BudgetDetailsDto>(savedBudget);
         }
     }
 }

@@ -1,13 +1,14 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using raBudget.Core.Exceptions;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.DeleteBudget
 {
-    public class DeleteBudgetHandler : IRequestHandler<DeleteBudgetRequest, DeleteBudgetResponse>
+    public class DeleteBudgetHandler : IRequestHandler<DeleteBudgetRequest>
     {
         private readonly IBudgetRepository _repository;
         private readonly IAuthenticationProvider _authenticationProvider;
@@ -18,20 +19,19 @@ namespace raBudget.Core.Handlers.BudgetHandlers.DeleteBudget
             _authenticationProvider = authenticationProvider;
         }
 
-        public async Task<DeleteBudgetResponse> Handle(DeleteBudgetRequest request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(DeleteBudgetRequest request, CancellationToken cancellationToken)
         {
             var budgetEntity = await _repository.GetByIdAsync(request.BudgetId);
             if (_authenticationProvider.User.UserId != budgetEntity.OwnedByUserId)
             {
-                return new DeleteBudgetResponse() {ResponseType = eResponseType.Unauthorized};
+                throw new NotFoundException("Requested budget was not found in user's owned budgets'");
             }
 
             await _repository.DeleteAsync(budgetEntity);
             await _repository.SaveChangesAsync(cancellationToken);
-            return new DeleteBudgetResponse()
-                   {
-                       ResponseType = eResponseType.Success
-                   };
+
+            return new Unit();
         }
+
     }
 }

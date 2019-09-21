@@ -1,42 +1,41 @@
-﻿using System.Threading;
+﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using raBudget.Core.Dto.Budget;
+using raBudget.Core.Exceptions;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.UpdateBudget
 {
-    public class UpdateBudgetHandler : IRequestHandler<UpdateBudgetRequest, UpdateBudgetResponse>
+    public class UpdateBudgetHandler : BaseBudgetHandler<UpdateBudgetRequest, Unit>
     {
-        private readonly IBudgetRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly IAuthenticationProvider _authenticationProvider;
-
-        public UpdateBudgetHandler(IBudgetRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider)
+        public UpdateBudgetHandler(IBudgetRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider) : base(repository, mapper, authenticationProvider)
         {
-            _repository = repository;
-            _mapper = mapper;
-            _authenticationProvider = authenticationProvider;
         }
 
-        public async Task<UpdateBudgetResponse> Handle(UpdateBudgetRequest request, CancellationToken cancellationToken)
+        public override async Task<Unit> Handle(UpdateBudgetRequest request, CancellationToken cancellationToken)
         {
-            var budgetEntity = await _repository.GetByIdAsync(request.Data.BudgetId);
+            var availableBudgets = await BudgetRepository.ListAvailableBudgets(AuthenticationProvider.User.UserId);
+
+            if (availableBudgets.All(s => s.Id != request.Data.BudgetId))
+            {
+                throw new NotFoundException("Budget was not found");
+            }
+            
+            var budgetEntity = availableBudgets.FirstOrDefault(x => x.Id == request.Data.BudgetId);
 
             budgetEntity.Name = request.Data.Name;
             budgetEntity.CurrencyCode = request.Data.Currency.CurrencyCode;
             budgetEntity.OwnedByUserId = request.Data.OwnedByUser.UserId;
 
-            await _repository.UpdateAsync(budgetEntity);
-            await _repository.SaveChangesAsync(cancellationToken);
-            return new UpdateBudgetResponse()
-                   {
-                       ResponseType = eResponseType.Success,
-                       Data = _mapper.Map<BudgetDto>(budgetEntity)
-                   };
+            await BudgetRepository.UpdateAsync(budgetEntity);
+            await BudgetRepository.SaveChangesAsync(cancellationToken);
+
+            return new Unit();
         }
     }
 }
