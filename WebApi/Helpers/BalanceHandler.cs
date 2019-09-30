@@ -1,4 +1,11 @@
-﻿namespace WebApi.Helpers
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using raBudget.Domain.Entities;
+using raBudget.Domain.Enum;
+using WebApi.Models.Dtos;
+
+namespace WebApi.Helpers
 {
     public class BalanceHandler
     {

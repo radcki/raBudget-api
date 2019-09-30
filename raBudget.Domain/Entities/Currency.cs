@@ -63,7 +63,7 @@ namespace raBudget.Domain.Entities
         }
 
         private static Dictionary<eCurrency, Currency> _currencyDictionary;
-        private static Dictionary<eCurrency, Currency> CurrencyDictionary
+        public static Dictionary<eCurrency, Currency> CurrencyDictionary
         {
             get { return _currencyDictionary ?? (_currencyDictionary = CreateCurrencyDictionary()); }
         }

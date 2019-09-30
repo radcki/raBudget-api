@@ -10,7 +10,7 @@ using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.UserHandlers.SetDefaultBudget
 {
-    public class SetDefaultBudgetHandler : IRequestHandler<SetDefaultBudgetRequest, SetDefaultBudgetResponse>
+    public class SetDefaultBudgetHandler : IRequestHandler<SetDefaultBudgetRequest, Unit>
     {
         private readonly IBudgetRepository _budgetRepository;
         private readonly IUserRepository _userRepository;
@@ -25,13 +25,13 @@ namespace raBudget.Core.Handlers.UserHandlers.SetDefaultBudget
             _authenticationProvider = authenticationProvider;
         }
 
-        public async Task<SetDefaultBudgetResponse> Handle(SetDefaultBudgetRequest request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(SetDefaultBudgetRequest request, CancellationToken cancellationToken)
         {
             var userEntity = await _userRepository.GetByIdAsync(_authenticationProvider.User.UserId);
             userEntity.DefaultBudgetId = request.BudgetId;
             await _userRepository.UpdateAsync(userEntity);
             await _userRepository.SaveChangesAsync(cancellationToken);
-            return new SetDefaultBudgetResponse(){ResponseType = eResponseType.Success};
+            return new Unit();
         }
     }
 }

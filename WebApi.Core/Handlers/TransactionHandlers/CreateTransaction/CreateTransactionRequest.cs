@@ -1,11 +1,6 @@
-﻿using System.Linq;
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
-using raBudget.Core.Dto.Base;
-using raBudget.Core.Dto.Budget;
 using raBudget.Core.Dto.Transaction;
-using raBudget.Core.Interfaces;
-using raBudget.Core.Interfaces.Repository;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.CreateTransaction
 {
@@ -25,7 +20,8 @@ namespace raBudget.Core.Handlers.TransactionHandlers.CreateTransaction
         public CreateTransactionRequestValidator()
         {
             RuleFor(x => x.Data.Description).NotEmpty();
-            RuleFor(x => x.Data.BudgetCategory).NotEmpty();
+            RuleFor(x => x.Data.BudgetCategoryId).NotEmpty();
+            RuleFor(x => x.Data.TransactionDate).NotEmpty();
         }
     }
 }

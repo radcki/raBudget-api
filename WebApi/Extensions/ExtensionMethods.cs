@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace WebApi.Extensions
 {
@@ -137,6 +138,7 @@ namespace WebApi.Extensions
             return res.ToString();
         }
         */
+        
 
         public static bool IsNullOrDefault<T>(this T val)
         {

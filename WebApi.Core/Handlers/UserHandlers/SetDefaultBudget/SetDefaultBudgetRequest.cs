@@ -1,13 +1,12 @@
 ﻿using System.Linq;
 using FluentValidation;
 using MediatR;
-using raBudget.Core.Dto.Base;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 
 namespace raBudget.Core.Handlers.UserHandlers.SetDefaultBudget
 {
-    public class SetDefaultBudgetRequest : IRequest<SetDefaultBudgetResponse>
+    public class SetDefaultBudgetRequest : IRequest
     {
         public int BudgetId;
 
@@ -17,9 +16,6 @@ namespace raBudget.Core.Handlers.UserHandlers.SetDefaultBudget
         }
     }
 
-    public class SetDefaultBudgetResponse : BaseResponse
-    {
-    }
 
     public class SetDefaultBudgetRequestValidator : AbstractValidator<SetDefaultBudgetRequest>
     {

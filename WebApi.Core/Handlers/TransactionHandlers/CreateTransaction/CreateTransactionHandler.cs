@@ -8,13 +8,13 @@ using MediatR;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Dto.Transaction;
 using raBudget.Core.Exceptions;
-using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Handlers.BudgetCategoriesHandlers;
 using raBudget.Core.Handlers.BudgetHandlers.CreateBudget;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
 using raBudget.Domain.Enum;
+using raBudget.Domain.ExtensionMethods;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.CreateTransaction
 {
@@ -30,12 +30,10 @@ namespace raBudget.Core.Handlers.TransactionHandlers.CreateTransaction
 
         public override async Task<TransactionDetailsDto> Handle(CreateTransactionRequest request, CancellationToken cancellationToken)
         {
-            var transaction = TransactionRepository.GetByIdAsync(request.Data.TransactionId);
-            if (! await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, (await transaction).Id))
+            if (! await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.Data.BudgetCategoryId))
             {
                 throw new NotFoundException("Target budget category was not found.");
             }
-
 
             request.Data.CreatedByUser = AuthenticationProvider.User;
 

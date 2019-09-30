@@ -27,19 +27,18 @@ namespace raBudget.WebApi.Handlers
         private readonly IMediator _mediator;
         private readonly IAuthenticationProvider _authenticationProvider;
 
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, DenyAnonymousAuthorizationRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, DenyAnonymousAuthorizationRequirement requirement)
         {
             if (_authenticationProvider.IsAuthenticated)
             {
-                var result = _mediator.Send(new CheckInUserRequest()).Result;
+                var result = await _mediator.Send(new CheckInUserRequest());
 
-                if (result.ResponseType != eResponseType.Success)
+                if (result == null)
                 {
                     throw new Exception("User registration failed");
                 }
             }
             context.Succeed(requirement);
-            return Task.CompletedTask;
         }
     }
 }

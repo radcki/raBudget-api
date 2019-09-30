@@ -21,11 +21,11 @@ namespace raBudget.Core.Tests.Handlers.Budget
         public readonly Mock<IAuthenticationProvider> AuthenticationProviderMock;
 
         public Domain.Entities.Budget RepositoryResult;
-        public BudgetDetailsDto MapperResult;
+        public BudgetDto MapperResult;
 
         public GetBudgetHandler RequestHandler;
-        public Task<BudgetDetailsDto> RequestResponse;
-        public Task<BudgetDetailsDto> IncorrectRequestResponse;
+        public Task<BudgetDto> RequestResponse;
+        public Task<BudgetDto> IncorrectRequestResponse;
 
         public GetBudgetFixture()
         {
@@ -41,7 +41,7 @@ namespace raBudget.Core.Tests.Handlers.Budget
                                    StartingDate = It.IsAny<DateTime>()
                                };
 
-            MapperResult = new BudgetDetailsDto()
+            MapperResult = new BudgetDto()
                            {
                                BudgetId = It.IsAny<int>(),
                                Name = It.IsAny<string>(),
@@ -58,7 +58,7 @@ namespace raBudget.Core.Tests.Handlers.Budget
             RepoMock.Setup(x => x.GetByIdAsync(It.IsInRange(1,int.MaxValue,Range.Inclusive)))
                     .ReturnsAsync(RepositoryResult);
 
-            MapperMock.Setup(m => m.Map<BudgetDetailsDto>(It.IsAny<Domain.Entities.Budget>()))
+            MapperMock.Setup(m => m.Map<BudgetDto>(It.IsAny<Domain.Entities.Budget>()))
                       .Returns(MapperResult);
 
             AuthenticationProviderMock.Setup(m => m.User).Returns(mockUserDto.Object);

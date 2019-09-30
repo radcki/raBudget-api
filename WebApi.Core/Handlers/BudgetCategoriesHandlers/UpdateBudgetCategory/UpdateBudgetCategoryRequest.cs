@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using FluentValidation;
 using MediatR;
-using raBudget.Core.Dto.Base;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
@@ -23,7 +22,7 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.UpdateBudgetCategory
         public UpdateBudgetCategoryRequestValidator()
         {
             RuleFor(x => x.Data.Name).NotEmpty();
-            RuleFor(x => x.Data.CategoryId).NotEmpty();
+            RuleFor(x => x.Data.BudgetCategoryId).NotEmpty();
         }
     }
     

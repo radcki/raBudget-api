@@ -5,7 +5,6 @@ using AutoMapper;
 using MediatR;
 using raBudget.Core.Dto.Transaction;
 using raBudget.Core.Exceptions;
-using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Handlers.BudgetCategoriesHandlers;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
@@ -40,8 +39,8 @@ namespace raBudget.Core.Handlers.TransactionHandlers.UpdateTransaction
             }
 
             transaction.Description = request.Data.Description;
-            transaction.TransactionDateTime = request.Data.Date;
-            transaction.BudgetCategoryId = request.Data.BudgetCategory.CategoryId;
+            transaction.TransactionDateTime = request.Data.TransactionDate;
+            transaction.BudgetCategoryId = request.Data.BudgetCategoryId;
             transaction.TransactionScheduleId = request.Data.TransactionSchedule.TransactionScheduleId;
 
             await TransactionRepository.UpdateAsync(transaction);

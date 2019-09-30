@@ -1,11 +1,26 @@
-﻿using System.Collections.Generic;
-using raBudget.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
 
-namespace raBudget.Core.ExtensionMethods
+namespace raBudget.Domain.ExtensionMethods
 {
     public static class GenericExtensionMethods
     {
         #region Methods
+
+        public static DateTime FirstDayOfMonth(this DateTime value)
+        {
+            return new DateTime(value.Year, value.Month, 1);
+        }
+
+        public static int DaysInMonth(this DateTime value)
+        {
+            return DateTime.DaysInMonth(value.Year, value.Month);
+        }
+
+        public static DateTime LastDayOfMonth(this DateTime value)
+        {
+            return new DateTime(value.Year, value.Month, value.DaysInMonth());
+        }
 
         public static bool IsNullOrDefault<T>(this T val)
         {

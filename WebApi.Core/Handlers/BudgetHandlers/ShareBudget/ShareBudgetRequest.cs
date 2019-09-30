@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using MediatR;
-using raBudget.Core.Dto.Base;
 using raBudget.Core.Dto.Budget;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.ShareBudget

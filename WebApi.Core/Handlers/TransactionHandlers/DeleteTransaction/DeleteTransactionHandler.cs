@@ -5,12 +5,12 @@ using AutoMapper;
 using MediatR;
 using raBudget.Core.Dto.Transaction;
 using raBudget.Core.Exceptions;
-using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Handlers.BudgetCategoriesHandlers;
 using raBudget.Core.Handlers.TransactionHandlers.CreateTransaction;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Enum;
+using raBudget.Domain.ExtensionMethods;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.DeleteTransaction
 {
@@ -30,7 +30,7 @@ namespace raBudget.Core.Handlers.TransactionHandlers.DeleteTransaction
         public override async Task<TransactionDto> Handle(DeleteTransactionRequest request, CancellationToken cancellationToken)
         {
             var transactionEntity = await TransactionRepository.GetByIdAsync(request.TransactionId);
-            if (transactionEntity.IsNullOrDefault() || !await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, transactionEntity.Id))
+            if (transactionEntity.IsNullOrDefault() || !await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, transactionEntity.BudgetCategoryId))
             {
                 throw new NotFoundException("Target transaction was not found.");
             }

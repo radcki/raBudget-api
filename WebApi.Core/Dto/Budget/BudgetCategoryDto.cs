@@ -10,12 +10,12 @@ namespace raBudget.Core.Dto.Budget
     {
         #region Properties
 
-        public int CategoryId { get; set; }
+        public int BudgetCategoryId { get; set; }
         public string Name { get; set; }
         public string Icon { get; set; }
         public List<BudgetCategoryAmountConfigDto> AmountConfigs { get; set; }
         public eBudgetCategoryType Type { get; set; }
-        public BudgetDto Budget { get; set; }
+        public int BudgetId { get; set; }
 
         #endregion
 
@@ -28,11 +28,13 @@ namespace raBudget.Core.Dto.Budget
         {
             // dto -> entity
             configuration.CreateMap<BudgetCategoryDto, BudgetCategory>()
-                         .ForMember(entity => entity.Id, opt => opt.MapFrom(dto => dto.CategoryId));
+                         .ForMember(entity => entity.Id, opt => opt.MapFrom(dto => dto.BudgetCategoryId))
+                         .ForMember(entity => entity.BudgetCategoryBudgetedAmounts, opt => opt.MapFrom(dto => dto.AmountConfigs));
 
             // entity -> dto
             configuration.CreateMap<BudgetCategory, BudgetCategoryDto>()
-                         .ForMember(dto => dto.CategoryId, opt => opt.MapFrom(entity => entity.Id));
+                         .ForMember(dto => dto.BudgetCategoryId, opt => opt.MapFrom(entity => entity.Id))
+                         .ForMember(dto => dto.AmountConfigs, opt => opt.MapFrom(entity => entity.BudgetCategoryBudgetedAmounts));
         }
 
         #endregion

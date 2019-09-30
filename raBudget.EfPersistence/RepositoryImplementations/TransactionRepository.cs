@@ -70,19 +70,19 @@ namespace raBudget.EfPersistence.RepositoryImplementations
                                   .Where(x => x.BudgetCategory.BudgetId == budget.Id);
 
             /*--*/
-            if (filters.TransactionIdFilter != null)
+            if (filters.TransactionIdFilter != null && filters.TransactionIdFilter.Any())
             {
                 transactions = transactions.Where(x => filters.TransactionIdFilter.Any(s => s == x.Id));
             }
 
             /*--*/
-            if (filters.CategoryIdFilter != null)
+            if (filters.CategoryIdFilter != null && filters.CategoryIdFilter.Any())
             {
                 transactions = transactions.Where(x => filters.CategoryIdFilter.Any(s => s == x.BudgetCategoryId));
             }
 
             /*--*/
-            if (filters.TransactionScheduleIdFilter != null)
+            if (filters.TransactionScheduleIdFilter != null && filters.TransactionScheduleIdFilter.Any())
             {
                 transactions = transactions.Where(x => filters.TransactionScheduleIdFilter.Any(s => s == x.TransactionScheduleId));
             }
@@ -94,7 +94,7 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             }
 
             /*--*/
-            if (filters.CreatedByUserIdFilter != null)
+            if (filters.CreatedByUserIdFilter != null && filters.CreatedByUserIdFilter.Any())
             {
                 transactions = transactions.Where(x => filters.CreatedByUserIdFilter.Any(s => s == x.CreatedByUserId));
             }
@@ -102,21 +102,21 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             /*--*/
             if (filters.CreationDateEndFilter != null)
             {
-                transactions = transactions.Where(x => x.CreationDateTime <= filters.CreationDateEndFilter);
+                transactions = transactions.Where(x => x.CreationDateTime.Date <= filters.CreationDateEndFilter.Value.Date);
             }
             if (filters.CreationDateStartFilter != null)
             {
-                transactions = transactions.Where(x => x.CreationDateTime >= filters.CreationDateStartFilter);
+                transactions = transactions.Where(x => x.CreationDateTime.Date >= filters.CreationDateStartFilter.Value.Date);
             }
 
             /*--*/
             if (filters.TransactionDateEndFilter != null)
             {
-                transactions = transactions.Where(x => x.TransactionDateTime <= filters.TransactionDateStartFilter);
+                transactions = transactions.Where(x => x.TransactionDateTime.Date <= filters.TransactionDateEndFilter.Value.Date);
             }
             if (filters.TransactionDateStartFilter != null)
             {
-                transactions = transactions.Where(x => x.TransactionDateTime >= filters.TransactionDateStartFilter);
+                transactions = transactions.Where(x => x.TransactionDateTime.Date >= filters.TransactionDateStartFilter.Value.Date);
             }
 
             if (filters.CategoryType != null)

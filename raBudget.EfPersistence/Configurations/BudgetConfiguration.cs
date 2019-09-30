@@ -30,7 +30,10 @@ namespace raBudget.EfPersistence.Configurations
             builder.Property(f => f.CurrencyCode).IsRequired();
             builder.Ignore(x => x.Currency);
 
-
+            // Business logic
+            builder.Ignore(x => x.IncomeCategoriesBalance);
+            builder.Ignore(x => x.SpendingCategoriesBalance);
+            builder.Ignore(x => x.SavingCategoriesBalance);
         }
     }
     

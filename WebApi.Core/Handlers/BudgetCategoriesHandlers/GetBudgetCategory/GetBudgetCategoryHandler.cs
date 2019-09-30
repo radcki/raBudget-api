@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Exceptions;
-using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Enum;

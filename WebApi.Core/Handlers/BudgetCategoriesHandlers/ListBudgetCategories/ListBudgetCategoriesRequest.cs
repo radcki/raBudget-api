@@ -2,7 +2,6 @@
 using System.Linq;
 using FluentValidation;
 using MediatR;
-using raBudget.Core.Dto.Base;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Handlers.BudgetCategoriesHandlers.UpdateBudgetCategory;
 using raBudget.Core.Interfaces;

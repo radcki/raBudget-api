@@ -26,7 +26,7 @@ namespace WebApi.Controllers
                 {
                     var categoryEntity = DatabaseContext.BudgetCategories
                                                        .Single(x => x.BudgetCategoryId == transactionScheduleDto.BudgetCategory
-                                                                                                                .CategoryId);
+                                                                                                                .BudgetCategoryId);
 
                     if (UserEntity.Budgets.All(x => x.BudgetId != categoryEntity.Budget.BudgetId))
                     {
@@ -42,7 +42,7 @@ namespace WebApi.Controllers
                     DatabaseContext.TransactionSchedules.Add(new TransactionSchedule()
                                                              {
                                                                  Amount = transactionScheduleDto.Amount,
-                                                                 BudgetCategoryId = transactionScheduleDto.BudgetCategory.CategoryId,
+                                                                 BudgetCategoryId = transactionScheduleDto.BudgetCategory.BudgetCategoryId,
                                                                  Description = transactionScheduleDto.Description,
                                                                  StartDate = transactionScheduleDto.StartDate,
                                                                  EndDate = transactionScheduleDto.EndDate,
@@ -124,7 +124,7 @@ namespace WebApi.Controllers
                 {
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     scheduleDto.BudgetCategory.CategoryId);
+                                                                     scheduleDto.BudgetCategory.BudgetCategoryId);
                     if (UserEntity.Budgets.Any(x => x.BudgetId == categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
 

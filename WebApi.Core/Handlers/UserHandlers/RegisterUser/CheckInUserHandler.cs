@@ -5,14 +5,14 @@ using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using raBudget.Core.Dto.User;
-using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Enum;
+using raBudget.Domain.ExtensionMethods;
 
 namespace raBudget.Core.Handlers.UserHandlers.RegisterUser
 {
-    public class CheckInUserHandler : IRequestHandler<CheckInUserRequest, CheckInUserResponse>
+    public class CheckInUserHandler : IRequestHandler<CheckInUserRequest, UserDto>
     {
         private readonly IUserRepository _repository;
         private readonly IMapper _mapper;
@@ -28,34 +28,20 @@ namespace raBudget.Core.Handlers.UserHandlers.RegisterUser
         }
 
         /// <inheritdoc />
-        public async Task<CheckInUserResponse> Handle(CheckInUserRequest request, CancellationToken cancellationToken)
+        public async Task<UserDto> Handle(CheckInUserRequest request, CancellationToken cancellationToken)
         {
             var existingUser = await _repository.GetByIdAsync(_authenticationProvider.User.UserId);
             if (existingUser.IsNullOrDefault())
             {
                 var mappedUser = _mapper.Map<Domain.Entities.User>(_authenticationProvider.User);
+                mappedUser.CreationTime = DateTime.Now;
 
                 existingUser = await _repository.AddAsync(mappedUser);
-                try
-                {
-                    _logger.LogInformation("Saving user {@User} to repository: {@Request}", _authenticationProvider.User, request);
-                    var result = await _repository.SaveChangesAsync(cancellationToken);
-                }
-                catch (Exception)
-                {
-                    return new CheckInUserResponse()
-                           {
-                               ResponseType = eResponseType.Error
-                           };
-                }
+                var result = await _repository.SaveChangesAsync(cancellationToken);
 
             }
 
-            return new CheckInUserResponse()
-                   {
-                       Data = _mapper.Map<UserDto>(existingUser),
-                       ResponseType = eResponseType.Success
-                   };
+            return _mapper.Map<UserDto>(existingUser);
         }
     }
 }

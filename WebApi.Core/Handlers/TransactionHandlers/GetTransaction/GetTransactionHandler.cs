@@ -5,12 +5,12 @@ using AutoMapper;
 using MediatR;
 using raBudget.Core.Dto.Transaction;
 using raBudget.Core.Exceptions;
-using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Handlers.BudgetCategoriesHandlers;
 using raBudget.Core.Handlers.TransactionHandlers.DeleteTransaction;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Enum;
+using raBudget.Domain.ExtensionMethods;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.GetTransaction
 {

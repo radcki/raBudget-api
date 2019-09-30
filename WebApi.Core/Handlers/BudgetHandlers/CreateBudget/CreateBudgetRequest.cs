@@ -1,15 +1,14 @@
 ﻿using FluentValidation;
 using MediatR;
-using raBudget.Core.Dto.Base;
 using raBudget.Core.Dto.Budget;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.CreateBudget
 {
-    public class CreateBudgetRequest : IRequest<BudgetDetailsDto>
+    public class CreateBudgetRequest : IRequest<BudgetDto>
     {
-        public BudgetDetailsDto Data;
+        public BudgetDto Data;
 
-        public CreateBudgetRequest(BudgetDetailsDto budget)
+        public CreateBudgetRequest(BudgetDto budget)
         {
             Data = budget;
         }

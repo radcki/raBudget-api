@@ -23,11 +23,11 @@ namespace WebApi.Controllers
             if (User != null)
                 try
                 {
-                    if (!allocationDto.SourceCategory.IsNullOrDefault() && allocationDto.SourceCategory.CategoryId != 0)
+                    if (!allocationDto.SourceCategory.IsNullOrDefault() && allocationDto.SourceCategory.BudgetCategoryId != 0)
                     {
                         var sourceCategory =
                             DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                         allocationDto.SourceCategory.CategoryId);
+                                                                         allocationDto.SourceCategory.BudgetCategoryId);
 
                         if (UserEntity.Budgets.All(x => x.BudgetId != sourceCategory.Budget.BudgetId))
                         {
@@ -48,7 +48,7 @@ namespace WebApi.Controllers
 
                     var destinationCategory =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     allocationDto.DestinationCategory.CategoryId);
+                                                                     allocationDto.DestinationCategory.BudgetCategoryId);
 
                     if (UserEntity.Budgets.All(x => x.BudgetId != destinationCategory.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
@@ -71,7 +71,7 @@ namespace WebApi.Controllers
                                   AllocationId = allocation.AllocationId,
                                   DestinationCategory = new BudgetCategoryDto
                                                         {
-                                                            CategoryId = allocation.BudgetCategory.BudgetCategoryId,
+                                                            BudgetCategoryId = allocation.BudgetCategory.BudgetCategoryId,
                                                             Icon = allocation.BudgetCategory.Icon,
                                                             Name = allocation.BudgetCategory.Name,
                                                             Type = allocation.BudgetCategory.Type
@@ -107,7 +107,7 @@ namespace WebApi.Controllers
                                   AllocationId = allocation.AllocationId,
                                   DestinationCategory = new BudgetCategoryDto
                                                         {
-                                                            CategoryId = allocation.BudgetCategory.BudgetCategoryId,
+                                                            BudgetCategoryId = allocation.BudgetCategory.BudgetCategoryId,
                                                             Icon = allocation.BudgetCategory.Icon,
                                                             Name = allocation.BudgetCategory.Name,
                                                             Type = allocation.BudgetCategory.Type
@@ -185,7 +185,7 @@ namespace WebApi.Controllers
                                                             {
                                                                 Name = x.BudgetCategory.Name,
                                                                 Icon = x.BudgetCategory.Icon,
-                                                                CategoryId = x.BudgetCategoryId
+                                                                BudgetCategoryId = x.BudgetCategoryId
                                                             }
                                                     }).ToList()
                              );
@@ -206,7 +206,7 @@ namespace WebApi.Controllers
                 {
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     allocationDto.DestinationCategory.CategoryId);
+                                                                     allocationDto.DestinationCategory.BudgetCategoryId);
                     if (UserEntity.Budgets.All(x => x.BudgetId != categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
 
@@ -223,7 +223,7 @@ namespace WebApi.Controllers
                                   AllocationId = allocationEntity.AllocationId,
                                   DestinationCategory = new BudgetCategoryDto
                                                         {
-                                                            CategoryId = allocationEntity.BudgetCategory.BudgetCategoryId,
+                                                            BudgetCategoryId = allocationEntity.BudgetCategory.BudgetCategoryId,
                                                             Icon = allocationEntity.BudgetCategory.Icon,
                                                             Name = allocationEntity.BudgetCategory.Name,
                                                             Type = allocationEntity.BudgetCategory.Type

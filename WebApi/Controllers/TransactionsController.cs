@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using raBudget.Core.Dto.Budget;
 using raBudget.Core.Dto.Transaction;
 using raBudget.Core.Handlers.TransactionHandlers.CreateTransaction;
 using raBudget.Core.Handlers.TransactionHandlers.DeleteTransaction;
@@ -9,12 +8,14 @@ using raBudget.Core.Handlers.TransactionHandlers.GetTransaction;
 using raBudget.Core.Handlers.TransactionHandlers.ListTransactions;
 using raBudget.Core.Handlers.TransactionHandlers.UpdateTransaction;
 using raBudget.Core.Handlers.UserHandlers.SetDefaultBudget;
+using BudgetDto = raBudget.Core.Dto.Budget.BudgetDto;
+using TransactionDto = raBudget.Core.Dto.Transaction.TransactionDto;
 
 namespace WebApi.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("/budget/{budgetId}/[controller]")]
+    [Route("/budgets/{budgetId}/[controller]")]
     public class TransactionsController : BaseController
     {
         #region Transactions CRUD
@@ -38,6 +39,16 @@ namespace WebApi.Controllers
         public async Task<ActionResult> GetById([FromRoute] int id)
         {
             var response = await Mediator.Send(new GetTransactionRequest(id));
+            return Ok(response);
+        }
+
+        [HttpPost("filter")]
+        public async Task<ActionResult> GetFiltered([FromBody] TransactionFilterDto filters, [FromRoute] int budgetId)
+        {
+            var response = await Mediator.Send(new ListTransactionsRequest(new BudgetDto() {BudgetId = budgetId})
+                                               {
+                                                   Filters = filters
+                                               });
             return Ok(response);
         }
 
@@ -98,7 +109,7 @@ namespace WebApi.Controllers
                 {
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     transactionDto.Category.CategoryId);
+                                                                     transactionDto.Category.BudgetCategoryId);
                     if (UserEntity.Budgets.All(x => x.BudgetId != categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
                     var transaction = new Transaction
@@ -119,7 +130,7 @@ namespace WebApi.Controllers
                                              TransactionId = transaction.TransactionId,
                                              Category = new BudgetCategoryDto
                                                         {
-                                                            CategoryId = transaction.BudgetCategory.BudgetCategoryId,
+                                                            BudgetCategoryId = transaction.BudgetCategory.BudgetCategoryId,
                                                             Icon = transaction.BudgetCategory.Icon,
                                                             Name = transaction.BudgetCategory.Name,
                                                             Type = transaction.BudgetCategory.Type
@@ -162,7 +173,7 @@ namespace WebApi.Controllers
                                   TransactionId = transaction.TransactionId,
                                   Category = new BudgetCategoryDto
                                              {
-                                                 CategoryId = transaction.BudgetCategory.BudgetCategoryId,
+                                                 BudgetCategoryId = transaction.BudgetCategory.BudgetCategoryId,
                                                  Icon = transaction.BudgetCategory.Icon,
                                                  Name = transaction.BudgetCategory.Name,
                                                  Type = transaction.BudgetCategory.Type
@@ -230,7 +241,7 @@ namespace WebApi.Controllers
 
                     if (!filters.Categories.IsNullOrDefault())
                     {
-                        var filterIds = filters.Categories.Select(x => x.CategoryId);
+                        var filterIds = filters.Categories.Select(x => x.BudgetCategoryId);
                         transactions = transactions.Where(x => filterIds.Any(s=>s == x.BudgetCategory.BudgetCategoryId));
                     }
 
@@ -265,7 +276,7 @@ namespace WebApi.Controllers
                                                                             {
                                                                                 Name = x.BudgetCategory.Name,
                                                                                 Icon = x.BudgetCategory.Icon,
-                                                                                CategoryId = x.BudgetCategoryId
+                                                                                BudgetCategoryId = x.BudgetCategoryId
                                                                             }
                                                                     }).ToList(),
 
@@ -280,7 +291,7 @@ namespace WebApi.Controllers
                                                                               {
                                                                                   Name = x.BudgetCategory.Name,
                                                                                   Icon = x.BudgetCategory.Icon,
-                                                                                  CategoryId = x.BudgetCategoryId
+                                                                                  BudgetCategoryId = x.BudgetCategoryId
                                                                               }
                                                                }).ToList(),
 
@@ -295,7 +306,7 @@ namespace WebApi.Controllers
                                                                               {
                                                                                   Name = x.BudgetCategory.Name,
                                                                                   Icon = x.BudgetCategory.Icon,
-                                                                                  CategoryId = x.BudgetCategoryId
+                                                                                  BudgetCategoryId = x.BudgetCategoryId
                                                                               }
                                                                }).ToList()
                               });
@@ -345,7 +356,7 @@ namespace WebApi.Controllers
                 {
                     var categoryEntity =
                         DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     transactionDto.Category.CategoryId);
+                                                                     transactionDto.Category.BudgetCategoryId);
                     if (!UserEntity.Budgets.Any(x=>x.BudgetId == categoryEntity.Budget.BudgetId))
                         return BadRequest(new { Message = "category.invalid" });
 
@@ -362,7 +373,7 @@ namespace WebApi.Controllers
                                                     TransactionId = transactionEntity.TransactionId,
                                                     Category = new BudgetCategoryDto
                                                                {
-                                                                   CategoryId = transactionEntity.BudgetCategory.BudgetCategoryId,
+                                                                   BudgetCategoryId = transactionEntity.BudgetCategory.BudgetCategoryId,
                                                                    Icon = transactionEntity.BudgetCategory.Icon,
                                                                    Name = transactionEntity.BudgetCategory.Name,
                                                                    Type = transactionEntity.BudgetCategory.Type

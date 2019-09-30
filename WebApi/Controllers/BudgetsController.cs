@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Handlers.BudgetHandlers.CreateBudget;
 using raBudget.Core.Handlers.BudgetHandlers.DeleteBudget;
 using raBudget.Core.Handlers.BudgetHandlers.GetBudget;
+using raBudget.Core.Handlers.BudgetHandlers.GetUnassignedFunds;
 using raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets;
 using raBudget.Core.Handlers.BudgetHandlers.UpdateBudget;
 using raBudget.Core.Handlers.UserHandlers.SetDefaultBudget;
+using raBudget.Domain.Entities;
 using raBudget.Domain.Enum;
 
 namespace WebApi.Controllers
@@ -49,7 +53,7 @@ namespace WebApi.Controllers
         /// <param name="budgetDto"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] BudgetDetailsDto budgetDto)
+        public async Task<ActionResult> Create([FromBody] BudgetDto budgetDto)
         {
             budgetDto.OwnedByUser = AuthenticationProvider.User;
             var response = await Mediator.Send(new CreateBudgetRequest(budgetDto));
@@ -90,6 +94,81 @@ namespace WebApi.Controllers
             return Ok(response);
         }
 
+        #endregion
+
+        #region Business queries
+
+        [HttpGet("{budgetId}/categories-balance/{categoryType}")]
+        public async Task<ActionResult> SpendingBalance([FromRoute] int budgetId, [FromRoute] eBudgetCategoryType categoryType)
+        {
+            var response = await Mediator.Send(new GetCategoryTypeBalanceRequest(budgetId, categoryType));
+            return Ok(response);
+        }
+
+        [HttpGet("{budgetId}/unassigned-funds")]
+        public async Task<ActionResult> UnassignedFunds(int budgetId)
+        {
+            var response = await Mediator.Send(new GetUnassignedFundsRequest(budgetId));
+            return Ok(response);
+        }
+        /*
+        [HttpGet("{budgetId}/report/period")]
+        public IActionResult PeriodReport(int budgetId, DateTime startDate, DateTime endDate)
+        {
+            if (User == null) return Unauthorized();
+            try
+            {
+                var userId = User.UserId();
+                var userEntity = DatabaseContext.Users.Single(x => x.UserId == userId);
+                var budget = userEntity.Budgets.Single(x => x.BudgetId == budgetId);
+                var reportHandler = new ReportHandler(budget, startDate, endDate);
+
+                return Ok(new
+                {
+                    Spending = reportHandler.SpendingCategoriesSummary,
+                    Saving = reportHandler.SavingCategoriesSummary,
+                    Income = reportHandler.IncomeCategoriesSummary
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("{budgetId}/report/monthly")]
+        public IActionResult MonthlyReport(int budgetId, DateTime startDate, DateTime endDate)
+        {
+            if (User == null) return Unauthorized();
+            try
+            {
+                var userId = User.UserId();
+                var userEntity = DatabaseContext.Users.Single(x => x.UserId == userId);
+                var budget = userEntity.Budgets.Single(x => x.BudgetId == budgetId);
+                var reportHandler = new ReportHandler(budget, startDate, endDate);
+
+                return Ok(new
+                {
+                    Spending = reportHandler.SpendingCategoriesByMonth,
+                    Saving = reportHandler.SavingCategoriesByMonth,
+                    Income = reportHandler.IncomeCategoriesByMonth
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }*/
+
+        #endregion
+
+        #region Utils
+        [HttpGet("supported-currencies")]
+        public async Task<ActionResult> Currencies()
+        {
+
+            return Ok(Currency.CurrencyDictionary.Select(x=>x.Value));
+        }
         #endregion
 
 
@@ -390,7 +469,7 @@ namespace WebApi.Controllers
                                      };
                 DatabaseContext.Add(categoryEntity);
                 DatabaseContext.SaveChanges();
-                budgetCategoryDto.CategoryId = categoryEntity.BudgetCategoryId;
+                budgetCategoryDto.BudgetCategoryId = categoryEntity.BudgetCategoryId;
                 budgetCategoryDto.Budget = new BudgetDto() {Id = id};
                 _ = _budgetsNotifier.CategoryAdded(UserEntity.UserId, budgetCategoryDto);
                 return Ok(budgetCategoryDto);
@@ -410,9 +489,9 @@ namespace WebApi.Controllers
                 if (UserEntity.Budgets.All(x => x.BudgetId != id))
                     return BadRequest(new {message = "budgets.notFound"});
 
-                if (budgetCategoryDto.CategoryId == 0
+                if (budgetCategoryDto.BudgetCategoryId == 0
                     || categoryId == 0
-                    || !DatabaseContext.BudgetCategories.Any(x => x.BudgetCategoryId == budgetCategoryDto.CategoryId))
+                    || !DatabaseContext.BudgetCategories.Any(x => x.BudgetCategoryId == budgetCategoryDto.BudgetCategoryId))
                 {
                     return BadRequest(new {message = "categories.notFound"});
                 }
@@ -436,7 +515,7 @@ namespace WebApi.Controllers
 
 
                 var categoryEntity = DatabaseContext.BudgetCategories
-                                                    .Single(x => x.BudgetCategoryId == budgetCategoryDto.CategoryId);
+                                                    .Single(x => x.BudgetCategoryId == budgetCategoryDto.BudgetCategoryId);
 
                 categoryEntity.Name = budgetCategoryDto.Name;
                 categoryEntity.Icon = budgetCategoryDto.Icon ?? "";

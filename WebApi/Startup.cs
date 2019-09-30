@@ -22,7 +22,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using raBudget.Core.Dto.Base;
 using raBudget.Core.Handlers.UserHandlers.RegisterUser;
 using raBudget.Core.Infrastructure;
 using raBudget.Core.Infrastructure.AutoMapper;
@@ -104,6 +103,8 @@ namespace WebApi
             services.AddTransient(typeof(DataContext), typeof(DataContext));
 
             // Repositiories for DI
+            services.AddScoped(typeof(ITransactionRepository), typeof(TransactionRepository));
+            services.AddScoped(typeof(IBudgetCategoryRepository), typeof(BudgetCategoryRepository));
             services.AddScoped(typeof(IBudgetRepository), typeof(BudgetRepository));
             services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
 
@@ -111,7 +112,7 @@ namespace WebApi
             services.AddScoped<IAuthenticationProvider, AuthenticationProvider>();
 
             // FluentValidator
-            AssemblyScanner.FindValidatorsInAssembly(typeof(BaseResponse).Assembly)
+            AssemblyScanner.FindValidatorsInAssembly(Assembly.GetExecutingAssembly())
                            .ForEach(result =>
                                     {
                                         services.AddTransient(result.InterfaceType, result.ValidatorType);
@@ -138,8 +139,8 @@ namespace WebApi
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                     .AddJsonOptions(options =>
                                     {
-                                        options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-                                        options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                                        //options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+                                        options.SerializerSettings.NullValueHandling = NullValueHandling.Include;
                                     }); ;
 
             // Headers

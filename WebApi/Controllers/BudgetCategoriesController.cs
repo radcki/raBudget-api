@@ -18,7 +18,7 @@ namespace WebApi.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("/budget/{budgetId}/[controller]")]
+    [Route("/budgets/{budgetId}/[controller]")]
     public class BudgetCategoriesController : BaseController
     {
         /// <summary>
@@ -46,12 +46,13 @@ namespace WebApi.Controllers
         /// <summary>
         /// Create new budget
         /// </summary>
-        /// <param name="budgetDto"></param>
+        /// <param name="budgetCategoryDto"></param>
+        /// <param name="budgetId"></param>
         /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<BudgetCategoryDto>> Create([FromBody] BudgetCategoryDto budgetCategoryDto, [FromRoute] int budgetId)
         {
-            budgetCategoryDto.Budget = new BudgetDto() {BudgetId = budgetId};
+            budgetCategoryDto.BudgetId = budgetId;
             var response = await Mediator.Send(new CreateBudgetCategoryRequest(budgetCategoryDto));
             return Ok();
         }
@@ -63,7 +64,7 @@ namespace WebApi.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<BudgetCategoryDto>> Update([FromBody] BudgetCategoryDto budgetCategoryDto, [FromRoute] int budgetId)
         {
-            budgetCategoryDto.Budget = new BudgetDto() {BudgetId = budgetId};
+            budgetCategoryDto.BudgetId = budgetId;
 
             var response = await Mediator.Send(new UpdateBudgetCategoryRequest(budgetCategoryDto));
             return Ok(response);
@@ -122,7 +123,7 @@ namespace WebApi.Controllers
                                      };
                 DatabaseContext.Add(categoryEntity);
                 DatabaseContext.SaveChanges();
-                budgetCategoryDto.CategoryId = categoryEntity.BudgetCategoryId;
+                budgetCategoryDto.BudgetCategoryId = categoryEntity.BudgetCategoryId;
                 budgetCategoryDto.Budget = new BudgetDto() {Id = id};
                 _ = _budgetsNotifier.CategoryAdded(UserEntity.UserId, budgetCategoryDto);
                 return Ok(budgetCategoryDto);
@@ -142,9 +143,9 @@ namespace WebApi.Controllers
                 if (UserEntity.Budgets.All(x => x.BudgetId != id))
                     return BadRequest(new {message = "budgets.notFound"});
 
-                if (budgetCategoryDto.CategoryId == 0
+                if (budgetCategoryDto.BudgetCategoryId == 0
                     || categoryId == 0
-                    || !DatabaseContext.BudgetCategories.Any(x => x.BudgetCategoryId == budgetCategoryDto.CategoryId))
+                    || !DatabaseContext.BudgetCategories.Any(x => x.BudgetCategoryId == budgetCategoryDto.BudgetCategoryId))
                 {
                     return BadRequest(new {message = "categories.notFound"});
                 }
@@ -168,7 +169,7 @@ namespace WebApi.Controllers
 
 
                 var categoryEntity = DatabaseContext.BudgetCategories
-                                                    .Single(x => x.BudgetCategoryId == budgetCategoryDto.CategoryId);
+                                                    .Single(x => x.BudgetCategoryId == budgetCategoryDto.BudgetCategoryId);
 
                 categoryEntity.Name = budgetCategoryDto.Name;
                 categoryEntity.Icon = budgetCategoryDto.Icon ?? "";

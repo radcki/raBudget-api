@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using raBudget.Core.Exceptions;
-using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
+using raBudget.Domain.ExtensionMethods;
 using raBudget.Domain.FilterModels;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.RevokeBudgetAccess

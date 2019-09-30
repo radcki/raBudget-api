@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using MediatR;
-using raBudget.Core.Dto.Base;
 using raBudget.Core.Dto.User;
 
 namespace raBudget.Core.Handlers.UserHandlers.DeleteUserData
@@ -8,7 +7,7 @@ namespace raBudget.Core.Handlers.UserHandlers.DeleteUserData
     /// <summary>
     /// Request is empty as user data is taken from IAuthenticationProvider
     /// </summary>
-    public class DeleteUserDataRequest : IRequest<DeleteUserDataResponse>
+    public class DeleteUserDataRequest : IRequest
     {
         public UserDto UserToDelete { get; set; }
 
@@ -18,9 +17,6 @@ namespace raBudget.Core.Handlers.UserHandlers.DeleteUserData
         }
     }
 
-    public class DeleteUserDataResponse : BaseResponse
-    {
-    }
 
     public class DeleteUserDataRequestValidator : AbstractValidator<DeleteUserDataRequest>
     {

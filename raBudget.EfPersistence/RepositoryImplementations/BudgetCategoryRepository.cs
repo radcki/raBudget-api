@@ -46,6 +46,7 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         /// <inheritdoc />
         public async Task UpdateAsync(BudgetCategory entity)
         {
+            _db.BudgetCategoryBudgetedAmounts.RemoveRange(_db.BudgetCategoryBudgetedAmounts.Where(x => x.BudgetCategoryId == entity.Id));
             await Task.FromResult(_db.Entry(entity).State = EntityState.Modified);
         }
 
@@ -66,6 +67,9 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         {
             var categories = _db.BudgetCategories
                                 .AsNoTracking()
+                                .Include(x=>x.Transactions)
+                                .Include(x=>x.Allocations)
+                                .Include(x=>x.BudgetCategoryBudgetedAmounts)
                                 .Where(x => x.BudgetId == budget.Id);
 
             /*--*/

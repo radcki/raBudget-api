@@ -1,7 +1,7 @@
 ﻿using System;
 using AutoMapper;
-using raBudget.Core.ExtensionMethods;
 using raBudget.Core.Interfaces.Mapping;
+using raBudget.Domain.ExtensionMethods;
 
 namespace raBudget.Core.Dto.User
 {

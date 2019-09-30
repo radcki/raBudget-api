@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using FluentValidation;
 using MediatR;
-using raBudget.Core.Dto.Base;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Handlers.BudgetCategoriesHandlers.ListBudgetCategories;
 using raBudget.Core.Interfaces;
@@ -9,7 +8,7 @@ using raBudget.Core.Interfaces.Repository;
 
 namespace raBudget.Core.Handlers.BudgetHandlers.GetBudget
 {
-    public class GetBudgetRequest : IRequest<BudgetDetailsDto>
+    public class GetBudgetRequest : IRequest<BudgetDto>
     {
         public int BudgetId;
 

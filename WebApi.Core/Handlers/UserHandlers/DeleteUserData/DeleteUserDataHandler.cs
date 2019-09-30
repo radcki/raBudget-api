@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Security.Authentication;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
@@ -10,7 +11,7 @@ using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Handlers.UserHandlers.DeleteUserData
 {
-    public class DeleteUserDataHandler : IRequestHandler<DeleteUserDataRequest, DeleteUserDataResponse>
+    public class DeleteUserDataHandler : IRequestHandler<DeleteUserDataRequest, Unit>
     {
         private readonly IUserRepository _repository;
         private readonly IMapper _mapper;
@@ -26,12 +27,12 @@ namespace raBudget.Core.Handlers.UserHandlers.DeleteUserData
         }
 
         /// <inheritdoc />
-        public async Task<DeleteUserDataResponse> Handle(DeleteUserDataRequest request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(DeleteUserDataRequest request, CancellationToken cancellationToken)
         {
             // only admin can delete other users
             if (_authenticationProvider.User.UserId != request.UserToDelete.UserId && !_authenticationProvider.Principal.IsInRole("admin"))
             {
-                return new DeleteUserDataResponse() {ResponseType = eResponseType.Unauthorized};
+                throw new AuthenticationException();
             }
 
             var userEntity = await _repository.GetByIdAsync(request.UserToDelete.UserId);
@@ -41,7 +42,7 @@ namespace raBudget.Core.Handlers.UserHandlers.DeleteUserData
             }
 
             await _repository.DeleteAsync(userEntity);
-            return new DeleteUserDataResponse(){ResponseType = eResponseType.Success};
+            return new Unit();
         }
     }
 }
