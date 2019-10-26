@@ -7,6 +7,7 @@ using FluentValidation.Results;
 using MediatR;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Dto.Transaction;
+using raBudget.Core.Dto.TransactionSchedule;
 using raBudget.Core.Exceptions;
 using raBudget.Core.Handlers.BudgetCategoriesHandlers;
 using raBudget.Core.Handlers.BudgetHandlers.CreateBudget;

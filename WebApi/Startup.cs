@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation;
 using Hellang.Middleware.ProblemDetails;
@@ -104,6 +105,8 @@ namespace WebApi
 
             // Repositiories for DI
             services.AddScoped(typeof(ITransactionRepository), typeof(TransactionRepository));
+            services.AddScoped(typeof(IAllocationRepository), typeof(AllocationRepository));
+            services.AddScoped(typeof(ITransactionScheduleRepository), typeof(TransactionScheduleRepository));
             services.AddScoped(typeof(IBudgetCategoryRepository), typeof(BudgetCategoryRepository));
             services.AddScoped(typeof(IBudgetRepository), typeof(BudgetRepository));
             services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
@@ -247,14 +250,17 @@ namespace WebApi
             options.Events = new JwtBearerEvents
             {
                 OnTokenValidated = async c =>
-                {
-                    // Update authentication provider with authentication result
-                    var authProvider = c.HttpContext
-                                        .RequestServices
-                                        .GetRequiredService<IAuthenticationProvider>();
+                                   {
+                                       await Task.Run(() =>
+                                                      {
+                                                          // Update authentication provider with authentication result
+                                                          var authProvider = c.HttpContext
+                                                                              .RequestServices
+                                                                              .GetRequiredService<IAuthenticationProvider>();
 
-                    authProvider.FromAuthenticationResult(c.Principal);
-                },
+                                                          authProvider.FromAuthenticationResult(c.Principal);
+                                                      });
+                                   },
 
                 OnAuthenticationFailed = c =>
                 {

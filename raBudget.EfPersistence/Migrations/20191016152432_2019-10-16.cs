@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace raBudget.EfPersistence.Migrations
 {
-    public partial class _20190921 : Migration
+    public partial class _20191016 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -111,28 +111,35 @@ namespace raBudget.EfPersistence.Migrations
                 name: "Allocations",
                 columns: table => new
                 {
-                    AllocationId = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(nullable: false),
                     Amount = table.Column<double>(nullable: false),
                     AllocationDateTime = table.Column<DateTime>(nullable: false),
-                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 9, 21, 20, 7, 15, 678, DateTimeKind.Local).AddTicks(2340)),
+                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 10, 16, 17, 24, 32, 298, DateTimeKind.Local).AddTicks(9669)),
                     CreatedByUserId = table.Column<Guid>(nullable: false),
-                    BudgetCategoryId = table.Column<int>(nullable: false)
+                    TargetBudgetCategoryId = table.Column<int>(nullable: false),
+                    SourceBudgetCategoryId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Allocations", x => x.AllocationId);
-                    table.ForeignKey(
-                        name: "FK_Allocations_BudgetCategories_BudgetCategoryId",
-                        column: x => x.BudgetCategoryId,
-                        principalTable: "BudgetCategories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                    table.PrimaryKey("PK_Allocations", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Allocations_Users_CreatedByUserId",
                         column: x => x.CreatedByUserId,
                         principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Allocations_BudgetCategories_SourceBudgetCategoryId",
+                        column: x => x.SourceBudgetCategoryId,
+                        principalTable: "BudgetCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Allocations_BudgetCategories_TargetBudgetCategoryId",
+                        column: x => x.TargetBudgetCategoryId,
+                        principalTable: "BudgetCategories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -163,7 +170,7 @@ namespace raBudget.EfPersistence.Migrations
                 name: "TransactionSchedules",
                 columns: table => new
                 {
-                    TransactionScheduleId = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     BudgetCategoryId = table.Column<int>(nullable: false),
                     Description = table.Column<string>(nullable: false),
@@ -171,15 +178,22 @@ namespace raBudget.EfPersistence.Migrations
                     Frequency = table.Column<int>(nullable: false),
                     PeriodStep = table.Column<int>(nullable: false),
                     StartDate = table.Column<DateTime>(nullable: false),
-                    EndDate = table.Column<DateTime>(nullable: true)
+                    EndDate = table.Column<DateTime>(nullable: true),
+                    CreatedByUserId = table.Column<Guid>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TransactionSchedules", x => x.TransactionScheduleId);
+                    table.PrimaryKey("PK_TransactionSchedules", x => x.Id);
                     table.ForeignKey(
                         name: "FK_TransactionSchedules_BudgetCategories_BudgetCategoryId",
                         column: x => x.BudgetCategoryId,
                         principalTable: "BudgetCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TransactionSchedules_Users_CreatedByUserId",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -193,7 +207,7 @@ namespace raBudget.EfPersistence.Migrations
                     Description = table.Column<string>(nullable: false),
                     Amount = table.Column<double>(nullable: false),
                     TransactionDateTime = table.Column<DateTime>(nullable: false),
-                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 9, 21, 20, 7, 15, 822, DateTimeKind.Local).AddTicks(7742)),
+                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 10, 16, 17, 24, 32, 447, DateTimeKind.Local).AddTicks(1984)),
                     CreatedByUserId = table.Column<Guid>(nullable: false),
                     BudgetCategoryId = table.Column<int>(nullable: false),
                     TransactionScheduleId = table.Column<int>(nullable: true)
@@ -217,7 +231,7 @@ namespace raBudget.EfPersistence.Migrations
                         name: "FK_Transactions_TransactionSchedules_TransactionScheduleId",
                         column: x => x.TransactionScheduleId,
                         principalTable: "TransactionSchedules",
-                        principalColumn: "TransactionScheduleId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -329,14 +343,19 @@ namespace raBudget.EfPersistence.Migrations
                 column: "AllocationDateTime");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Allocations_BudgetCategoryId",
-                table: "Allocations",
-                column: "BudgetCategoryId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Allocations_CreatedByUserId",
                 table: "Allocations",
                 column: "CreatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Allocations_SourceBudgetCategoryId",
+                table: "Allocations",
+                column: "SourceBudgetCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Allocations_TargetBudgetCategoryId",
+                table: "Allocations",
+                column: "TargetBudgetCategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Budget_OwnedByUserId",
@@ -392,6 +411,11 @@ namespace raBudget.EfPersistence.Migrations
                 name: "IX_TransactionSchedules_BudgetCategoryId",
                 table: "TransactionSchedules",
                 column: "BudgetCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransactionSchedules_CreatedByUserId",
+                table: "TransactionSchedules",
+                column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransactionSchedules_StartDate",

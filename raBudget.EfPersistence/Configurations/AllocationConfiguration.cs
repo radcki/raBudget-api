@@ -11,19 +11,27 @@ namespace raBudget.EfPersistence.Configurations
         public void Configure(EntityTypeBuilder<Allocation> builder)
         {
             // AllocationId
-            builder.HasKey(f => f.AllocationId);
-            builder.Property(f=>f.AllocationId).IsRequired().ValueGeneratedOnAdd();
+            builder.HasKey(f => f. Id);
+            builder.Property(f=>f.Id).IsRequired().ValueGeneratedOnAdd();
 
             // AllocationDateTime
             builder.HasIndex(f => f.AllocationDateTime);
             builder.Property(f => f.AllocationDateTime).IsRequired();
 
-            //BudgetCategory
-            builder.HasIndex(f => f.BudgetCategoryId);
-            builder.Property(f => f.BudgetCategoryId).IsRequired();
-            builder.HasOne(x => x.BudgetCategory)
-                   .WithMany(x => x.Allocations)
-                   .HasForeignKey(x=>x.BudgetCategoryId)
+            //TargetBudgetCategory
+            builder.HasIndex(f => f.TargetBudgetCategoryId);
+            builder.Property(f => f.TargetBudgetCategoryId).IsRequired();
+            builder.HasOne(x => x.TargetBudgetCategory)
+                   .WithMany(x => x.TargetAllocations)
+                   .HasForeignKey(x=>x.TargetBudgetCategoryId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            //SourceBudgetCategory
+            builder.HasIndex(f => f.SourceBudgetCategoryId);
+            builder.Property(f => f.SourceBudgetCategoryId).IsRequired();
+            builder.HasOne(x => x.SourceBudgetCategory)
+                   .WithMany(x => x.SourceAllocations)
+                   .HasForeignKey(x => x.SourceBudgetCategoryId)
                    .OnDelete(DeleteBehavior.Cascade);
 
             //CreatedByUser

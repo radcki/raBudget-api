@@ -19,31 +19,36 @@ namespace raBudget.EfPersistence.Migrations
 
             modelBuilder.Entity("raBudget.Domain.Entities.Allocation", b =>
                 {
-                    b.Property<int>("AllocationId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<DateTime>("AllocationDateTime");
 
                     b.Property<double>("Amount");
 
-                    b.Property<int>("BudgetCategoryId");
-
                     b.Property<Guid>("CreatedByUserId");
 
                     b.Property<DateTime>("CreationDateTime")
                         .ValueGeneratedOnAdd()
-                        .HasDefaultValue(new DateTime(2019, 9, 21, 20, 7, 15, 678, DateTimeKind.Local).AddTicks(2340));
+                        .HasDefaultValue(new DateTime(2019, 10, 16, 17, 24, 32, 298, DateTimeKind.Local).AddTicks(9669));
 
                     b.Property<string>("Description")
                         .IsRequired();
 
-                    b.HasKey("AllocationId");
+                    b.Property<int?>("SourceBudgetCategoryId")
+                        .IsRequired();
+
+                    b.Property<int>("TargetBudgetCategoryId");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("AllocationDateTime");
 
-                    b.HasIndex("BudgetCategoryId");
-
                     b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("SourceBudgetCategoryId");
+
+                    b.HasIndex("TargetBudgetCategoryId");
 
                     b.ToTable("Allocations");
                 });
@@ -926,7 +931,7 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<DateTime>("CreationDateTime")
                         .ValueGeneratedOnAdd()
-                        .HasDefaultValue(new DateTime(2019, 9, 21, 20, 7, 15, 822, DateTimeKind.Local).AddTicks(7742));
+                        .HasDefaultValue(new DateTime(2019, 10, 16, 17, 24, 32, 447, DateTimeKind.Local).AddTicks(1984));
 
                     b.Property<string>("Description")
                         .IsRequired();
@@ -950,12 +955,14 @@ namespace raBudget.EfPersistence.Migrations
 
             modelBuilder.Entity("raBudget.Domain.Entities.TransactionSchedule", b =>
                 {
-                    b.Property<int>("TransactionScheduleId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<double>("Amount");
 
                     b.Property<int>("BudgetCategoryId");
+
+                    b.Property<Guid>("CreatedByUserId");
 
                     b.Property<string>("Description")
                         .IsRequired();
@@ -968,9 +975,11 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<DateTime>("StartDate");
 
-                    b.HasKey("TransactionScheduleId");
+                    b.HasKey("Id");
 
                     b.HasIndex("BudgetCategoryId");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("StartDate");
 
@@ -996,14 +1005,19 @@ namespace raBudget.EfPersistence.Migrations
 
             modelBuilder.Entity("raBudget.Domain.Entities.Allocation", b =>
                 {
-                    b.HasOne("raBudget.Domain.Entities.BudgetCategory", "BudgetCategory")
-                        .WithMany("Allocations")
-                        .HasForeignKey("BudgetCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("raBudget.Domain.Entities.User", "CreatedByUser")
                         .WithMany("RegisteredAllocations")
                         .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("raBudget.Domain.Entities.BudgetCategory", "SourceBudgetCategory")
+                        .WithMany("SourceAllocations")
+                        .HasForeignKey("SourceBudgetCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("raBudget.Domain.Entities.BudgetCategory", "TargetBudgetCategory")
+                        .WithMany("TargetAllocations")
+                        .HasForeignKey("TargetBudgetCategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -1066,6 +1080,11 @@ namespace raBudget.EfPersistence.Migrations
                     b.HasOne("raBudget.Domain.Entities.BudgetCategory", "BudgetCategory")
                         .WithMany("TransactionSchedules")
                         .HasForeignKey("BudgetCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("raBudget.Domain.Entities.User", "CreatedByUser")
+                        .WithMany("TransactionSchedules")
+                        .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618

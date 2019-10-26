@@ -13,7 +13,8 @@ namespace raBudget.Domain.Entities
         public BudgetCategory()
         {
             Transactions = new HashSet<Transaction>();
-            Allocations = new HashSet<Allocation>();
+            TargetAllocations = new HashSet<Allocation>();
+            SourceAllocations = new HashSet<Allocation>();
             BudgetCategoryBudgetedAmounts = new HashSet<BudgetCategoryBudgetedAmount>();
             TransactionSchedules = new HashSet<TransactionSchedule>();
         }
@@ -36,7 +37,8 @@ namespace raBudget.Domain.Entities
          * Navigation properties
          */
         public ICollection<Transaction> Transactions { get; set; }
-        public ICollection<Allocation> Allocations { get; set; }
+        public ICollection<Allocation> TargetAllocations { get; set; }
+        public ICollection<Allocation> SourceAllocations { get; set; }
         public ICollection<BudgetCategoryBudgetedAmount> BudgetCategoryBudgetedAmounts { get; set; }
         public ICollection<TransactionSchedule> TransactionSchedules { get; set; }
 
@@ -50,13 +52,13 @@ namespace raBudget.Domain.Entities
         {
             get
             {
-if (Math.Abs(_totalTransactionsSum - (double) default) < 0.01)
-            {
-                _totalTransactionsSum = Transactions.Where(x => x.TransactionDateTime >= Budget.StartingDate)
-                                                    .Sum(x => x.Amount);
-            }
+                if (Math.Abs(_totalTransactionsSum - (double) default) < 0.01)
+                {
+                    _totalTransactionsSum = Transactions.Where(x => x.TransactionDateTime >= Budget.StartingDate)
+                                                        .Sum(x => x.Amount);
+                }
 
-            return _totalTransactionsSum;
+                return _totalTransactionsSum;
             }
         }
 
@@ -67,33 +69,39 @@ if (Math.Abs(_totalTransactionsSum - (double) default) < 0.01)
             get
             {
                 // Prevent reevaluation
-                if (Math.Abs(_totalAllocationsSum - (double)default) < 0.01)
+                if (Math.Abs(_totalAllocationsSum - (double) default) < 0.01)
                 {
-                    _totalAllocationsSum = Allocations.Where(x => x.AllocationDateTime >= Budget.StartingDate)
-                                                      .Sum(x => x.Amount);
+                    _totalAllocationsSum = TargetAllocations.Where(x => x.AllocationDateTime >= Budget.StartingDate)
+                                                            .Sum(x => x.Amount)
+                                           - SourceAllocations.Where(x => x.AllocationDateTime >= Budget.StartingDate)
+                                                              .Sum(x => x.Amount);
                 }
 
                 return _totalAllocationsSum;
             }
-            
         }
 
 
         public double Balance => TotalTransactionsSum + TotalAllocationsSum;
-        
+
 
         public double ThisMonthTransactionsSum => Transactions.Where(x => x.TransactionDateTime.Year == DateTime.Today.Year
-                                           && x.TransactionDateTime.Month == DateTime.Today.Month)
-                               .Sum(x => x.Amount);
-        
+                                                                          && x.TransactionDateTime.Month == DateTime.Today.Month)
+                                                              .Sum(x => x.Amount);
 
-        public double ThisMonthAllocationsSum => Allocations.Where(x => x.AllocationDateTime.Year == DateTime.Today.Year
-                                          && x.AllocationDateTime.Month == DateTime.Today.Month)
-                              .Sum(x => x.Amount);
-        
 
-        public double ThisYearBudget => Allocations.Where(x => DateTime.Now.Year == x.AllocationDateTime.Year)
-                                                   .Sum(x => x.Amount) // this year allocations
+        public double ThisMonthAllocationsSum => TargetAllocations.Where(x => x.AllocationDateTime.Year == DateTime.Today.Year
+                                                                              && x.AllocationDateTime.Month == DateTime.Today.Month)
+                                                                  .Sum(x => x.Amount)
+                                                 - SourceAllocations.Where(x => x.AllocationDateTime.Year == DateTime.Today.Year
+                                                                                && x.AllocationDateTime.Month == DateTime.Today.Month)
+                                                                    .Sum(x => x.Amount);
+
+
+        public double ThisYearBudget => TargetAllocations.Where(x => DateTime.Now.Year == x.AllocationDateTime.Year)
+                                                         .Sum(x => x.Amount) // this year allocations
+                                        - SourceAllocations.Where(x => DateTime.Now.Year == x.AllocationDateTime.Year)
+                                                           .Sum(x => x.Amount) // this year allocations
                                         + (DateTime.Now.Year == Budget.StartingDate.Year
                                                ? PeriodBudget(Budget.StartingDate, new DateTime(DateTime.Today.Year, 12, 1))
                                                : PeriodBudget(new DateTime(DateTime.Today.Year, 1, 1), new DateTime(DateTime.Today.Year, 12, 1)));

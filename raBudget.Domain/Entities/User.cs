@@ -21,6 +21,7 @@ namespace raBudget.Domain.Entities
         public virtual ICollection<Budget> OwnedBudgets { get; set; }
         public virtual ICollection<BudgetShare> BudgetShares { get; set; }
         public virtual ICollection<Transaction> RegisteredTransactions { get; set; }
+        public virtual ICollection<TransactionSchedule> TransactionSchedules { get; set; }
         public virtual ICollection<Allocation> RegisteredAllocations{ get; set; }
     }
 }

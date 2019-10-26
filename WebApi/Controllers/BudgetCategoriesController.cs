@@ -123,7 +123,7 @@ namespace WebApi.Controllers
                                      };
                 DatabaseContext.Add(categoryEntity);
                 DatabaseContext.SaveChanges();
-                budgetCategoryDto.BudgetCategoryId = categoryEntity.BudgetCategoryId;
+                budgetCategoryDto.TargetBudgetCategoryId = categoryEntity.TargetBudgetCategoryId;
                 budgetCategoryDto.Budget = new BudgetDto() {Id = id};
                 _ = _budgetsNotifier.CategoryAdded(UserEntity.UserId, budgetCategoryDto);
                 return Ok(budgetCategoryDto);
@@ -143,9 +143,9 @@ namespace WebApi.Controllers
                 if (UserEntity.Budgets.All(x => x.BudgetId != id))
                     return BadRequest(new {message = "budgets.notFound"});
 
-                if (budgetCategoryDto.BudgetCategoryId == 0
+                if (budgetCategoryDto.TargetBudgetCategoryId == 0
                     || categoryId == 0
-                    || !DatabaseContext.BudgetCategories.Any(x => x.BudgetCategoryId == budgetCategoryDto.BudgetCategoryId))
+                    || !DatabaseContext.BudgetCategories.Any(x => x.TargetBudgetCategoryId == budgetCategoryDto.TargetBudgetCategoryId))
                 {
                     return BadRequest(new {message = "categories.notFound"});
                 }
@@ -169,7 +169,7 @@ namespace WebApi.Controllers
 
 
                 var categoryEntity = DatabaseContext.BudgetCategories
-                                                    .Single(x => x.BudgetCategoryId == budgetCategoryDto.BudgetCategoryId);
+                                                    .Single(x => x.TargetBudgetCategoryId == budgetCategoryDto.TargetBudgetCategoryId);
 
                 categoryEntity.Name = budgetCategoryDto.Name;
                 categoryEntity.Icon = budgetCategoryDto.Icon ?? "";
@@ -208,13 +208,13 @@ namespace WebApi.Controllers
                     return BadRequest(new {message = "budgets.notFound"});
 
                 if (!DatabaseContext.BudgetCategories.Any(x => x.BudgetId == budgetId &&
-                                                               x.BudgetCategoryId == categoryId))
+                                                               x.TargetBudgetCategoryId == categoryId))
                     return BadRequest(new {message = "categories.notFound"});
 
                 var categoryEntity =
                     DatabaseContext.BudgetCategories.Single(x =>
                                                                 x.BudgetId == budgetId &&
-                                                                x.BudgetCategoryId == categoryId);
+                                                                x.TargetBudgetCategoryId == categoryId);
                 DatabaseContext.BudgetCategories.Remove(categoryEntity);
                 DatabaseContext.SaveChanges();
 

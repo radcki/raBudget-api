@@ -13,7 +13,8 @@ namespace raBudget.Core.Interfaces.Repository
         /// <summary>
         /// Find filtered transactions
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="budget"></param>
+        /// <param name="filters"></param>
         /// <returns>Collection of budget entities</returns>
         Task<IReadOnlyList<Transaction>> ListWithFilter(Budget budget, TransactionsFilterModel filters);
 

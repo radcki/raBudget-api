@@ -1,13 +1,92 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using raBudget.Core.Dto.Allocation;
+using raBudget.Core.Dto.Budget;
+using raBudget.Core.Handlers.AllocationHandlers.CreateAllocation;
+using raBudget.Core.Handlers.AllocationHandlers.DeleteAllocation;
+using raBudget.Core.Handlers.AllocationHandlers.GetAllocation;
+using raBudget.Core.Handlers.AllocationHandlers.ListAllocation;
+using raBudget.Core.Handlers.AllocationHandlers.UpdateAllocation;
 
 namespace WebApi.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("[controller]")]
+    [Route("/budgets/{budgetId}/[controller]")]
     public class AllocationsController : BaseController
     {
+
+        #region Allocations CRUD
+
+        /// <summary>
+        /// Get list of allocations available for user - both owned and shared
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<ActionResult> Get([FromRoute] int budgetId)
+        {
+            var response = await Mediator.Send(new ListAllocationsRequest(new BudgetDto() { BudgetId = budgetId }));
+            return Ok(response);
+        }
+
+        /// <summary>
+        ///  Get details of specific allocation, identified by id
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        public async Task<ActionResult> GetById([FromRoute] int id)
+        {
+            var response = await Mediator.Send(new GetAllocationRequest(id));
+            return Ok(response);
+        }
+
+        [HttpPost("filter")]
+        public async Task<ActionResult> GetFiltered([FromBody] AllocationFilterDto filters, [FromRoute] int budgetId)
+        {
+            var response = await Mediator.Send(new ListAllocationsRequest(new BudgetDto() { BudgetId = budgetId })
+            {
+                Filters = filters
+            });
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Create new allocation
+        /// </summary>
+        /// <param name="allocationDto"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ActionResult> Create([FromBody] AllocationDto allocationDto)
+        {
+            var response = await Mediator.Send(new CreateAllocationRequest(allocationDto));
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Update allocation parameters. Allocation id in request body will be ignored
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update([FromBody] AllocationDto allocationDto, [FromRoute] int id)
+        {
+            allocationDto.AllocationId = id;
+            var response = await Mediator.Send(new UpdateAllocationRequest(allocationDto));
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Delete allocation
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete([FromRoute] int id)
+        {
+            var response = await Mediator.Send(new DeleteAllocationRequest(id));
+            return Ok(response);
+        }
+
+        #endregion
         /*
         private readonly UserService _userService;
         private User UserEntity => _userService.GetByClaimsPrincipal(User).Data;
@@ -23,11 +102,11 @@ namespace WebApi.Controllers
             if (User != null)
                 try
                 {
-                    if (!allocationDto.SourceCategory.IsNullOrDefault() && allocationDto.SourceCategory.BudgetCategoryId != 0)
+                    if (!allocationDto.SourceCategory.IsNullOrDefault() && allocationDto.SourceCategory.TargetBudgetCategoryId != 0)
                     {
                         var sourceCategory =
-                            DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                         allocationDto.SourceCategory.BudgetCategoryId);
+                            DatabaseContext.BudgetCategories.Single(x => x.TargetBudgetCategoryId ==
+                                                                         allocationDto.SourceCategory.TargetBudgetCategoryId);
 
                         if (UserEntity.Budgets.All(x => x.BudgetId != sourceCategory.Budget.BudgetId))
                         {
@@ -36,7 +115,7 @@ namespace WebApi.Controllers
 
                         var subtractAllocation = new Allocation
                                                  {
-                                                     BudgetCategoryId = sourceCategory.BudgetCategoryId,
+                                                     TargetBudgetCategoryId = sourceCategory.TargetBudgetCategoryId,
                                                      CreatedByUserId = UserEntity.UserId,
                                                      Description = allocationDto.Description,
                                                      Amount = -allocationDto.Amount,
@@ -47,15 +126,15 @@ namespace WebApi.Controllers
                     }
 
                     var destinationCategory =
-                        DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     allocationDto.DestinationCategory.BudgetCategoryId);
+                        DatabaseContext.BudgetCategories.Single(x => x.TargetBudgetCategoryId ==
+                                                                     allocationDto.DestinationCategory.TargetBudgetCategoryId);
 
                     if (UserEntity.Budgets.All(x => x.BudgetId != destinationCategory.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
 
                     var allocation = new Allocation
                                      {
-                                         BudgetCategoryId = destinationCategory.BudgetCategoryId,
+                                         TargetBudgetCategoryId = destinationCategory.TargetBudgetCategoryId,
                                          CreatedByUserId = UserEntity.UserId,
                                          Description = allocationDto.Description,
                                          Amount = allocationDto.Amount,
@@ -71,7 +150,7 @@ namespace WebApi.Controllers
                                   AllocationId = allocation.AllocationId,
                                   DestinationCategory = new BudgetCategoryDto
                                                         {
-                                                            BudgetCategoryId = allocation.BudgetCategory.BudgetCategoryId,
+                                                            TargetBudgetCategoryId = allocation.BudgetCategory.TargetBudgetCategoryId,
                                                             Icon = allocation.BudgetCategory.Icon,
                                                             Name = allocation.BudgetCategory.Name,
                                                             Type = allocation.BudgetCategory.Type
@@ -107,7 +186,7 @@ namespace WebApi.Controllers
                                   AllocationId = allocation.AllocationId,
                                   DestinationCategory = new BudgetCategoryDto
                                                         {
-                                                            BudgetCategoryId = allocation.BudgetCategory.BudgetCategoryId,
+                                                            TargetBudgetCategoryId = allocation.BudgetCategory.TargetBudgetCategoryId,
                                                             Icon = allocation.BudgetCategory.Icon,
                                                             Name = allocation.BudgetCategory.Name,
                                                             Type = allocation.BudgetCategory.Type
@@ -185,7 +264,7 @@ namespace WebApi.Controllers
                                                             {
                                                                 Name = x.BudgetCategory.Name,
                                                                 Icon = x.BudgetCategory.Icon,
-                                                                BudgetCategoryId = x.BudgetCategoryId
+                                                                TargetBudgetCategoryId = x.TargetBudgetCategoryId
                                                             }
                                                     }).ToList()
                              );
@@ -205,8 +284,8 @@ namespace WebApi.Controllers
                 try
                 {
                     var categoryEntity =
-                        DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     allocationDto.DestinationCategory.BudgetCategoryId);
+                        DatabaseContext.BudgetCategories.Single(x => x.TargetBudgetCategoryId ==
+                                                                     allocationDto.DestinationCategory.TargetBudgetCategoryId);
                     if (UserEntity.Budgets.All(x => x.BudgetId != categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
 
@@ -214,7 +293,7 @@ namespace WebApi.Controllers
                     allocationEntity.Amount = allocationDto.Amount;
                     allocationEntity.Description = allocationDto.Description;
                     allocationEntity.AllocationDateTime = allocationDto.Date;
-                    allocationEntity.BudgetCategoryId = categoryEntity.BudgetCategoryId;
+                    allocationEntity.TargetBudgetCategoryId = categoryEntity.TargetBudgetCategoryId;
 
                     DatabaseContext.SaveChanges();
                     PrecalculateAllocationsSum(categoryEntity);
@@ -223,7 +302,7 @@ namespace WebApi.Controllers
                                   AllocationId = allocationEntity.AllocationId,
                                   DestinationCategory = new BudgetCategoryDto
                                                         {
-                                                            BudgetCategoryId = allocationEntity.BudgetCategory.BudgetCategoryId,
+                                                            TargetBudgetCategoryId = allocationEntity.BudgetCategory.TargetBudgetCategoryId,
                                                             Icon = allocationEntity.BudgetCategory.Icon,
                                                             Name = allocationEntity.BudgetCategory.Name,
                                                             Type = allocationEntity.BudgetCategory.Type
@@ -251,7 +330,7 @@ namespace WebApi.Controllers
                     var allocationEntity = DatabaseContext.Allocations.Single(x => x.AllocationId == id);
 
                     var categoryEntity =
-                        DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId == allocationEntity.BudgetCategoryId);
+                        DatabaseContext.BudgetCategories.Single(x => x.TargetBudgetCategoryId == allocationEntity.TargetBudgetCategoryId);
 
                     if (UserEntity.Budgets.All(x => x.BudgetId != categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
@@ -273,7 +352,7 @@ namespace WebApi.Controllers
         private void PrecalculateAllocationsSum(BudgetCategory category)
         {
             DatabaseContext.BudgetCategories
-                        .First(x=>x.BudgetCategoryId == category.BudgetCategoryId)
+                        .First(x=>x.TargetBudgetCategoryId == category.TargetBudgetCategoryId)
                         .AllocationsSum = category.Allocations.Sum(x => x.Amount);
             DatabaseContext.SaveChanges();
         }

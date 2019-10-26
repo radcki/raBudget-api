@@ -9,6 +9,7 @@ using raBudget.Core.Dto.Budget;
 using raBudget.Core.Handlers.BudgetHandlers.CreateBudget;
 using raBudget.Core.Handlers.BudgetHandlers.DeleteBudget;
 using raBudget.Core.Handlers.BudgetHandlers.GetBudget;
+using raBudget.Core.Handlers.BudgetHandlers.GetMonthlyReport;
 using raBudget.Core.Handlers.BudgetHandlers.GetUnassignedFunds;
 using raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets;
 using raBudget.Core.Handlers.BudgetHandlers.UpdateBudget;
@@ -111,6 +112,22 @@ namespace WebApi.Controllers
             var response = await Mediator.Send(new GetUnassignedFundsRequest(budgetId));
             return Ok(response);
         }
+
+        [HttpPost("{budgetId}/period-report")]
+        public async Task<ActionResult> PeriodReport([FromRoute] int budgetId, [FromBody] ReportFilterDto filters)
+        {
+            var response = await Mediator.Send(new GetPeriodReportRequest(budgetId, filters));
+            return Ok(response);
+        }
+
+        [HttpPost("{budgetId}/monthly-report")]
+        public async Task<ActionResult> MonthlyReport([FromRoute] int budgetId, [FromBody] ReportFilterDto filters)
+        {
+            var response = await Mediator.Send(new GetMonthlyReportRequest(budgetId, filters));
+            return Ok(response);
+        }
+
+
         /*
         [HttpGet("{budgetId}/report/period")]
         public IActionResult PeriodReport(int budgetId, DateTime startDate, DateTime endDate)
@@ -164,11 +181,14 @@ namespace WebApi.Controllers
 
         #region Utils
         [HttpGet("supported-currencies")]
-        public async Task<ActionResult> Currencies()
+        public ActionResult Currencies()
         {
 
             return Ok(Currency.CurrencyDictionary.Select(x=>x.Value));
         }
+
+
+
         #endregion
 
 
@@ -469,7 +489,7 @@ namespace WebApi.Controllers
                                      };
                 DatabaseContext.Add(categoryEntity);
                 DatabaseContext.SaveChanges();
-                budgetCategoryDto.BudgetCategoryId = categoryEntity.BudgetCategoryId;
+                budgetCategoryDto.TargetBudgetCategoryId = categoryEntity.TargetBudgetCategoryId;
                 budgetCategoryDto.Budget = new BudgetDto() {Id = id};
                 _ = _budgetsNotifier.CategoryAdded(UserEntity.UserId, budgetCategoryDto);
                 return Ok(budgetCategoryDto);
@@ -489,9 +509,9 @@ namespace WebApi.Controllers
                 if (UserEntity.Budgets.All(x => x.BudgetId != id))
                     return BadRequest(new {message = "budgets.notFound"});
 
-                if (budgetCategoryDto.BudgetCategoryId == 0
+                if (budgetCategoryDto.TargetBudgetCategoryId == 0
                     || categoryId == 0
-                    || !DatabaseContext.BudgetCategories.Any(x => x.BudgetCategoryId == budgetCategoryDto.BudgetCategoryId))
+                    || !DatabaseContext.BudgetCategories.Any(x => x.TargetBudgetCategoryId == budgetCategoryDto.TargetBudgetCategoryId))
                 {
                     return BadRequest(new {message = "categories.notFound"});
                 }
@@ -515,7 +535,7 @@ namespace WebApi.Controllers
 
 
                 var categoryEntity = DatabaseContext.BudgetCategories
-                                                    .Single(x => x.BudgetCategoryId == budgetCategoryDto.BudgetCategoryId);
+                                                    .Single(x => x.TargetBudgetCategoryId == budgetCategoryDto.TargetBudgetCategoryId);
 
                 categoryEntity.Name = budgetCategoryDto.Name;
                 categoryEntity.Icon = budgetCategoryDto.Icon ?? "";
@@ -554,13 +574,13 @@ namespace WebApi.Controllers
                     return BadRequest(new {message = "budgets.notFound"});
 
                 if (!DatabaseContext.BudgetCategories.Any(x => x.BudgetId == budgetId &&
-                                                               x.BudgetCategoryId == categoryId))
+                                                               x.TargetBudgetCategoryId == categoryId))
                     return BadRequest(new {message = "categories.notFound"});
 
                 var categoryEntity =
                     DatabaseContext.BudgetCategories.Single(x =>
                                                                 x.BudgetId == budgetId &&
-                                                                x.BudgetCategoryId == categoryId);
+                                                                x.TargetBudgetCategoryId == categoryId);
                 DatabaseContext.BudgetCategories.Remove(categoryEntity);
                 DatabaseContext.SaveChanges();
 

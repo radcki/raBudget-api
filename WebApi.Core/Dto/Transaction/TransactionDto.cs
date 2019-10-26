@@ -13,6 +13,7 @@ namespace raBudget.Core.Dto.Transaction
 
         public int TransactionId { get; set; }
         public int BudgetCategoryId { get; set; }
+        public int? TransactionScheduleId { get; set; }
         public eBudgetCategoryType Type { get; set; }
         public string Description { get; set; }
         public double Amount { get; set; }

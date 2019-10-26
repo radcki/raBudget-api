@@ -63,7 +63,6 @@ namespace raBudget.Domain.Entities
             {
                 if (Math.Abs(_currentFunds - (double) default) < 0.01)
                 {
-                    var income = IncomeCategories.Sum(x => x.TotalTransactionsSum);
                     _currentFunds = IncomeCategories.Sum(x => x.TotalTransactionsSum)
                                     - SpendingCategories.Sum(x => x.TotalTransactionsSum)
                                     - SavingCategories.Sum(x => x.TotalTransactionsSum);

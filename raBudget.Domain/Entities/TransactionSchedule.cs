@@ -8,14 +8,12 @@ using raBudget.Domain.ExtensionMethods;
 
 namespace raBudget.Domain.Entities
 {
-    public class TransactionSchedule
+    public class TransactionSchedule : BaseEntity<int>
     {
         public TransactionSchedule()
         {
             Transactions = new HashSet<Transaction>();
         }
-
-        public int TransactionScheduleId { get; set; }
 
         public int BudgetCategoryId { get; set; }
 
@@ -31,6 +29,8 @@ namespace raBudget.Domain.Entities
         
         public DateTime? EndDate { get; set; }
 
+        public Guid CreatedByUserId { get; set; }
+
 
         /*
          * Navigation properties
@@ -38,6 +38,9 @@ namespace raBudget.Domain.Entities
         public virtual BudgetCategory BudgetCategory { get; set; }
 
         public virtual ICollection<Transaction> Transactions { get; set; }
+
+        public User CreatedByUser { get; set; }
+
 
         #region Business logic
 

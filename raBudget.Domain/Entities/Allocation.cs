@@ -2,10 +2,8 @@ using System;
 
 namespace raBudget.Domain.Entities
 {
-    public class Allocation
+    public class Allocation : BaseEntity<int>
     {
-        public int AllocationId { get; set; }
-
         public string Description { get; set; }
 
         public double Amount { get; set; }
@@ -16,12 +14,14 @@ namespace raBudget.Domain.Entities
 
         public Guid CreatedByUserId { get; set; }
 
-        public int BudgetCategoryId { get; set; }
+        public int TargetBudgetCategoryId { get; set; }
+        public int? SourceBudgetCategoryId { get; set; }
 
         /*
          * Navigation properties
          */
         public virtual User CreatedByUser { get; set; }
-        public virtual BudgetCategory BudgetCategory { get; set; }
+        public virtual BudgetCategory TargetBudgetCategory { get; set; }
+        public virtual BudgetCategory SourceBudgetCategory { get; set; }
     }
 }

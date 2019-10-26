@@ -15,12 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Handlers\AllocationHandlers\CreateAllocation\" />
-    <Folder Include="Handlers\AllocationHandlers\DeleteAllocation\" />
-    <Folder Include="Handlers\AllocationHandlers\ListAllocation\" />
-    <Folder Include="Handlers\AllocationHandlers\GetAllocation\" />
-    <Folder Include="Handlers\AllocationHandlers\UpdateAllocation\" />
-    <Folder Include="Handlers\TransactionScheduleHandlers\" />
     <Folder Include="Handlers\UserHandlers\ListUsers\" />
   </ItemGroup>
 

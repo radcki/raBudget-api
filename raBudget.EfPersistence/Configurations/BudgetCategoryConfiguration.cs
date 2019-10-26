@@ -9,7 +9,7 @@ namespace raBudget.EfPersistence.Configurations
         /// <inheritdoc />
         public void Configure(EntityTypeBuilder<BudgetCategory> builder)
         {
-            // BudgetCategoryId
+            // TargetBudgetCategoryId
             builder.HasKey(f => f.Id);
             builder.Property(f=>f.Id).IsRequired().ValueGeneratedOnAdd();
 

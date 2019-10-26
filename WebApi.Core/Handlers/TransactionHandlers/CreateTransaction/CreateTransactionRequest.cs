@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 using raBudget.Core.Dto.Transaction;
+using raBudget.Core.Dto.TransactionSchedule;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.CreateTransaction
 {

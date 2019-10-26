@@ -13,10 +13,6 @@ namespace raBudget.Core.Handlers.TransactionHandlers.UpdateTransaction
 {
     public class UpdateTransactionHandler : BaseTransactionHandler<UpdateTransactionRequest, TransactionDetailsDto>
     {
-        private readonly ITransactionRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly IAuthenticationProvider _authenticationProvider;
-
         public UpdateTransactionHandler(IBudgetCategoryRepository budgetCategoryRepository,
                                         ITransactionRepository transactionRepository,
                                         IMapper mapper,
@@ -27,13 +23,8 @@ namespace raBudget.Core.Handlers.TransactionHandlers.UpdateTransaction
         public override async Task<TransactionDetailsDto> Handle(UpdateTransactionRequest request, CancellationToken cancellationToken)
         {
             var transaction = await TransactionRepository.GetByIdAsync(request.Data.TransactionId);
-            var sourceCategoryAccessible = BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, transaction.Id);
-            var targetCategoryAccessible = BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.Data.TransactionId);
-            if (!await sourceCategoryAccessible)
-            {
-                throw new NotFoundException("Source budget category was not found.");
-            }
-            if (!await targetCategoryAccessible)
+            var budgetCategoryAccessible = BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.Data.TransactionId);
+            if (!await budgetCategoryAccessible)
             {
                 throw new NotFoundException("Target budget category was not found.");
             }

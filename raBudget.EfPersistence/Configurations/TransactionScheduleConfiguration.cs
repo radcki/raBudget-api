@@ -10,14 +10,21 @@ namespace raBudget.EfPersistence.Configurations
         public void Configure(EntityTypeBuilder<TransactionSchedule> builder)
         {
             // TransactionScheduleId
-            builder.HasKey(f => f.TransactionScheduleId);
-            builder.Property(f=>f.TransactionScheduleId).IsRequired().ValueGeneratedOnAdd();
+            builder.HasKey(f => f.Id);
+            builder.Property(f=>f.Id).IsRequired().ValueGeneratedOnAdd();
 
             
             //BudgetCategory
             builder.HasIndex(f => f.BudgetCategoryId);
             builder.Property(f => f.BudgetCategoryId).IsRequired();
             builder.HasOne(x => x.BudgetCategory)
+                   .WithMany(x => x.TransactionSchedules)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            //CreatedByUser
+            builder.HasIndex(f => f.CreatedByUserId);
+            builder.Property(f => f.CreatedByUserId).IsRequired();
+            builder.HasOne(x => x.CreatedByUser)
                    .WithMany(x => x.TransactionSchedules)
                    .OnDelete(DeleteBehavior.Cascade);
 

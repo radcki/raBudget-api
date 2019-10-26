@@ -1,13 +1,102 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿ using System;
+ using System.Threading.Tasks;
+ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+ using raBudget.Core.Dto.Budget;
+ using raBudget.Core.Dto.Transaction;
+ using raBudget.Core.Dto.TransactionSchedule;
+ using raBudget.Core.Handlers.TransactionScheduleHandlers.CreateTransactionSchedule;
+ using raBudget.Core.Handlers.TransactionScheduleHandlers.DeleteTransactionSchedule;
+ using raBudget.Core.Handlers.TransactionScheduleHandlers.GetTransactionSchedule;
+ using raBudget.Core.Handlers.TransactionScheduleHandlers.ListClosestOccurrences;
+ using raBudget.Core.Handlers.TransactionScheduleHandlers.ListTransactionSchedules;
+ using raBudget.Core.Handlers.TransactionScheduleHandlers.UpdateTransactionSchedule;
 
-namespace WebApi.Controllers
+ namespace WebApi.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("[controller]")]
+    [Route("/budgets/{budgetId}/[controller]")]
     public class TransactionSchedulesController : BaseController
     {
+        #region TransactionSchedules CRUD
+
+        /// <summary>
+        /// Get list of transactionSchedules available for user - both owned and shared
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<ActionResult> Get([FromRoute] int budgetId)
+        {
+            var response = await Mediator.Send(new ListTransactionSchedulesRequest(new BudgetDto() { BudgetId = budgetId }, null));
+            return Ok(response);
+        }
+
+        /// <summary>
+        ///  Get details of specific transactionSchedule, identified by id
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        public async Task<ActionResult> GetById([FromRoute] int id)
+        {
+            var response = await Mediator.Send(new GetTransactionScheduleRequest(id));
+            return Ok(response);
+        }
+
+        [HttpPost("filter")]
+        public async Task<ActionResult> GetFiltered([FromBody] TransactionScheduleFilterDto filters, [FromRoute] int budgetId)
+        {
+            var response = await Mediator.Send(new ListTransactionSchedulesRequest(new BudgetDto() { BudgetId = budgetId }, filters)
+            {
+                Filters = filters
+            });
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Create new transactionSchedule
+        /// </summary>
+        /// <param name="transactionScheduleDto"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ActionResult> Create([FromBody] TransactionScheduleDto transactionScheduleDto)
+        {
+            var response = await Mediator.Send(new CreateTransactionScheduleRequest(transactionScheduleDto));
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Update transactionSchedule parameters. TransactionSchedule id in request body will be ignored
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update([FromBody] TransactionScheduleDetailsDto transactionScheduleDto, [FromRoute] int id)
+        {
+            transactionScheduleDto.TransactionScheduleId = id;
+            var response = await Mediator.Send(new UpdateTransactionScheduleRequest(transactionScheduleDto));
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Delete transactionSchedule
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete([FromRoute] int id)
+        {
+            var response = await Mediator.Send(new DeleteTransactionScheduleRequest(id));
+            return Ok(response);
+        }
+
+        #endregion
+
+        [HttpGet("closest-transactions")]
+        public async Task<ActionResult> ListClosestOccurrences(DateTime endDate, int budgetId)
+        {
+            var daysForward = (endDate - DateTime.Today).Days;
+            var response = await Mediator.Send(new ListClosestOccurrencesRequest(new BudgetDto() { BudgetId = budgetId }, 4, daysForward));
+            return Ok(response);
+        }
         /*
         private readonly UserService _userService;
         private User UserEntity => _userService.GetByClaimsPrincipal(User).Data;
@@ -25,8 +114,8 @@ namespace WebApi.Controllers
                 try
                 {
                     var categoryEntity = DatabaseContext.BudgetCategories
-                                                       .Single(x => x.BudgetCategoryId == transactionScheduleDto.BudgetCategory
-                                                                                                                .BudgetCategoryId);
+                                                       .Single(x => x.TargetBudgetCategoryId == transactionScheduleDto.BudgetCategory
+                                                                                                                .TargetBudgetCategoryId);
 
                     if (UserEntity.Budgets.All(x => x.BudgetId != categoryEntity.Budget.BudgetId))
                     {
@@ -42,7 +131,7 @@ namespace WebApi.Controllers
                     DatabaseContext.TransactionSchedules.Add(new TransactionSchedule()
                                                              {
                                                                  Amount = transactionScheduleDto.Amount,
-                                                                 BudgetCategoryId = transactionScheduleDto.BudgetCategory.BudgetCategoryId,
+                                                                 TargetBudgetCategoryId = transactionScheduleDto.BudgetCategory.TargetBudgetCategoryId,
                                                                  Description = transactionScheduleDto.Description,
                                                                  StartDate = transactionScheduleDto.StartDate,
                                                                  EndDate = transactionScheduleDto.EndDate,
@@ -68,7 +157,7 @@ namespace WebApi.Controllers
                 try
                 {
                     var transactionSchedule = DatabaseContext.TransactionSchedules.Single(x => x.TransactionScheduleId == id);
-                    if (UserEntity.Budgets.SelectMany(x => x.BudgetCategories).All(x => x.BudgetCategoryId != transactionSchedule.BudgetCategoryId))
+                    if (UserEntity.Budgets.SelectMany(x => x.BudgetCategories).All(x => x.TargetBudgetCategoryId != transactionSchedule.TargetBudgetCategoryId))
                     {
                         return BadRequest(new {Message = "transactionsSchedule.notFound"});
                     }
@@ -123,8 +212,8 @@ namespace WebApi.Controllers
                 try
                 {
                     var categoryEntity =
-                        DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId ==
-                                                                     scheduleDto.BudgetCategory.BudgetCategoryId);
+                        DatabaseContext.BudgetCategories.Single(x => x.TargetBudgetCategoryId ==
+                                                                     scheduleDto.BudgetCategory.TargetBudgetCategoryId);
                     if (UserEntity.Budgets.Any(x => x.BudgetId == categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});
 
@@ -157,7 +246,7 @@ namespace WebApi.Controllers
                     var scheduleEntity = DatabaseContext.TransactionSchedules.Single(x => x.TransactionScheduleId == id);
 
                     var categoryEntity =
-                        DatabaseContext.BudgetCategories.Single(x => x.BudgetCategoryId == scheduleEntity.BudgetCategoryId);
+                        DatabaseContext.BudgetCategories.Single(x => x.TargetBudgetCategoryId == scheduleEntity.TargetBudgetCategoryId);
 
                     if (UserEntity.Budgets.All(x => x.BudgetId != categoryEntity.Budget.BudgetId))
                         return BadRequest(new {Message = "category.invalid"});

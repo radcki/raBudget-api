@@ -68,7 +68,8 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             var categories = _db.BudgetCategories
                                 .AsNoTracking()
                                 .Include(x=>x.Transactions)
-                                .Include(x=>x.Allocations)
+                                .Include(x=>x.SourceAllocations)
+                                .Include(x=>x.TargetAllocations)
                                 .Include(x=>x.BudgetCategoryBudgetedAmounts)
                                 .Where(x => x.BudgetId == budget.Id);
 

@@ -22,7 +22,7 @@
         {
             return new BudgetCategoryDto
                    {
-                       BudgetCategoryId = entity.BudgetCategoryId,
+                       TargetBudgetCategoryId = entity.TargetBudgetCategoryId,
                        Type = entity.Type,
                        Name = entity.Name,
                        AmountConfigs = entity.BudgetCategoryAmountConfigs.ToDtoList(),
@@ -129,7 +129,7 @@
                        ValidTo = entity.ValidTo,
                        BudgetCategory = new BudgetCategoryDto
                                         {
-                                            BudgetCategoryId = entity.BudgetCategory.BudgetCategoryId,
+                                            TargetBudgetCategoryId = entity.BudgetCategory.TargetBudgetCategoryId,
                                             Name = entity.BudgetCategory.Name
                                         }
                    };
