@@ -28,7 +28,7 @@ namespace raBudget.EfPersistence.Configurations
 
             //SourceBudgetCategory
             builder.HasIndex(f => f.SourceBudgetCategoryId);
-            builder.Property(f => f.SourceBudgetCategoryId).IsRequired();
+            builder.Property(f => f.SourceBudgetCategoryId).IsRequired(false);
             builder.HasOne(x => x.SourceBudgetCategory)
                    .WithMany(x => x.SourceAllocations)
                    .HasForeignKey(x => x.SourceBudgetCategoryId)
@@ -48,7 +48,7 @@ namespace raBudget.EfPersistence.Configurations
                    .ValueGeneratedOnAdd();
 
             //Description
-            builder.Property(f => f.Description).IsRequired();
+            builder.Property(f => f.Description).HasColumnType("nvarchar(160)").IsUnicode(true);
 
         }
     }

@@ -21,7 +21,7 @@ namespace raBudget.Core.Dto.Transaction
         public DateTime? CreationDateStartFilter { get; set; }
         public DateTime? CreationDateEndFilter { get; set; }
 
-        public int? LimitResults { get; set; }
+        public int? LimitCategoryTypeResults { get; set; }
         public eBudgetCategoryType? CategoryType { get; set; }
 
         #region Implementation of IHaveCustomMapping

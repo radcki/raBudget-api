@@ -8,7 +8,7 @@ namespace raBudget.Core.Dto.Budget
     {
         public List<BudgetCategoryMonthlyReportDto> BudgetCategoryReports { get; set; }
 
-        public IEnumerable<MonthReportDto> BudgetReports { get; set; }
+        public IEnumerable<MonthReportDto> TotalMonthlyReports { get; set; }
     }
 
     public class Month : IEquatable<Month>
@@ -57,7 +57,7 @@ namespace raBudget.Core.Dto.Budget
     {
         public int BudgetCategoryId { get; set; }
 
-        public IEnumerable<MonthReportDto> BudgetCategoryReports { get; set; }
+        public IEnumerable<MonthReportDto> MonthlyReports { get; set; }
     }
 
     public class MonthReportDto

@@ -66,7 +66,6 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         {
             var transactions = _db.Transactions
                                   .AsNoTracking()
-                                  .Include(x => x.BudgetCategory)
                                   .Where(x => x.BudgetCategory.BudgetId == budget.Id);
 
             /*--*/
@@ -104,6 +103,7 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             {
                 transactions = transactions.Where(x => x.CreationDateTime.Date <= filters.CreationDateEndFilter.Value.Date);
             }
+
             if (filters.CreationDateStartFilter != null)
             {
                 transactions = transactions.Where(x => x.CreationDateTime.Date >= filters.CreationDateStartFilter.Value.Date);
@@ -114,6 +114,7 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             {
                 transactions = transactions.Where(x => x.TransactionDateTime.Date <= filters.TransactionDateEndFilter.Value.Date);
             }
+
             if (filters.TransactionDateStartFilter != null)
             {
                 transactions = transactions.Where(x => x.TransactionDateTime.Date >= filters.TransactionDateStartFilter.Value.Date);
@@ -142,16 +143,20 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             }
 
 
-            if (filters.LimitResults != null)
+            if (filters.LimitCategoryTypeResults != null)
             {
-                transactions = transactions.Take(filters.LimitResults.Value);
+                var income = transactions.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Income)
+                                           .Take(filters.LimitCategoryTypeResults.Value);
+                var saving = transactions.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Saving)
+                                          .Take(filters.LimitCategoryTypeResults.Value);
+                var spending = transactions.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Spending)
+                                            .Take(filters.LimitCategoryTypeResults.Value);
+
+                transactions = spending.Union(income).Union(saving);
             }
 
-            return await transactions.ToListAsync();
-
+            return await transactions.Include(x=>x.BudgetCategory).ToListAsync();
         }
-
-        
 
         #endregion
     }

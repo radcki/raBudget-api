@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace raBudget.EfPersistence.Migrations
 {
-    public partial class _20191016 : Migration
+    public partial class _20191028 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -43,7 +43,7 @@ namespace raBudget.EfPersistence.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(160)", nullable: false),
                     CurrencyCode = table.Column<int>(nullable: false),
                     StartingDate = table.Column<DateTime>(nullable: false),
                     OwnedByUserId = table.Column<Guid>(nullable: false)
@@ -67,7 +67,7 @@ namespace raBudget.EfPersistence.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Type = table.Column<int>(nullable: false),
                     Icon = table.Column<string>(nullable: true),
-                    Name = table.Column<string>(nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(160)", nullable: false),
                     BudgetId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
@@ -113,10 +113,10 @@ namespace raBudget.EfPersistence.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Description = table.Column<string>(nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(160)", nullable: true),
                     Amount = table.Column<double>(nullable: false),
                     AllocationDateTime = table.Column<DateTime>(nullable: false),
-                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 10, 16, 17, 24, 32, 298, DateTimeKind.Local).AddTicks(9669)),
+                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 10, 28, 18, 1, 57, 40, DateTimeKind.Local).AddTicks(7288)),
                     CreatedByUserId = table.Column<Guid>(nullable: false),
                     TargetBudgetCategoryId = table.Column<int>(nullable: false),
                     SourceBudgetCategoryId = table.Column<int>(nullable: false)
@@ -173,7 +173,7 @@ namespace raBudget.EfPersistence.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     BudgetCategoryId = table.Column<int>(nullable: false),
-                    Description = table.Column<string>(nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(160)", nullable: true),
                     Amount = table.Column<double>(nullable: false),
                     Frequency = table.Column<int>(nullable: false),
                     PeriodStep = table.Column<int>(nullable: false),
@@ -204,10 +204,10 @@ namespace raBudget.EfPersistence.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Description = table.Column<string>(nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(160)", nullable: true),
                     Amount = table.Column<double>(nullable: false),
                     TransactionDateTime = table.Column<DateTime>(nullable: false),
-                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 10, 16, 17, 24, 32, 447, DateTimeKind.Local).AddTicks(1984)),
+                    CreationDateTime = table.Column<DateTime>(nullable: false, defaultValue: new DateTime(2019, 10, 28, 18, 1, 57, 190, DateTimeKind.Local).AddTicks(5525)),
                     CreatedByUserId = table.Column<Guid>(nullable: false),
                     BudgetCategoryId = table.Column<int>(nullable: false),
                     TransactionScheduleId = table.Column<int>(nullable: true)

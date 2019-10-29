@@ -39,38 +39,38 @@ namespace raBudget.Core.Handlers.BudgetHandlers.GetBudget
             reportDto.BudgetCategoryReports = categoryReports.Select(x => new BudgetCategoryMonthlyReportDto()
                                                                           {
                                                                               BudgetCategoryId = x.Category.Id,
-                                                                              BudgetCategoryReports = x.MonthByMonth
-                                                                                                       .Data
-                                                                                                       .Select(t => new MonthReportDto()
-                                                                                                                    {
-                                                                                                                        Month = new Month()
-                                                                                                                                {
-                                                                                                                                    MonthNumber = t.Month,
-                                                                                                                                    Year = t.Year
-                                                                                                                                },
-                                                                                                                        ReportData = new ReportDataDto()
-                                                                                                                                     {
-                                                                                                                                         AllocationsSum = t.AllocationsSum,
-                                                                                                                                         AveragePerDay = t.AveragePerDay,
-                                                                                                                                         TransactionsSum = t.TransactionsSum
-                                                                                                                                     }
-                                                                                                                    })
+                                                                              MonthlyReports = x.MonthByMonth
+                                                                                                .Data
+                                                                                                .Select(t => new MonthReportDto()
+                                                                                                             {
+                                                                                                                 Month = new Month()
+                                                                                                                         {
+                                                                                                                             MonthNumber = t.Month,
+                                                                                                                             Year = t.Year
+                                                                                                                         },
+                                                                                                                 ReportData = new ReportDataDto()
+                                                                                                                              {
+                                                                                                                                  AllocationsSum = t.AllocationsSum,
+                                                                                                                                  AveragePerDay = t.AveragePerDay,
+                                                                                                                                  TransactionsSum = t.TransactionsSum
+                                                                                                                              }
+                                                                                                             })
                                                                           })
                                                              .ToList();
 
-            reportDto.BudgetReports = reportDto.BudgetCategoryReports
-                                               .SelectMany(x => x.BudgetCategoryReports)
-                                               .GroupBy(x => x.Month)
-                                               .Select(t => new MonthReportDto()
-                                                            {
-                                                                Month = t.Key,
-                                                                ReportData = new ReportDataDto()
-                                                                             {
-                                                                                 AllocationsSum = t.Sum(g => g.ReportData.AllocationsSum),
-                                                                                 TransactionsSum = t.Sum(g => g.ReportData.TransactionsSum),
-                                                                                 AveragePerDay = t.Sum(g => g.ReportData.AveragePerDay)
-                                                                             }
-                                                            });
+            reportDto.TotalMonthlyReports = reportDto.BudgetCategoryReports
+                                                     .SelectMany(x => x.MonthlyReports)
+                                                     .GroupBy(x => x.Month)
+                                                     .Select(t => new MonthReportDto()
+                                                                  {
+                                                                      Month = t.Key,
+                                                                      ReportData = new ReportDataDto()
+                                                                                   {
+                                                                                       AllocationsSum = t.Sum(g => g.ReportData.AllocationsSum),
+                                                                                       TransactionsSum = t.Sum(g => g.ReportData.TransactionsSum),
+                                                                                       AveragePerDay = t.Sum(g => g.ReportData.AveragePerDay)
+                                                                                   }
+                                                                  });
             return reportDto;
         }
     }

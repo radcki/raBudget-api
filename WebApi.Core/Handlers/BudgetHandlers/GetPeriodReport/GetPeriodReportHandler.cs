@@ -39,21 +39,23 @@ namespace raBudget.Core.Handlers.BudgetHandlers.GetBudget
             reportDto.BudgetCategoryReports = categoryReports.Select(x => new BudgetCategoryPeriodReportDto()
                                                                           {
                                                                               BudgetCategoryId = x.Category.Id,
-                                                                              PeriodCategoryReport = new ReportDataDto()
-                                                                                                     {
-                                                                                                         AllocationsSum = x.PeriodReport.AllocationsSum,
-                                                                                                         AveragePerDay = x.PeriodReport.AveragePerDay,
-                                                                                                         TransactionsSum = x.PeriodReport.TransactionsSum
-                                                                              }
+                                                                              ReportData = new ReportDataDto()
+                                                                                           {
+                                                                                               BudgetedSum = x.PeriodReport.BudgetAmount,
+                                                                                               AllocationsSum = x.PeriodReport.AllocationsSum,
+                                                                                               AveragePerDay = x.PeriodReport.AveragePerDay,
+                                                                                               TransactionsSum = x.PeriodReport.TransactionsSum
+                                                                                           }
                                                                           })
                                                              .ToList();
 
-            reportDto.PeriodBudgetReport = new ReportDataDto()
-                                           {
-                                               AllocationsSum = reportDto.BudgetCategoryReports.Sum(g => g.PeriodCategoryReport.AllocationsSum),
-                                               TransactionsSum = reportDto.BudgetCategoryReports.Sum(g => g.PeriodCategoryReport.TransactionsSum),
-                                               AveragePerDay = reportDto.BudgetCategoryReports.Sum(g => g.PeriodCategoryReport.AveragePerDay)
-                                           };
+            reportDto.TotalPeriodReport = new ReportDataDto()
+                                          {
+                                              BudgetedSum = reportDto.BudgetCategoryReports.Sum(g => g.ReportData.BudgetedSum),
+                                              AllocationsSum = reportDto.BudgetCategoryReports.Sum(g => g.ReportData.AllocationsSum),
+                                              TransactionsSum = reportDto.BudgetCategoryReports.Sum(g => g.ReportData.TransactionsSum),
+                                              AveragePerDay = reportDto.BudgetCategoryReports.Sum(g => g.ReportData.AveragePerDay)
+                                          };
             return reportDto;
         }
     }

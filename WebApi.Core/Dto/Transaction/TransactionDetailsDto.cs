@@ -28,7 +28,6 @@ namespace raBudget.Core.Dto.Transaction
             // entity -> dto
             configuration.CreateMap<Domain.Entities.Transaction, TransactionDetailsDto>()
                          .ForMember(dto => dto.TransactionId, opt => opt.MapFrom(entity => entity.Id))
-                         .ForMember(dto => dto.Type, opt => opt.MapFrom(entity => entity.BudgetCategory.Type))
                          .ForMember(dto => dto.CreatedByUser, opt => opt.MapFrom(entity => entity.CreatedByUser))
                          .ForMember(dto => dto.TransactionDate, opt => opt.MapFrom(entity => entity.TransactionDateTime))
                          .ForMember(dto => dto.TransactionSchedule, opt => opt.MapFrom(entity => entity.TransactionSchedule))

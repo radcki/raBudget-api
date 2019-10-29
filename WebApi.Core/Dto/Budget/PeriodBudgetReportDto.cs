@@ -8,7 +8,7 @@ namespace raBudget.Core.Dto.Budget
     {
         public List<BudgetCategoryPeriodReportDto> BudgetCategoryReports { get; set; }
 
-        public ReportDataDto PeriodBudgetReport { get; set; }
+        public ReportDataDto TotalPeriodReport { get; set; }
     }
 
     
@@ -16,6 +16,6 @@ namespace raBudget.Core.Dto.Budget
     {
         public int BudgetCategoryId { get; set; }
 
-        public ReportDataDto PeriodCategoryReport { get; set; }
+        public ReportDataDto ReportData { get; set; }
     }
 }

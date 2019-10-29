@@ -9,8 +9,8 @@ using raBudget.EfPersistence.Contexts;
 namespace raBudget.EfPersistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20191016152432_2019-10-16")]
-    partial class _20191016
+    [Migration("20191028170157_2019-10-28")]
+    partial class _20191028
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -32,10 +32,11 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<DateTime>("CreationDateTime")
                         .ValueGeneratedOnAdd()
-                        .HasDefaultValue(new DateTime(2019, 10, 16, 17, 24, 32, 298, DateTimeKind.Local).AddTicks(9669));
+                        .HasDefaultValue(new DateTime(2019, 10, 28, 18, 1, 57, 40, DateTimeKind.Local).AddTicks(7288));
 
                     b.Property<string>("Description")
-                        .IsRequired();
+                        .HasColumnType("nvarchar(160)")
+                        .IsUnicode(true);
 
                     b.Property<int?>("SourceBudgetCategoryId")
                         .IsRequired();
@@ -63,7 +64,9 @@ namespace raBudget.EfPersistence.Migrations
                     b.Property<int>("CurrencyCode");
 
                     b.Property<string>("Name")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(160)")
+                        .IsUnicode(true);
 
                     b.Property<Guid>("OwnedByUserId");
 
@@ -86,7 +89,9 @@ namespace raBudget.EfPersistence.Migrations
                     b.Property<string>("Icon");
 
                     b.Property<string>("Name")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(160)")
+                        .IsUnicode(true);
 
                     b.Property<int>("Type");
 
@@ -933,10 +938,11 @@ namespace raBudget.EfPersistence.Migrations
 
                     b.Property<DateTime>("CreationDateTime")
                         .ValueGeneratedOnAdd()
-                        .HasDefaultValue(new DateTime(2019, 10, 16, 17, 24, 32, 447, DateTimeKind.Local).AddTicks(1984));
+                        .HasDefaultValue(new DateTime(2019, 10, 28, 18, 1, 57, 190, DateTimeKind.Local).AddTicks(5525));
 
                     b.Property<string>("Description")
-                        .IsRequired();
+                        .HasColumnType("nvarchar(160)")
+                        .IsUnicode(true);
 
                     b.Property<DateTime>("TransactionDateTime");
 
@@ -967,7 +973,8 @@ namespace raBudget.EfPersistence.Migrations
                     b.Property<Guid>("CreatedByUserId");
 
                     b.Property<string>("Description")
-                        .IsRequired();
+                        .HasColumnType("nvarchar(160)")
+                        .IsUnicode(true);
 
                     b.Property<DateTime?>("EndDate");
 

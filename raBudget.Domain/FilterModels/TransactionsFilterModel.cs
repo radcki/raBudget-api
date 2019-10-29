@@ -11,6 +11,11 @@ namespace raBudget.Domain.FilterModels
     /// </summary>
     public class TransactionsFilterModel
     {
+        public TransactionsFilterModel()
+        {
+            DataOrder = eDataOrder.Descending;
+            OrderBy = transaction => transaction.TransactionDateTime;
+        }
         public IEnumerable<int> TransactionIdFilter { get; set; }
         public IEnumerable<int> CategoryIdFilter { get; set; }
         public IEnumerable<Guid> CreatedByUserIdFilter { get; set; }
@@ -22,7 +27,7 @@ namespace raBudget.Domain.FilterModels
         public DateTime? CreationDateStartFilter { get; set; }
         public DateTime? CreationDateEndFilter { get; set; }
 
-        public int? LimitResults { get; set; }
+        public int? LimitCategoryTypeResults { get; set; }
         public eBudgetCategoryType? CategoryType { get; set; }
         public eDataOrder DataOrder { get; set; }
         public Func<Transaction, IComparable> OrderBy { get; set; }

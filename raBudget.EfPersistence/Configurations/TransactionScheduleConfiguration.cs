@@ -40,7 +40,7 @@ namespace raBudget.EfPersistence.Configurations
             builder.Property(f => f.PeriodStep).IsRequired();
 
             //Description
-            builder.Property(f => f.Description).IsRequired();
+            builder.Property(f => f.Description).HasColumnType("nvarchar(160)").IsUnicode(true);
 
             //Amount
             builder.Property(f => f.Amount).IsRequired();

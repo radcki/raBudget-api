@@ -39,7 +39,7 @@ namespace raBudget.EfPersistence.Configurations
                    .ValueGeneratedOnAdd();
 
             //Description
-            builder.Property(f => f.Description).IsRequired();
+            builder.Property(f => f.Description).HasColumnType("nvarchar(160)").IsUnicode(true);
 
         }
     }

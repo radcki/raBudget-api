@@ -14,7 +14,7 @@ namespace raBudget.EfPersistence.Configurations
             builder.Property(f=>f.Id).IsRequired().ValueGeneratedOnAdd();
 
             // Name
-            builder.Property(f => f.Name).IsRequired();
+            builder.Property(f => f.Name).IsRequired().HasColumnType("nvarchar(160)").IsUnicode(true);
 
             // Budget
             builder.HasIndex(f => f.BudgetId);
