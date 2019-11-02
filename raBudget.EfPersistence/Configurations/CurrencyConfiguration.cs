@@ -28,7 +28,7 @@ namespace raBudget.EfPersistence.Configurations
                                  .Cast<eCurrency>()
                                  .Select(Currency.Get);
             // Currency
-            builder.HasData(currencies);
+            builder.HasData(currencies.Where(x=>x != null));
 
 
         }
