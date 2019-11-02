@@ -48,16 +48,19 @@ namespace raBudget.Domain.Entities
 
         private static CultureInfo CultureInfoFromCurrencyISO(string isoCode)
         {
-            //CultureInfo cultureInfo = (from culture in CultureInfo.GetCultures(CultureTypes.SpecificCultures)
-            //  let region = new RegionInfo(culture.LCID)
-            //  where String.Equals(region.ISOCurrencySymbol, isoCode, StringComparison.InvariantCultureIgnoreCase)
-            //  select culture).First();
-            //return cultureInfo;
             foreach (CultureInfo ci in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
             {
-                RegionInfo ri = new RegionInfo(ci.LCID);
-                if (ri.ISOCurrencySymbol == isoCode)
-                    return ci;
+                try
+                {
+                    RegionInfo ri = new RegionInfo(ci.LCID);
+                    if (ri.ISOCurrencySymbol == isoCode)
+                        return ci;
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+                
             }
             throw new Exception("Currency code " + isoCode + " is not supported by the current .Net Framework.");
         }
@@ -71,7 +74,16 @@ namespace raBudget.Domain.Entities
         {
             var result = new Dictionary<eCurrency, Currency>();
             foreach (eCurrency code in System.Enum.GetValues(typeof(eCurrency)))
-                result.Add(code, new Currency(code));
+            {
+                try
+                {
+                    result.Add(code, new Currency(code));
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+            }
             return result;
         }
     }
