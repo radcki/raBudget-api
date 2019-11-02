@@ -28,9 +28,9 @@ namespace raBudget.Domain.Entities
             var cultureInfo = CultureInfoFromCurrencyISO(Code);
             NumberFormat = cultureInfo.NumberFormat;
             var region = new RegionInfo(cultureInfo.LCID);
-            Symbol = region.CurrencySymbol;
-            EnglishName = region.CurrencyEnglishName;
-            NativeName = region.CurrencyNativeName;
+            Symbol = region?.CurrencySymbol;
+            EnglishName = region?.CurrencyEnglishName;
+            NativeName = region?.CurrencyNativeName;
         }
 
         public static Currency Get(eCurrency currencyCode)
