@@ -9,4 +9,4 @@ RUN dotnet publish raBudget-Api.sln -c Release -o /app/out
 FROM mcr.microsoft.com/dotnet/core/aspnet:2.2 AS runtime
 WORKDIR /app
 COPY --from=build /app/out ./
-ENTRYPOINT ["dotnet", "WebApi.dll"]
+ENTRYPOINT ["dotnet", "raBudget.WebApi.dll"]
