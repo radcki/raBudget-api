@@ -31,6 +31,8 @@ namespace raBudget.EfPersistence.RepositoryImplementations
                                             .Include(x=>x.OwnedByUser)
                                             .Include(x=>x.BudgetCategories).ThenInclude(x=>x.BudgetCategoryBudgetedAmounts)
                                             .Include(x => x.BudgetCategories).ThenInclude(x => x.Transactions)
+                                            .Include(x => x.BudgetCategories).ThenInclude(x => x.SourceAllocations)
+                                            .Include(x => x.BudgetCategories).ThenInclude(x => x.TargetAllocations)
                                             .Where(x => x.OwnedByUserId == userId
                                                         || x.BudgetShares.Any(s => s.SharedWithUserId == userId)));
         }
