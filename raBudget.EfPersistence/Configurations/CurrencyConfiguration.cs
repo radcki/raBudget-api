@@ -17,9 +17,9 @@ namespace raBudget.EfPersistence.Configurations
 
             builder.HasIndex(x => x.Code);
             builder.Property(x => x.Code).IsRequired();
-            builder.Property(x => x.EnglishName).IsRequired();
-            builder.Property(x => x.NativeName).IsRequired();
-            builder.Property(x => x.Symbol).IsRequired();
+            builder.Property(x => x.EnglishName).IsUnicode(true).IsRequired();
+            builder.Property(x => x.NativeName).IsUnicode(true).IsRequired();
+            builder.Property(x => x.Symbol).IsUnicode(true).IsRequired();
 
             builder.Ignore(x => x.NumberFormat);
 
