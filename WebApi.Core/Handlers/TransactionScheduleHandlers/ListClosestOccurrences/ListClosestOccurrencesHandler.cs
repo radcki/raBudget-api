@@ -56,7 +56,7 @@ namespace raBudget.Core.Handlers.TransactionScheduleHandlers.ListClosestOccurren
                                         });
             }
 
-            return occurrences;
+            return occurrences.OrderBy(x=>x.TransactionDate);
         }
     }
 }

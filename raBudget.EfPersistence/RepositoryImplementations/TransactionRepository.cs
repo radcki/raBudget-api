@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -15,12 +14,20 @@ namespace raBudget.EfPersistence.RepositoryImplementations
 {
     public class TransactionRepository : ITransactionRepository
     {
+        #region Privates
+
         private readonly DataContext _db;
+
+        #endregion
+
+        #region Constructors
 
         public TransactionRepository(DataContext dataContext)
         {
             _db = dataContext;
         }
+
+        #endregion
 
         #region Implementation of IAsyncRepository<Transaction,in int>
 
@@ -146,16 +153,16 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             if (filters.LimitCategoryTypeResults != null)
             {
                 var income = transactions.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Income)
-                                           .Take(filters.LimitCategoryTypeResults.Value);
+                                         .Take(filters.LimitCategoryTypeResults.Value);
                 var saving = transactions.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Saving)
-                                          .Take(filters.LimitCategoryTypeResults.Value);
+                                         .Take(filters.LimitCategoryTypeResults.Value);
                 var spending = transactions.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Spending)
-                                            .Take(filters.LimitCategoryTypeResults.Value);
+                                           .Take(filters.LimitCategoryTypeResults.Value);
 
                 transactions = spending.Union(income).Union(saving);
             }
 
-            return await transactions.Include(x=>x.BudgetCategory).ToListAsync();
+            return await transactions.Include(x => x.BudgetCategory).ToListAsync();
         }
 
         #endregion
