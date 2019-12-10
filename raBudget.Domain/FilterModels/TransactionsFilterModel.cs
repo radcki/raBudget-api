@@ -14,7 +14,6 @@ namespace raBudget.Domain.FilterModels
         public TransactionsFilterModel()
         {
             DataOrder = eDataOrder.Descending;
-            OrderBy = transaction => transaction.TransactionDateTime;
         }
         public IEnumerable<int> TransactionIdFilter { get; set; }
         public IEnumerable<int> CategoryIdFilter { get; set; }
