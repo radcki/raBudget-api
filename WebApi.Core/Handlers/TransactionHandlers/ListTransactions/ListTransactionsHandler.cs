@@ -32,7 +32,9 @@ namespace raBudget.Core.Handlers.TransactionHandlers.ListTransactions
                 request.Filters = new TransactionFilterDto();
             }
 
-            var transactions = await TransactionRepository.ListWithFilter(Mapper.Map<Budget>(request.Budget), Mapper.Map<TransactionsFilterModel>(request.Filters));
+            var filters = Mapper.Map<TransactionsFilterModel>(request.Filters);
+            filters.OrderBy = x => x.CreationDateTime;
+            var transactions = await TransactionRepository.ListWithFilter(Mapper.Map<Budget>(request.Budget), filters);
             
             return Mapper.Map<IEnumerable<TransactionDetailsDto>>(transactions);
         }
