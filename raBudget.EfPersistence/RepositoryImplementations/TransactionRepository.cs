@@ -148,6 +148,11 @@ namespace raBudget.EfPersistence.RepositoryImplementations
                         throw new ArgumentOutOfRangeException();
                 }
             }
+            else
+            {
+                transactions = transactions.OrderByDescending(x => x.TransactionDateTime)
+                                           .ThenByDescending(x => x.CreationDateTime);
+            }
 
 
             if (filters.LimitCategoryTypeResults != null)

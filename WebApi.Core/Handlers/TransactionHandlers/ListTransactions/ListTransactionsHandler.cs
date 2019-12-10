@@ -12,6 +12,7 @@ using raBudget.Core.Infrastructure.AutoMapper;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
+using raBudget.Domain.Enum;
 using raBudget.Domain.FilterModels;
 
 namespace raBudget.Core.Handlers.TransactionHandlers.ListTransactions
@@ -33,7 +34,7 @@ namespace raBudget.Core.Handlers.TransactionHandlers.ListTransactions
             }
 
             var filters = Mapper.Map<TransactionsFilterModel>(request.Filters);
-            filters.OrderBy = x => x.CreationDateTime;
+           
             var transactions = await TransactionRepository.ListWithFilter(Mapper.Map<Budget>(request.Budget), filters);
             
             return Mapper.Map<IEnumerable<TransactionDetailsDto>>(transactions);
