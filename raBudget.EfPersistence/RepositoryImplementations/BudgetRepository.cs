@@ -87,6 +87,18 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             return await _db.SaveChangesAsync(cancellationToken);
         }
 
+        /// <inheritdoc />
+        public Task<bool> IsAccessibleToUser(User user, int budgetId)
+        {
+            return IsAccessibleToUser(user.Id, budgetId);
+        }
+
+        /// <inheritdoc />
+        public Task<bool> IsAccessibleToUser(Guid userId, int budgetId)
+        {
+            return _db.Budgets.AnyAsync(x => x.Id == budgetId && x.OwnedByUserId == userId || x.BudgetShares.Any(s => s.SharedWithUserId == userId));
+        }
+
         #endregion
 
     }

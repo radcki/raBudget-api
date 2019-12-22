@@ -2,13 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using raBudget.Core.Dto.Transaction;
-using raBudget.Core.Handlers.TransactionHandlers.CreateTransaction;
-using raBudget.Core.Handlers.TransactionHandlers.DeleteTransaction;
-using raBudget.Core.Handlers.TransactionHandlers.GetTransaction;
-using raBudget.Core.Handlers.TransactionHandlers.ListTransactions;
-using raBudget.Core.Handlers.TransactionHandlers.UpdateTransaction;
-using raBudget.Core.Handlers.UserHandlers.SetDefaultBudget;
-using BudgetDto = raBudget.Core.Dto.Budget.BudgetDto;
+using raBudget.Core.Handlers.TransactionHandlers.Command;
+using raBudget.Core.Handlers.TransactionHandlers.Query;
 using TransactionDto = raBudget.Core.Dto.Transaction.TransactionDto;
 
 namespace WebApi.Controllers
@@ -21,46 +16,37 @@ namespace WebApi.Controllers
         #region Transactions CRUD
 
         /// <summary>
-        /// Get list of transactions available for user - both owned and shared
+        ///  Get list of transactions from budget, filtered by query string
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult> Get([FromRoute] int budgetId)
+        public async Task<ActionResult> Get([FromRoute] int budgetId,[FromQuery] ListTransactions.Query query)
         {
-            var response = await Mediator.Send(new ListTransactionsRequest(new BudgetDto() {BudgetId = budgetId}));
-            return Ok(response);
+            query.BudgetId = budgetId;
+            var response = await Mediator.Send(query);
+            return Ok(response.Data);
         }
 
         /// <summary>
         ///  Get details of specific transaction, identified by id
         /// </summary>
         /// <returns></returns>
-        [HttpGet("{id}")]
-        public async Task<ActionResult> GetById([FromRoute] int id)
+        [HttpGet("{query.TransactionId}")]
+        public async Task<ActionResult> GetById([FromQuery] GetTransaction.Query query)
         {
-            var response = await Mediator.Send(new GetTransactionRequest(id));
-            return Ok(response);
-        }
-
-        [HttpPost("filter")]
-        public async Task<ActionResult> GetFiltered([FromBody] TransactionFilterDto filters, [FromRoute] int budgetId)
-        {
-            var response = await Mediator.Send(new ListTransactionsRequest(new BudgetDto() {BudgetId = budgetId})
-                                               {
-                                                   Filters = filters
-                                               });
-            return Ok(response);
+            var response = await Mediator.Send(query);
+            return Ok(response.Data);
         }
 
         /// <summary>
         /// Create new transaction
         /// </summary>
-        /// <param name="transactionDto"></param>
+        /// <param name="query"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] TransactionDto transactionDto)
+        public async Task<ActionResult> Create([FromBody] CreateTransaction.Request query)
         {
-            var response = await Mediator.Send(new CreateTransactionRequest(transactionDto));
+            var response = await Mediator.Send(query);
             return Ok(response);
         }
 
@@ -69,10 +55,10 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update([FromBody] TransactionDetailsDto transactionDto, [FromRoute] int id)
+        public async Task<ActionResult> Update([FromBody] UpdateTransaction.Request query, [FromRoute] int id)
         {
-            transactionDto.TransactionId = id;
-            var response = await Mediator.Send(new UpdateTransactionRequest(transactionDto));
+            query.TransactionId = id;
+            var response = await Mediator.Send(query);
             return Ok(response);
         }
 
@@ -83,356 +69,10 @@ namespace WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete([FromRoute] int id)
         {
-            var response = await Mediator.Send(new DeleteTransactionRequest(id));
+            var response = await Mediator.Send(new DeleteTransaction.Request(){TransactionId = id});
             return Ok(response);
         }
 
         #endregion
-
-
-        /*
-        private readonly TransactionsNotifier _transactionsNotifier;
-        private readonly UserService _userService;
-        private User UserEntity => _userService.GetByClaimsPrincipal(User).Data;
-        public TransactionsController(DataContext context, TransactionsNotifier transactionsNotifier, UserService userService)
-        {
-            DatabaseContext = context;
-            _transactionsNotifier = transactionsNotifier;
-            _userService = userService;
-        }
-
-        [HttpPost]
-        public IActionResult CreateTransaction([FromBody] TransactionDto transactionDto)
-        {
-            if (User != null)
-                try
-                {
-                    var categoryEntity =
-                        DatabaseContext.BudgetCategories.Single(x => x.TargetBudgetCategoryId ==
-                                                                     transactionDto.Category.TargetBudgetCategoryId);
-                    if (UserEntity.Budgets.All(x => x.BudgetId != categoryEntity.Budget.BudgetId))
-                        return BadRequest(new {Message = "category.invalid"});
-                    var transaction = new Transaction
-                                      {
-                                          TargetBudgetCategoryId = categoryEntity.TargetBudgetCategoryId,
-                                          CreatedByUserId = User.UserId().Value,
-                                          Description = transactionDto.Description,
-                                          Amount = transactionDto.Amount,
-                                          CreationDateTime = DateTime.Now,
-                                          TransactionDateTime = transactionDto.Date,
-                                          TransactionScheduleId = transactionDto.TransactionSchedule?.TransactionScheduleId
-                                      };
-                    DatabaseContext.Transactions.Add(transaction);
-                    DatabaseContext.SaveChanges();
-                    PrecalculateTransactionsSum(transaction.BudgetCategory);
-                    var savedTransactionDto = new TransactionDto
-                                         {
-                                             TransactionId = transaction.TransactionId,
-                                             Category = new BudgetCategoryDto
-                                                        {
-                                                            TargetBudgetCategoryId = transaction.BudgetCategory.TargetBudgetCategoryId,
-                                                            Icon = transaction.BudgetCategory.Icon,
-                                                            Name = transaction.BudgetCategory.Name,
-                                                            Type = transaction.BudgetCategory.Type
-                                                        },
-                                             Budget = new BudgetDto() { Id = categoryEntity.BudgetId},
-                                             Date = transaction.TransactionDateTime,
-                                             RegisteredDate = transaction.CreationDateTime,
-                                             Description = transaction.Description,
-                                             Amount = transaction.Amount
-                                         };
-                    _ = _transactionsNotifier.TransactionAdded(User.UserId().Value, savedTransactionDto);
-                    
-                    return Ok(savedTransactionDto);
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(new {message = ex.Message});
-                }
-
-            return Unauthorized();
-        }
-
-        [HttpGet("{id}")]
-        public IActionResult GetById(int id, int budgetId)
-        {
-            if (User != null)
-                try
-                {
-                    var transaction = DatabaseContext.Transactions.Single(x => x.TransactionId == id);
-                    if (!_userService.GetByClaimsPrincipal(User)
-                                     .Data
-                                     .Budgets
-                                     .Any(x=>x.BudgetId == transaction.BudgetCategory.Budget.BudgetId))
-                    {
-                        return BadRequest(new {Message = "transactions.notFound"});
-                    }
-
-                    return Ok(new TransactionDto
-                              {
-                                  TransactionId = transaction.TransactionId,
-                                  Category = new BudgetCategoryDto
-                                             {
-                                                 TargetBudgetCategoryId = transaction.BudgetCategory.TargetBudgetCategoryId,
-                                                 Icon = transaction.BudgetCategory.Icon,
-                                                 Name = transaction.BudgetCategory.Name,
-                                                 Type = transaction.BudgetCategory.Type
-                                             },
-                                  Date = transaction.TransactionDateTime,
-                                  RegisteredDate = transaction.CreationDateTime,
-                                  Description = transaction.Description,
-                                  Amount = transaction.Amount,
-                                  Budget = new BudgetDataDto()
-                                           {
-                                               Currency = transaction.BudgetCategory.Budget.Currency,
-                                               IncomeCategories = transaction.BudgetCategory.Budget
-                                                                             .BudgetCategories
-                                                                             .Where(x => x.Type == eBudgetCategoryType.Income)
-                                                                             .ToDtoList(),
-                                               SavingCategories = transaction.BudgetCategory.Budget
-                                                                             .BudgetCategories
-                                                                             .Where(x => x.Type == eBudgetCategoryType.Saving)
-                                                                             .ToDtoList(),
-                                               SpendingCategories = transaction.BudgetCategory.Budget
-                                                                               .BudgetCategories
-                                                                               .Where(x => x.Type == eBudgetCategoryType.Spending)
-                                                                               .ToDtoList()
-                                  }
-                              });
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(new {message = ex.Message});
-                }
-
-            return Unauthorized();
-        }
-
-        [HttpPost("list")]
-        public IActionResult ListTransactions([FromBody] TransactionsListFiltersDto filters)
-        {
-            if (User != null)
-                try
-                {
-                    var userId = User.UserId();
-                    var budget = DatabaseContext.Budgets.Single(x => x.BudgetId == filters.BudgetId && x.UserId == userId);
-                    if (budget.IsNullOrDefault()) return BadRequest(new {Message = "budget.invalid"});
-                    
-                    var transactions = DatabaseContext.Transactions
-                                           .Include(b => b.BudgetCategory)
-                                           .ThenInclude(b=>b.Budget)
-                                           .Where(x => x.BudgetCategory.BudgetId == budget.BudgetId 
-                                                       && x.BudgetCategory.Budget.UserId == budget.UserId);
-
-
-                    if (!filters.StartDate.IsNullOrDefault())
-                    {
-                        var filter = filters.StartDate.GetValueOrDefault();
-                        transactions = transactions.Where(x => x.TransactionDateTime >= filter);
-
-                    }
-
-                    if (!filters.EndDate.IsNullOrDefault())
-                    {
-                        var filter = filters.EndDate.GetValueOrDefault();
-                        transactions = transactions.Where(x => x.TransactionDateTime <= filter);
-
-                    }
-
-                    if (!filters.Categories.IsNullOrDefault())
-                    {
-                        var filterIds = filters.Categories.Select(x => x.TargetBudgetCategoryId);
-                        transactions = transactions.Where(x => filterIds.Any(s=>s == x.BudgetCategory.TargetBudgetCategoryId));
-                    }
-
-
-                    transactions = transactions.OrderByDescending(x => x.TransactionDateTime)
-                                         .ThenByDescending(x => x.CreationDateTime);
-                    var transactionsList = transactions.ToList();
-
-                    var spendings = transactionsList.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Spending);
-                    var income = transactionsList.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Income);
-                    var saving = transactionsList.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Saving);
-
-                    if (!filters.GroupCount.IsNullOrDefault())
-                    {
-                        var count = filters.GroupCount.GetValueOrDefault();
-                        spendings = spendings.Take(count);
-                        income = income.Take(count);
-                        saving = saving.Take(count);
-                    }
-
-                    return Ok(new
-                              {
-                                  Spendings = spendings.Select(x => new TransactionDto
-                                                                    {
-                                                                        TransactionId = x.TransactionId,
-                                                                        Description = x.Description,
-                                                                        Date = x.TransactionDateTime,
-                                                                        RegisteredDate = x.CreationDateTime,
-                                                                        Amount = x.Amount,
-                                                                        Category =
-                                                                            new BudgetCategoryDto
-                                                                            {
-                                                                                Name = x.BudgetCategory.Name,
-                                                                                Icon = x.BudgetCategory.Icon,
-                                                                                TargetBudgetCategoryId = x.TargetBudgetCategoryId
-                                                                            }
-                                                                    }).ToList(),
-
-                                  Incomes = income.Select(x => new TransactionDto
-                                                               {
-                                                                   TransactionId = x.TransactionId,
-                                                                   Description = x.Description,
-                                                                   Date = x.TransactionDateTime,
-                                                                   RegisteredDate = x.CreationDateTime,
-                                                                   Amount = x.Amount,
-                                                                   Category = new BudgetCategoryDto
-                                                                              {
-                                                                                  Name = x.BudgetCategory.Name,
-                                                                                  Icon = x.BudgetCategory.Icon,
-                                                                                  TargetBudgetCategoryId = x.TargetBudgetCategoryId
-                                                                              }
-                                                               }).ToList(),
-
-                                  Savings = saving.Select(x => new TransactionDto
-                                                               {
-                                                                   TransactionId = x.TransactionId,
-                                                                   Description = x.Description,
-                                                                   Date = x.TransactionDateTime,
-                                                                   RegisteredDate = x.CreationDateTime,
-                                                                   Amount = x.Amount,
-                                                                   Category = new BudgetCategoryDto
-                                                                              {
-                                                                                  Name = x.BudgetCategory.Name,
-                                                                                  Icon = x.BudgetCategory.Icon,
-                                                                                  TargetBudgetCategoryId = x.TargetBudgetCategoryId
-                                                                              }
-                                                               }).ToList()
-                              });
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(new {message = ex.Message});
-                }
-
-            return Unauthorized();
-        }
-
-        [HttpPost("transfer")]
-        public IActionResult TransferToCategory([FromBody] TransactionsTransferDto transactionTransferDto)
-        {
-            if (User != null)
-                try
-                {
-                    var budget = UserEntity.Budgets.Single(x => x.BudgetId == transactionTransferDto.BudgetId);
-                    var sourceCategory =
-                        budget.BudgetCategories.Single(x => x.TargetBudgetCategoryId ==
-                                                            transactionTransferDto.SourceCategory);
-                    var targetCategory =
-                        budget.BudgetCategories.Single(x => x.TargetBudgetCategoryId ==
-                                                            transactionTransferDto.TargetCategory);
-
-                    sourceCategory.Transactions.ForEach(x => x.TargetBudgetCategoryId = targetCategory.TargetBudgetCategoryId);
-
-                    DatabaseContext.SaveChanges();
-                    PrecalculateTransactionsSum(sourceCategory);
-                    PrecalculateTransactionsSum(targetCategory);
-                    return Ok();
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(new {message = ex.Message});
-                }
-
-            return Unauthorized();
-        }
-
-        [HttpPost("{id}")]
-        public IActionResult UpdateTransaction(int id, [FromBody] TransactionDto transactionDto)
-        {
-            if (User != null)
-                try
-                {
-                    var categoryEntity =
-                        DatabaseContext.BudgetCategories.Single(x => x.TargetBudgetCategoryId ==
-                                                                     transactionDto.Category.TargetBudgetCategoryId);
-                    if (!UserEntity.Budgets.Any(x=>x.BudgetId == categoryEntity.Budget.BudgetId))
-                        return BadRequest(new { Message = "category.invalid" });
-
-                    var transactionEntity = DatabaseContext.Transactions.Single(x => x.TransactionId == id);
-                    transactionEntity.Amount = transactionDto.Amount;
-                    transactionEntity.Description = transactionDto.Description;
-                    transactionEntity.TransactionDateTime = transactionDto.Date;
-                    transactionEntity.TargetBudgetCategoryId = categoryEntity.TargetBudgetCategoryId;
-
-                    DatabaseContext.SaveChanges();
-                    PrecalculateTransactionsSum(categoryEntity);
-                    var updatedTransactionDto = new TransactionDto()
-                                                {
-                                                    TransactionId = transactionEntity.TransactionId,
-                                                    Category = new BudgetCategoryDto
-                                                               {
-                                                                   TargetBudgetCategoryId = transactionEntity.BudgetCategory.TargetBudgetCategoryId,
-                                                                   Icon = transactionEntity.BudgetCategory.Icon,
-                                                                   Name = transactionEntity.BudgetCategory.Name,
-                                                                   Type = transactionEntity.BudgetCategory.Type
-                                                               },
-                                                    Budget = new BudgetDto() { Id = categoryEntity.BudgetId },
-                                                    Date = transactionEntity.TransactionDateTime,
-                                                    RegisteredDate = transactionEntity.CreationDateTime,
-                                                    Description = transactionEntity.Description,
-                                                    Amount = transactionEntity.Amount
-                                                };
-                    _ = _transactionsNotifier.TransactionUpdated(User.UserId().Value, updatedTransactionDto);
-
-                    return Ok(updatedTransactionDto);
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(new { message = ex.Message });
-                }
-
-            return Unauthorized();
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult DeleteTransaction(int id)
-        {
-            if (User != null)
-                try
-                {
-                    var transactionEntity = DatabaseContext.Transactions.Single(x => x.TransactionId == id);
-
-                    var categoryEntity =
-                        DatabaseContext.BudgetCategories.Single(x => x.TargetBudgetCategoryId == transactionEntity.TargetBudgetCategoryId);
-
-                    if (!UserEntity.Budgets.Any(x=>x.BudgetId == categoryEntity.Budget.BudgetId))
-                        return BadRequest(new { Message = "category.invalid" });
-
-                    DatabaseContext.Transactions.Remove(transactionEntity);
-
-                    DatabaseContext.SaveChanges();
-                    PrecalculateTransactionsSum(transactionEntity.BudgetCategory);
-
-                    _ = _transactionsNotifier.TransactionRemoved(User.UserId().Value, id);
-                    return Ok();
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(new { message = ex.Message });
-                }
-
-            return Unauthorized();
-        }
-
-        private void PrecalculateTransactionsSum(BudgetCategory category)
-        {
-            DatabaseContext.BudgetCategories
-                        .First(x=>x.TargetBudgetCategoryId == category.TargetBudgetCategoryId)
-                        .TransactionsSum = category.Transactions.Sum(x => x.Amount);
-            DatabaseContext.SaveChanges();
-        }
-        */
     }
 }

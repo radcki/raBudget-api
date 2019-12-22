@@ -19,7 +19,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
@@ -37,7 +37,6 @@ using Serilog;
 using WebApi.Filters;
 using WebApi.Hubs;
 using WebApi.Providers;
-using ILogger = Serilog.ILogger;
 using ValidationProblemDetails = raBudget.WebApi.Models.ValidationProblemDetails;
 using ValidationException = raBudget.Core.Exceptions.ValidationException;
 
@@ -47,7 +46,7 @@ namespace WebApi
     {
         #region Constructors
 
-        public Startup(IConfiguration configuration, IHostingEnvironment environment)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
             Environment = environment;
@@ -58,7 +57,7 @@ namespace WebApi
         #region Properties
 
         public IConfiguration Configuration { get; }
-        private IHostingEnvironment Environment { get; }
+        private IWebHostEnvironment Environment { get; }
         
         #endregion
 
@@ -139,11 +138,11 @@ namespace WebApi
 
             // MVC
             services.AddMvc(options => { options.Filters.Add(typeof(ValidateModelStateAttribute)); })
-                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
                     .AddJsonOptions(options =>
                                     {
                                         //options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-                                        options.SerializerSettings.NullValueHandling = NullValueHandling.Include;
+                                        options.JsonSerializerOptions.IgnoreNullValues = false;
                                     }); ;
 
             // Headers
@@ -168,8 +167,7 @@ namespace WebApi
 
             // Exception handling
             services.AddProblemDetails(ConfigureProblemDetails)
-                    .AddMvcCore()
-                    .AddJsonFormatters(x => x.NullValueHandling = NullValueHandling.Ignore);
+                    .AddMvcCore();
             
             // SignalR
             services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
@@ -179,7 +177,7 @@ namespace WebApi
         }
 
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseSerilogRequestLogging();
 
@@ -220,14 +218,17 @@ namespace WebApi
                                  c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "raBudget API V1");
                              });
 
-            app.UseMvc();
+            app.UseRouting();
+            app.UseAuthorization();
             app.UseHttpsRedirection();
 
-            app.UseSignalR(routes =>
-                           {
-                               routes.MapHub<BudgetsHub>("/hubs/budgets");
-                               routes.MapHub<TransactionsHub>("/hubs/transactions");
-                           });
+            app.UseEndpoints(endpoints =>
+                             {
+                                 endpoints.MapControllers();
+                                 endpoints.MapHub<BudgetsHub>("/hubs/budgets");
+                                 endpoints.MapHub<TransactionsHub>("/hubs/transactions");
+                             });
+
         }
 
         private void ConfigureProblemDetails(ProblemDetailsOptions options)

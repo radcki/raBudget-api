@@ -14,9 +14,9 @@ namespace raBudget.Core.Dto.Transaction
         public int TransactionId { get; set; }
         public int BudgetCategoryId { get; set; }
         public int? TransactionScheduleId { get; set; }
+        public eBudgetCategoryType Type { get; set; }
         public string Description { get; set; }
         public double Amount { get; set; }
-        public BudgetDto Budget { get; set; }
         public UserDto CreatedByUser { get; set; }
         public DateTime TransactionDate { get; set; }
         public DateTime RegisteredDate { get; set; } = DateTime.Now;
@@ -42,6 +42,7 @@ namespace raBudget.Core.Dto.Transaction
                          .ForMember(dto => dto.CreatedByUser, opt => opt.MapFrom(entity => entity.CreatedByUser))
                          .ForMember(dto => dto.TransactionDate, opt => opt.MapFrom(entity => entity.TransactionDateTime))
                          .ForMember(dto => dto.RegisteredDate, opt => opt.MapFrom(entity => entity.CreationDateTime))
+                         .ForMember(dto => dto.Type, opt => opt.MapFrom(entity => entity.BudgetCategory.Type))
                          .ForMember(dto => dto.BudgetCategoryId, opt => opt.MapFrom(entity => entity.BudgetCategoryId));
         }
 

@@ -11,6 +11,7 @@ using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
 using raBudget.Domain.Enum;
 using Xunit;
+using Range = Moq.Range;
 
 namespace raBudget.Core.Tests.Handlers.Budget
 {

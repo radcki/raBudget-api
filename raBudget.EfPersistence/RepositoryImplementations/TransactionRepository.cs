@@ -72,6 +72,8 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         public async Task<IReadOnlyList<Transaction>> ListWithFilter(Budget budget, TransactionsFilterModel filters)
         {
             var transactions = _db.Transactions
+                                  .Include(x => x.BudgetCategory)
+                                  .Include(x=>x.CreatedByUser)
                                   .AsNoTracking()
                                   .Where(x => x.BudgetCategory.BudgetId == budget.Id);
 
@@ -158,16 +160,16 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             if (filters.LimitCategoryTypeResults != null)
             {
                 var income = transactions.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Income)
-                                         .Take(filters.LimitCategoryTypeResults.Value);
+                                         .Take(filters.LimitCategoryTypeResults.Value).ToList();
                 var saving = transactions.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Saving)
-                                         .Take(filters.LimitCategoryTypeResults.Value);
+                                         .Take(filters.LimitCategoryTypeResults.Value).ToList();
                 var spending = transactions.Where(x => x.BudgetCategory.Type == eBudgetCategoryType.Spending)
-                                           .Take(filters.LimitCategoryTypeResults.Value);
+                                           .Take(filters.LimitCategoryTypeResults.Value).ToList();
 
-                transactions = spending.Union(income).Union(saving);
+                return spending.Union(income).Union(saving).ToList();
             }
 
-            return await transactions.Include(x => x.BudgetCategory).ToListAsync();
+            return await transactions.ToListAsync();
         }
 
         #endregion

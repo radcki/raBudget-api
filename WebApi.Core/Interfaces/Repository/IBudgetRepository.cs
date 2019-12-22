@@ -23,5 +23,8 @@ namespace raBudget.Core.Interfaces.Repository
         /// <returns>Collection of budget entities</returns>
         Task<IEnumerable<Budget>> ListOwnedBudgets(Guid userId);
 
+        Task<bool> IsAccessibleToUser(User user, int budgetId);
+        Task<bool> IsAccessibleToUser(Guid userId, int budgetId);
+
     }
 }
