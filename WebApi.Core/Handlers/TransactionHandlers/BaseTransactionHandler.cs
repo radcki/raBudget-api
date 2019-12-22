@@ -18,7 +18,7 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers
         protected readonly IMapper Mapper;
         protected readonly IAuthenticationProvider AuthenticationProvider;
 
-        public BaseTransactionHandler
+        protected BaseTransactionHandler
         (IBudgetCategoryRepository budgetCategoryRepository,
          ITransactionRepository transactionRepository,
          IMapper mapper,

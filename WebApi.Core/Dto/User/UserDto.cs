@@ -32,7 +32,8 @@ namespace raBudget.Core.Dto.User
 
             // entity -> dto
             configuration.CreateMap<Domain.Entities.User, UserDto>()
-                         .ForMember(dto => dto.UserId, opt => opt.MapFrom(entity => entity.Id));
+                         .ForMember(dto => dto.UserId, opt => opt.MapFrom(entity => entity.Id))
+                         .ForMember(dto => dto.CreationDate, opt => opt.MapFrom(entity => entity.CreationTime));
         }
 
         #endregion

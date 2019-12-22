@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using RestSharp;
 using RestSharp.Authenticators;
 
-namespace WebApi.Services
+namespace raBudget.WebApi.Services
 {
-    public class EmailService : IEmailSender
+    public class EmailService //: IEmailSender
     {
         #region Constructors
 
