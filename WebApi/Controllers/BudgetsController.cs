@@ -1,22 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using raBudget.Core.Dto.Budget;
-using raBudget.Core.Handlers.BudgetHandlers.CreateBudget;
-using raBudget.Core.Handlers.BudgetHandlers.DeleteBudget;
-using raBudget.Core.Handlers.BudgetHandlers.GetBudget;
-using raBudget.Core.Handlers.BudgetHandlers.GetMonthlyReport;
 using raBudget.Core.Handlers.BudgetHandlers.GetUnassignedFunds;
-using raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets;
-using raBudget.Core.Handlers.BudgetHandlers.UpdateBudget;
+using raBudget.Core.Handlers.BudgetHandlers.Query;
 using raBudget.Core.Handlers.UserHandlers.SetDefaultBudget;
 using raBudget.Domain.Entities;
 using raBudget.Domain.Enum;
+using WebApi.Controllers;
 
-namespace WebApi.Controllers
+namespace raBudget.WebApi.Controllers
 {
     [Authorize]
     [ApiController]
@@ -30,10 +23,10 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult> Get()
+        public async Task<ActionResult> Get([FromQuery] ListAvailableBudgets.Query query)
         {
-            var response = await Mediator.Send(new ListAvailableBudgetsRequest());
-            return Ok(response);
+            var response = await Mediator.Send(query);
+            return Ok(response.Data);
         }
 
         /// <summary>
@@ -43,21 +36,20 @@ namespace WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult> GetById([FromRoute] int id)
         {
-            var response = await Mediator.Send(new GetBudgetRequest(id));
-            return Ok(response);
+            var response = await Mediator.Send(new GetBudget.Query(){BudgetId = id});
+            return Ok(response.Data);
         }
 
         /// <summary>
         /// Create new budget
         /// </summary>
-        /// <param name="budgetDto"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] BudgetDto budgetDto)
+        public async Task<ActionResult> Create([FromBody] CreateBudget.Request request)
         {
-            budgetDto.OwnedByUser = AuthenticationProvider.User;
-            var response = await Mediator.Send(new CreateBudgetRequest(budgetDto));
-            return Ok(response);
+            var response = await Mediator.Send(request);
+            return Ok(response.Data);
         }
 
         /// <summary>
@@ -65,11 +57,11 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update([FromBody] BudgetDto budgetDto, [FromRoute] int id)
+        public async Task<ActionResult> Update([FromBody] UpdateBudget.Request request, [FromRoute] int id)
         {
-            budgetDto.BudgetId = id;
-            var response = await Mediator.Send(new UpdateBudgetRequest(budgetDto));
-            return Ok(response);
+            request.BudgetId = id;
+            var response = await Mediator.Send(request);
+            return Ok(response.Data);
         }
         
         /// <summary>
@@ -79,8 +71,8 @@ namespace WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete([FromRoute] int id)
         {
-            var response = await Mediator.Send(new DeleteBudgetRequest(id));
-            return Ok(response);
+            var response = await Mediator.Send(new DeleteBudget.Request(){BudgetId = id});
+            return Ok(response.Data);
         }
         
         /// <summary>
@@ -108,22 +100,24 @@ namespace WebApi.Controllers
         [HttpGet("{budgetId}/unassigned-funds")]
         public async Task<ActionResult> UnassignedFunds(int budgetId)
         {
-            var response = await Mediator.Send(new GetUnassignedFundsRequest(budgetId));
-            return Ok(response);
+            var response = await Mediator.Send(new GetUnassignedFunds.Query() { BudgetId = budgetId});
+            return Ok(response.Data);
         }
 
-        [HttpPost("{budgetId}/period-report")]
-        public async Task<ActionResult> PeriodReport([FromRoute] int budgetId, [FromBody] ReportFilterDto filters)
+        [HttpGet("{budgetId}/period-report")]
+        public async Task<ActionResult> PeriodReport([FromRoute] int budgetId, [FromQuery] GetPeriodReport.Query query)
         {
-            var response = await Mediator.Send(new GetPeriodReportRequest(budgetId, filters));
-            return Ok(response);
+            query.BudgetId = budgetId;
+            var response = await Mediator.Send(query);
+            return Ok(response.Data);
         }
 
-        [HttpPost("{budgetId}/monthly-report")]
-        public async Task<ActionResult> MonthlyReport([FromRoute] int budgetId, [FromBody] ReportFilterDto filters)
+        [HttpGet("{budgetId}/monthly-report")]
+        public async Task<ActionResult> MonthlyReport([FromRoute] int budgetId, [FromQuery] GetMonthlyReport.Query query)
         {
-            var response = await Mediator.Send(new GetMonthlyReportRequest(budgetId, filters));
-            return Ok(response);
+            query.BudgetId = budgetId;
+            var response = await Mediator.Send(query);
+            return Ok(response.Data);
         }
 
         #endregion
