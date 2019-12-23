@@ -8,6 +8,7 @@ using Moq;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Dto.User;
 using raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets;
+using raBudget.Core.Handlers.BudgetHandlers.Query;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
@@ -25,8 +26,8 @@ namespace raBudget.Core.Tests.Handlers.Budget
         public List<Domain.Entities.Budget> SampleBudgetEntities;
         public List<BudgetDto> SampleBudgetDtoEntities;
 
-        public ListAvailableBudgetsHandler RequestHandler;
-        public Task<IEnumerable<BudgetDto>> RequestResponse;
+        public ListAvailableBudgets.Handler RequestHandler;
+        public Task<ListAvailableBudgets.Response> RequestResponse;
 
         public ListAvailableBudgetsFixture()
         {
@@ -69,8 +70,8 @@ namespace raBudget.Core.Tests.Handlers.Budget
             AuthenticationProviderMock.Setup(m => m.User).Returns(mockUserDto.Object);
             AuthenticationProviderMock.Setup(m => m.IsAuthenticated).Returns(true);
 
-            RequestHandler = new ListAvailableBudgetsHandler(RepoMock.Object, MapperMock.Object, AuthenticationProviderMock.Object);
-            RequestResponse = RequestHandler.Handle(new ListAvailableBudgetsRequest(), new CancellationToken());
+            RequestHandler = new ListAvailableBudgets.Handler(RepoMock.Object, MapperMock.Object, AuthenticationProviderMock.Object);
+            RequestResponse = RequestHandler.Handle(new ListAvailableBudgets.Query(), new CancellationToken());
         }
 
         public void Dispose()

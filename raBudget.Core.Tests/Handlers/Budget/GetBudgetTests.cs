@@ -5,7 +5,7 @@ using AutoMapper;
 using Moq;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Dto.User;
-using raBudget.Core.Handlers.BudgetHandlers.GetBudget;
+using raBudget.Core.Handlers.BudgetHandlers.Query;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
@@ -24,9 +24,9 @@ namespace raBudget.Core.Tests.Handlers.Budget
         public Domain.Entities.Budget RepositoryResult;
         public BudgetDto MapperResult;
 
-        public GetBudgetHandler RequestHandler;
-        public Task<BudgetDto> RequestResponse;
-        public Task<BudgetDto> IncorrectRequestResponse;
+        public GetBudget.Handler RequestHandler;
+        public Task<GetBudget.Response> RequestResponse;
+        public Task<GetBudget.Response> IncorrectRequestResponse;
 
         public GetBudgetFixture()
         {
@@ -65,9 +65,9 @@ namespace raBudget.Core.Tests.Handlers.Budget
             AuthenticationProviderMock.Setup(m => m.User).Returns(mockUserDto.Object);
             AuthenticationProviderMock.Setup(m => m.IsAuthenticated).Returns(true);
 
-            RequestHandler = new GetBudgetHandler(RepoMock.Object, MapperMock.Object, AuthenticationProviderMock.Object);
-            RequestResponse = RequestHandler.Handle(new GetBudgetRequest(1), new CancellationToken());
-            IncorrectRequestResponse = RequestHandler.Handle(new GetBudgetRequest(0), new CancellationToken());
+            RequestHandler = new GetBudget.Handler(RepoMock.Object, MapperMock.Object, AuthenticationProviderMock.Object);
+            RequestResponse = RequestHandler.Handle(new GetBudget.Query(){BudgetId = 1},new CancellationToken());
+            IncorrectRequestResponse = RequestHandler.Handle(new GetBudget.Query(){ BudgetId = 1}, new CancellationToken());
         }
 
         public void Dispose()
