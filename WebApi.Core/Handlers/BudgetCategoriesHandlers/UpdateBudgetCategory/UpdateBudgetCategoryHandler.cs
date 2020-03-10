@@ -24,7 +24,7 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.UpdateBudgetCategory
 
         public override async Task<BudgetCategoryDto> Handle(UpdateBudgetCategoryRequest request, CancellationToken cancellationToken)
         {
-            var isAccessible = BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.Data.BudgetCategoryId);
+            var isAccessible = await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.Data.BudgetCategoryId);
 
             var budgetCategoryEntity = await BudgetCategoryRepository.GetByIdAsync(request.Data.BudgetCategoryId);
 
@@ -33,11 +33,11 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.UpdateBudgetCategory
 
             for (int i = 0; i < request.Data.AmountConfigs.Count - 1; i++)
             {
-                request.Data.AmountConfigs[i + 1].ValidTo = null;
                 request.Data.AmountConfigs[i].ValidTo = request.Data.AmountConfigs[i + 1]
                                                                .ValidFrom
                                                                .AddDays(-1)
                                                                .FirstDayOfMonth();
+                request.Data.AmountConfigs[i + 1].ValidTo = null;
             }
 
             var amountConfigs = request.Data
@@ -47,12 +47,13 @@ namespace raBudget.Core.Handlers.BudgetCategoriesHandlers.UpdateBudgetCategory
                                                         BudgetCategoryId = budgetCategoryEntity.Id,
                                                         MonthlyAmount = x.Amount,
                                                         ValidFrom = x.ValidFrom,
+                                                        ValidTo = x.ValidTo
                                                     })
                                        .ToList();
 
             budgetCategoryEntity.BudgetCategoryBudgetedAmounts = amountConfigs;
 
-            if (!(await isAccessible))
+            if (!(isAccessible))
             {
                 throw new NotFoundException("Budget category was not found");
             }
