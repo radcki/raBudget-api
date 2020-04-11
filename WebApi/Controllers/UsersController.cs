@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using raBudget.Core.Dto.User;
-using raBudget.Core.Handlers.User.Command;
+using raBudget.Core.Features.User.Command;
 
 namespace raBudget.WebApi.Controllers
 {

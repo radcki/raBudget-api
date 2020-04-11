@@ -48,7 +48,7 @@ namespace raBudget.Core.Dto.Budget
                          .ForMember(dto => dto.CurrentFunds, opt => opt.MapFrom(entity => entity.CurrentFunds))
                          .ForMember(dto => dto.OwnedByUser, opt => opt.MapFrom(entity => entity.OwnedByUser))
                          .ForMember(dto => dto.Default, opt => opt.Ignore())
-                         .ForMember(dto => dto.BudgetCategories, opt => opt.MapFrom(entity => entity.BudgetCategories));
+                         .ForMember(dto => dto.BudgetCategories, opt => opt.MapFrom(entity => entity.BudgetCategories.OrderBy(x=>x.Order)));
         }
 
         #endregion

@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using raBudget.Core.Dto.Allocation;
 using raBudget.Core.Dto.Budget;
-using raBudget.Core.Handlers.Allocation.Command;
-using raBudget.Core.Handlers.Allocation.Query;
+using raBudget.Core.Features.Allocation.Command;
+using raBudget.Core.Features.Allocation.Query;
 
 namespace raBudget.WebApi.Controllers
 {
@@ -50,12 +50,12 @@ namespace raBudget.WebApi.Controllers
         /// <summary>
         /// Create new allocation
         /// </summary>
-        /// <param name="allocationDto"></param>
+        /// <param name="command"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] AllocationDto allocationDto)
+        public async Task<ActionResult> Create([FromBody] CreateAllocation.Command command)
         {
-            var response = await Mediator.Send(new CreateAllocation.Command(allocationDto));
+            var response = await Mediator.Send(command);
             return Ok(response);
         }
 
@@ -64,10 +64,10 @@ namespace raBudget.WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update([FromBody] AllocationDto allocationDto, [FromRoute] int id)
+        public async Task<ActionResult> Update([FromBody] UpdateAllocation.Command command, [FromRoute] int id)
         {
-            allocationDto.AllocationId = id;
-            var response = await Mediator.Send(new UpdateAllocation.Command(allocationDto));
+            command.AllocationId = id;
+            var response = await Mediator.Send(command);
             return Ok(response);
         }
 

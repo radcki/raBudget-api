@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Dto.Transaction;
 using raBudget.Core.Dto.TransactionSchedule;
-using raBudget.Core.Handlers.TransactionSchedule.Command;
-using raBudget.Core.Handlers.TransactionSchedule.Query;
+using raBudget.Core.Features.TransactionSchedule.Command;
+using raBudget.Core.Features.TransactionSchedule.Query;
 
 namespace raBudget.WebApi.Controllers
 {
@@ -24,7 +24,7 @@ namespace raBudget.WebApi.Controllers
         [HttpGet]
         public async Task<ActionResult> Get([FromRoute] int budgetId)
         {
-            var response = await Mediator.Send(new ListTransactionSchedules.Query(new BudgetDto() {BudgetId = budgetId}, null));
+            var response = await Mediator.Send(new ListTransactionSchedules.Query(budgetId, null));
             return Ok(response);
         }
 
@@ -42,7 +42,7 @@ namespace raBudget.WebApi.Controllers
         [HttpPost("filter")]
         public async Task<ActionResult> GetFiltered([FromBody] TransactionScheduleFilterDto filters, [FromRoute] int budgetId)
         {
-            var response = await Mediator.Send(new ListTransactionSchedules.Query(new BudgetDto() {BudgetId = budgetId}, filters)
+            var response = await Mediator.Send(new ListTransactionSchedules.Query(budgetId, filters)
                                                {
                                                    Filters = filters
                                                });
@@ -52,12 +52,12 @@ namespace raBudget.WebApi.Controllers
         /// <summary>
         /// Create new transactionSchedule
         /// </summary>
-        /// <param name="transactionScheduleDto"></param>
+        /// <param name="command"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] TransactionScheduleDto transactionScheduleDto)
+        public async Task<ActionResult> Create([FromBody] CreateTransactionSchedule.Command command)
         {
-            var response = await Mediator.Send(new CreateTransactionSchedule.Command(transactionScheduleDto));
+            var response = await Mediator.Send(command);
             return Ok(response);
         }
 
@@ -66,10 +66,10 @@ namespace raBudget.WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update([FromBody] TransactionScheduleDetailsDto transactionScheduleDto, [FromRoute] int id)
+        public async Task<ActionResult> Update([FromBody] UpdateTransactionSchedule.Command command, [FromRoute] int id)
         {
-            transactionScheduleDto.TransactionScheduleId = id;
-            var response = await Mediator.Send(new UpdateTransactionSchedule.Command(transactionScheduleDto));
+            command.TransactionScheduleId = id;
+            var response = await Mediator.Send(command);
             return Ok(response);
         }
 
@@ -90,7 +90,7 @@ namespace raBudget.WebApi.Controllers
         public async Task<ActionResult> ListClosestOccurrences(DateTime endDate, int budgetId)
         {
             var daysForward = (endDate - DateTime.Today).Days;
-            var response = await Mediator.Send(new ListClosestOccurrences.Query(new BudgetDto() {BudgetId = budgetId}, 4, daysForward));
+            var response = await Mediator.Send(new ListClosestOccurrences.Query(budgetId, 4, daysForward));
             return Ok(response);
         }
     }

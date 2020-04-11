@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using raBudget.Core.Dto.Budget;
-using raBudget.Core.Handlers.BudgetCategories.Command;
-using raBudget.Core.Handlers.BudgetCategories.Query;
+using raBudget.Core.Features.BudgetCategories.Command;
+using raBudget.Core.Features.BudgetCategories.Query;
 
 namespace raBudget.WebApi.Controllers
 {
@@ -42,10 +42,10 @@ namespace raBudget.WebApi.Controllers
         /// <param name="budgetId"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult<BudgetCategoryDto>> Create([FromBody] BudgetCategoryDto budgetCategoryDto, [FromRoute] int budgetId)
+        public async Task<ActionResult<BudgetCategoryDto>> Create([FromBody] CreateBudgetCategory.Command command, [FromRoute] int budgetId)
         {
-            budgetCategoryDto.BudgetId = budgetId;
-            var response = await Mediator.Send(new CreateBudgetCategory.Command(budgetCategoryDto));
+            command.BudgetId = budgetId;
+            var response = await Mediator.Send(command);
             return Ok();
         }
 
@@ -54,11 +54,9 @@ namespace raBudget.WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult<BudgetCategoryDto>> Update([FromBody] BudgetCategoryDto budgetCategoryDto, [FromRoute] int budgetId)
+        public async Task<ActionResult<BudgetCategoryDto>> Update([FromBody] UpdateBudgetCategory.Command command, [FromRoute] int budgetId)
         {
-            budgetCategoryDto.BudgetId = budgetId;
-
-            var response = await Mediator.Send(new UpdateBudgetCategory.Command(budgetCategoryDto));
+            var response = await Mediator.Send(command);
             return Ok(response);
         }
 

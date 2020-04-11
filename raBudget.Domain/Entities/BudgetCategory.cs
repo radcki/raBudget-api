@@ -30,6 +30,7 @@ namespace raBudget.Domain.Entities
         public string Name { get; set; }
 
         public int BudgetId { get; set; }
+        public int Order { get; set; }
 
         public virtual Budget Budget { get; set; }
 

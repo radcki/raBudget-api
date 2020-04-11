@@ -2,10 +2,11 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using raBudget.Core.Handlers.Budget.Command;
-using raBudget.Core.Handlers.Budget.Query;
-using raBudget.Core.Handlers.BudgetCategories.Query;
-using raBudget.Core.Handlers.User.Command;
+using raBudget.Core.Features.Budget.Command;
+using raBudget.Core.Features.Budget.Query;
+using raBudget.Core.Features.BudgetCategories.Command;
+using raBudget.Core.Features.BudgetCategories.Query;
+using raBudget.Core.Features.User.Command;
 using raBudget.Domain.Entities;
 using raBudget.Domain.Enum;
 
@@ -43,12 +44,12 @@ namespace raBudget.WebApi.Controllers
         /// <summary>
         /// Create new budget
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="command"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] CreateBudget.Request request)
+        public async Task<ActionResult> Create([FromBody] CreateBudget.Command command)
         {
-            var response = await Mediator.Send(request);
+            var response = await Mediator.Send(command);
             return Ok(response.Data);
         }
 
@@ -57,10 +58,10 @@ namespace raBudget.WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update([FromBody] UpdateBudget.Request request, [FromRoute] int id)
+        public async Task<ActionResult> Update([FromBody] UpdateBudget.Command command, [FromRoute] int id)
         {
-            request.BudgetId = id;
-            var response = await Mediator.Send(request);
+            command.BudgetId = id;
+            var response = await Mediator.Send(command);
             return Ok(response.Data);
         }
 
@@ -84,6 +85,17 @@ namespace raBudget.WebApi.Controllers
         {
             var response = await Mediator.Send(new SetDefaultBudget.Command(id));
             return Ok(response);
+        }
+
+        /// <summary>
+        /// Save order of budget categories
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        [HttpPost("{id}/save-categories-order")]
+        public async Task<ActionResult> SaveBudgetCategoryOrder([FromBody] SaveBudgetCategoryOrder.Command command)
+        {
+            return Ok(await Mediator.Send(command));
         }
 
         #endregion

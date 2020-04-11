@@ -55,19 +55,21 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         /// <inheritdoc />
         public async Task<Budget> GetByIdAsync(int id)
         {
-            return await _db.Budgets
-                            .Include(x => x.BudgetCategories)
-                            .ThenInclude(x => x.BudgetCategoryBudgetedAmounts)
-                            .Include(x => x.BudgetShares)
-                            .ThenInclude(x => x.SharedWithUser)
-                            .Include(x => x.BudgetCategories)
-                            .ThenInclude(x => x.Transactions)
-                            .Include(x => x.BudgetCategories)
-                            .ThenInclude(x => x.SourceAllocations)
-                            .Include(x => x.BudgetCategories)
-                            .ThenInclude(x => x.TargetAllocations)
-                            .Include(x => x.OwnedByUser)
-                            .FirstOrDefaultAsync(x => x.Id == id);
+            var budget = await _db.Budgets
+                                  .Include(x => x.BudgetCategories)
+                                  .ThenInclude(x => x.BudgetCategoryBudgetedAmounts)
+                                  .Include(x => x.BudgetShares)
+                                  .ThenInclude(x => x.SharedWithUser)
+                                  .Include(x => x.BudgetCategories)
+                                  .ThenInclude(x => x.Transactions)
+                                  .Include(x => x.BudgetCategories)
+                                  .ThenInclude(x => x.SourceAllocations)
+                                  .Include(x => x.BudgetCategories)
+                                  .ThenInclude(x => x.TargetAllocations)
+                                  .Include(x => x.OwnedByUser)
+                                  .FirstOrDefaultAsync(x => x.Id == id);
+            budget.BudgetCategories = budget.BudgetCategories.OrderBy(x => x.Order).ToList();
+            return budget;
         }
 
         /// <inheritdoc />

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using raBudget.Core.Handlers.User.Command;
+using raBudget.Core.Features.User.Command;
 using raBudget.Core.Interfaces;
 using raBudget.Domain.Enum;
 

@@ -23,7 +23,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using raBudget.Core.Handlers.User.Command;
+using raBudget.Core.Features.User.Command;
 using raBudget.Core.Infrastructure;
 using raBudget.Core.Infrastructure.AutoMapper;
 using raBudget.Core.Interfaces;
@@ -31,6 +31,7 @@ using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Enum;
 using raBudget.EfPersistence.Contexts;
 using raBudget.EfPersistence.RepositoryImplementations;
+using raBudget.WebApi.Converters;
 using raBudget.WebApi.Handlers;
 using raBudget.WebApi.Providers;
 using Serilog;
@@ -136,6 +137,7 @@ namespace WebApi
                     .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
                     .AddJsonOptions(options =>
                                     {
+                                        options.JsonSerializerOptions.Converters.Add(new LongToStringConverter());
                                         //options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
                                         options.JsonSerializerOptions.IgnoreNullValues = false;
                                     });
@@ -231,7 +233,8 @@ namespace WebApi
             options.Map<HttpRequestException>(ex => new ExceptionProblemDetails(ex, StatusCodes.Status503ServiceUnavailable));
             options.Map<ValidationException>(ex => new ValidationProblemDetails(ex));
 
-            options.Map<Exception>(ex => new ExceptionProblemDetails(ex, StatusCodes.Status500InternalServerError));
+            options.Map<Exception>(ex => 
+                                       new ExceptionProblemDetails(ex, StatusCodes.Status500InternalServerError));
         }
 
         private void ConfigureJwtBearer(JwtBearerOptions options)

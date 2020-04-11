@@ -10,7 +10,7 @@ namespace raBudget.Core.Dto.Budget
         #region Properties
 
         public int BudgetCategoryAmountConfigId { get; set; }
-        public double Amount { get; set; }
+        public double MonthlyAmount { get; set; }
         public int BudgetCategoryId { get; set; }
         public DateTime ValidFrom { get; set; }
         public DateTime? ValidTo { get; set; }
@@ -26,12 +26,12 @@ namespace raBudget.Core.Dto.Budget
         {
             // dto -> entity
             configuration.CreateMap<BudgetCategoryAmountConfigDto, BudgetCategoryBudgetedAmount>()
-                         .ForMember(entity => entity.MonthlyAmount, opt => opt.MapFrom(dto => dto.Amount))
+                         .ForMember(entity => entity.MonthlyAmount, opt => opt.MapFrom(dto => dto.MonthlyAmount))
                          .ForMember(entity => entity.Id, opt => opt.MapFrom(dto => dto.BudgetCategoryAmountConfigId));
 
             // entity -> dto
             configuration.CreateMap<BudgetCategoryBudgetedAmount, BudgetCategoryAmountConfigDto>()
-                         .ForMember(dto => dto.Amount, opt => opt.MapFrom(entity => entity.MonthlyAmount))
+                         .ForMember(dto => dto.MonthlyAmount, opt => opt.MapFrom(entity => entity.MonthlyAmount))
                          .ForMember(dto => dto.BudgetCategoryAmountConfigId, opt => opt.MapFrom(entity => entity.Id));
         }
 
