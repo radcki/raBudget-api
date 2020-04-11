@@ -5,7 +5,7 @@ using AutoMapper;
 using Moq;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Dto.User;
-using raBudget.Core.Handlers.BudgetHandlers.Query;
+using raBudget.Core.Features.Budget.Query;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;

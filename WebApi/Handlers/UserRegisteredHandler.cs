@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using raBudget.Core.Handlers.UserHandlers.RegisterUser;
+using raBudget.Core.Features.User.Command;
 using raBudget.Core.Interfaces;
 using raBudget.Domain.Enum;
 
@@ -24,6 +24,7 @@ namespace raBudget.WebApi.Handlers
             _mediator = mediator;
             _authenticationProvider = authenticationProvider;
         }
+
         private readonly IMediator _mediator;
         private readonly IAuthenticationProvider _authenticationProvider;
 
@@ -31,13 +32,14 @@ namespace raBudget.WebApi.Handlers
         {
             if (_authenticationProvider.IsAuthenticated)
             {
-                var result = await _mediator.Send(new CheckInUserRequest());
+                var result = await _mediator.Send(new CheckInUser.Command());
 
                 if (result == null)
                 {
                     throw new Exception("User registration failed");
                 }
             }
+
             context.Succeed(requirement);
         }
     }

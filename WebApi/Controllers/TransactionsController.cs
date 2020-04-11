@@ -1,12 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using raBudget.Core.Dto.Transaction;
-using raBudget.Core.Handlers.TransactionHandlers.Command;
-using raBudget.Core.Handlers.TransactionHandlers.Query;
-using TransactionDto = raBudget.Core.Dto.Transaction.TransactionDto;
+using raBudget.Core.Features.Transaction.Command;
+using raBudget.Core.Features.Transaction.Query;
 
-namespace WebApi.Controllers
+namespace raBudget.WebApi.Controllers
 {
     [Authorize]
     [ApiController]
@@ -41,12 +39,12 @@ namespace WebApi.Controllers
         /// <summary>
         /// Create new transaction
         /// </summary>
-        /// <param name="query"></param>
+        /// <param name="command"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] CreateTransaction.Request query)
+        public async Task<ActionResult> Create([FromBody] CreateTransaction.Command command)
         {
-            var response = await Mediator.Send(query);
+            var response = await Mediator.Send(command);
             return Ok(response);
         }
 
@@ -55,10 +53,10 @@ namespace WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update([FromBody] UpdateTransaction.Request query, [FromRoute] int id)
+        public async Task<ActionResult> Update([FromBody] UpdateTransaction.Command command, [FromRoute] int id)
         {
-            query.TransactionId = id;
-            var response = await Mediator.Send(query);
+            command.TransactionId = id;
+            var response = await Mediator.Send(command);
             return Ok(response);
         }
 

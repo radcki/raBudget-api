@@ -65,9 +65,9 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         public async Task<IReadOnlyList<Allocation>> ListWithFilter(Budget budget, AllocationFilterModel filters)
         {
             var allocations = _db.Allocations
-                                  .AsNoTracking()
-                                  .Include(x => x.TargetBudgetCategory)
-                                  .Include(x => x.SourceBudgetCategory)
+                                 .AsNoTracking()
+                                 .Include(x => x.TargetBudgetCategory)
+                                 .Include(x => x.SourceBudgetCategory)
                                  .Where(x => x.TargetBudgetCategory.BudgetId == budget.Id);
 
             /*--*/
@@ -81,6 +81,7 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             {
                 allocations = allocations.Where(x => filters.TargetCategoryIdFilter.Any(s => s == x.TargetBudgetCategoryId));
             }
+
             if (filters.SourceCategoryIdFilter != null && filters.SourceCategoryIdFilter.Any())
             {
                 allocations = allocations.Where(x => filters.SourceCategoryIdFilter.Any(s => s == x.SourceBudgetCategoryId));
@@ -97,6 +98,7 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             {
                 allocations = allocations.Where(x => x.CreationDateTime.Date <= filters.CreationDateEndFilter.Value.Date);
             }
+
             if (filters.CreationDateStartFilter != null)
             {
                 allocations = allocations.Where(x => x.CreationDateTime.Date >= filters.CreationDateStartFilter.Value.Date);
@@ -107,6 +109,7 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             {
                 allocations = allocations.Where(x => x.AllocationDateTime.Date <= filters.AllocationDateEndFilter.Value.Date);
             }
+
             if (filters.AllocationDateStartFilter != null)
             {
                 allocations = allocations.Where(x => x.AllocationDateTime.Date >= filters.AllocationDateStartFilter.Value.Date);
@@ -136,10 +139,7 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             }
 
             return await allocations.ToListAsync();
-
         }
-
-        
 
         #endregion
     }

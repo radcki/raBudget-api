@@ -5,9 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using raBudget.Core.Dto.User;
 using raBudget.Core.Interfaces;
-using raBudget.EfPersistence.Contexts;
 
-namespace WebApi.Controllers
+namespace raBudget.WebApi.Controllers
 {
     public class BaseController : ControllerBase
     {

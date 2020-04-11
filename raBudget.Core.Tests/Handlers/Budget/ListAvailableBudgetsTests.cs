@@ -7,8 +7,7 @@ using AutoMapper;
 using Moq;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Dto.User;
-using raBudget.Core.Handlers.BudgetHandlers.ListAvailableBudgets;
-using raBudget.Core.Handlers.BudgetHandlers.Query;
+using raBudget.Core.Features.Budget.Query;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
@@ -91,7 +90,6 @@ namespace raBudget.Core.Tests.Handlers.Budget
         [Fact]
         public void CanReceiveBudgetsList()
         {
-            
             //Assert.Equal(eResponseType.Success, fixture.RequestResponse.Result.ResponseType);
         }
 
@@ -110,10 +108,10 @@ namespace raBudget.Core.Tests.Handlers.Budget
         [Fact]
         public void DoesNotReturnEntities()
         {
-           /* foreach (var data in fixture.RequestResponse)
-            {
-                Assert.False(data.GetType().IsSubclassOf(typeof(BaseEntity<Domain.Entities.Budget>)));
-            }*/
+            /* foreach (var data in fixture.RequestResponse)
+             {
+                 Assert.False(data.GetType().IsSubclassOf(typeof(BaseEntity<Domain.Entities.Budget>)));
+             }*/
         }
     }
 }

@@ -27,13 +27,13 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         /// <inheritdoc />
         public async Task<BudgetCategory> GetByIdAsync(int id)
         {
-            return await _db.BudgetCategories.FindAsync(id);
+            return await _db.BudgetCategories.Include(x => x.BudgetCategoryBudgetedAmounts).Where(x => x.Id == id).FirstOrDefaultAsync();
         }
 
         /// <inheritdoc />
         public async Task<IReadOnlyList<BudgetCategory>> ListAllAsync()
         {
-            return await _db.BudgetCategories.ToListAsync();
+            return await _db.BudgetCategories.OrderBy(x => x.Order).ToListAsync();
         }
 
         /// <inheritdoc />
@@ -47,6 +47,22 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         public async Task UpdateAsync(BudgetCategory entity)
         {
             _db.BudgetCategoryBudgetedAmounts.RemoveRange(_db.BudgetCategoryBudgetedAmounts.Where(x => x.BudgetCategoryId == entity.Id));
+            entity.BudgetCategoryBudgetedAmounts = entity.BudgetCategoryBudgetedAmounts
+                                                         .ToList()
+                                                         .Select(x =>
+                                                                 {
+                                                                     var amount = new BudgetCategoryBudgetedAmount()
+                                                                                  {
+                                                                                      BudgetCategoryId = x.BudgetCategoryId,
+                                                                                      MonthlyAmount = x.MonthlyAmount,
+                                                                                      ValidFrom = x.ValidFrom,
+                                                                                      ValidTo = x.ValidTo
+                                                                                  };
+                                                                     _db.Entry(amount).State = EntityState.Added;
+                                                                     return amount;
+                                                                 })
+                                                         .ToList();
+
             await Task.FromResult(_db.Entry(entity).State = EntityState.Modified);
         }
 
@@ -67,10 +83,11 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         {
             var categories = _db.BudgetCategories
                                 .AsNoTracking()
-                                .Include(x=>x.Transactions)
-                                .Include(x=>x.SourceAllocations)
-                                .Include(x=>x.TargetAllocations)
-                                .Include(x=>x.BudgetCategoryBudgetedAmounts)
+                                .Include(x => x.Transactions)
+                                .Include(x => x.SourceAllocations)
+                                .Include(x => x.TargetAllocations)
+                                .Include(x => x.BudgetCategoryBudgetedAmounts)
+                                .OrderBy(x => x.Order)
                                 .Where(x => x.BudgetId == budget.Id);
 
             /*--*/

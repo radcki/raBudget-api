@@ -61,12 +61,12 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             return await _db.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<IReadOnlyList<TransactionSchedule>> ListWithFilter(Budget budget, TransactionScheduleFilterModel filters)
+        public async Task<IReadOnlyList<TransactionSchedule>> ListWithFilter(int budgetId, TransactionScheduleFilterModel filters)
         {
             var transactionSchedules = _db.TransactionSchedules
                                           .Include(x => x.BudgetCategory)
                                           .Include(x => x.CreatedByUser)
-                                          .Where(x => x.BudgetCategory.BudgetId == budget.Id);
+                                          .Where(x => x.BudgetCategory.BudgetId == budgetId);
 
             if (filters.TransactionScheduleIdFilter != null && filters.TransactionScheduleIdFilter.Any())
             {
