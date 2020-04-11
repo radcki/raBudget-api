@@ -28,11 +28,15 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         {
             return await Task.FromResult(_db.Budgets
                                             .Include(x => x.BudgetShares)
-                                            .Include(x=>x.OwnedByUser)
-                                            .Include(x=>x.BudgetCategories).ThenInclude(x=>x.BudgetCategoryBudgetedAmounts)
-                                            .Include(x => x.BudgetCategories).ThenInclude(x => x.Transactions)
-                                            .Include(x => x.BudgetCategories).ThenInclude(x => x.SourceAllocations)
-                                            .Include(x => x.BudgetCategories).ThenInclude(x => x.TargetAllocations)
+                                            .Include(x => x.OwnedByUser)
+                                            .Include(x => x.BudgetCategories)
+                                            .ThenInclude(x => x.BudgetCategoryBudgetedAmounts)
+                                            .Include(x => x.BudgetCategories)
+                                            .ThenInclude(x => x.Transactions)
+                                            .Include(x => x.BudgetCategories)
+                                            .ThenInclude(x => x.SourceAllocations)
+                                            .Include(x => x.BudgetCategories)
+                                            .ThenInclude(x => x.TargetAllocations)
                                             .Where(x => x.OwnedByUserId == userId
                                                         || x.BudgetShares.Any(s => s.SharedWithUserId == userId)));
         }
@@ -42,8 +46,9 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         {
             return await Task.FromResult(_db.Budgets
                                             .Include(x => x.BudgetShares)
-                                            .Include(x=>x.OwnedByUser)
-                                            .Include(x => x.BudgetCategories).ThenInclude(x => x.BudgetCategoryBudgetedAmounts)
+                                            .Include(x => x.OwnedByUser)
+                                            .Include(x => x.BudgetCategories)
+                                            .ThenInclude(x => x.BudgetCategoryBudgetedAmounts)
                                             .Where(x => x.OwnedByUserId == userId));
         }
 
@@ -51,14 +56,20 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         public async Task<Budget> GetByIdAsync(int id)
         {
             return await _db.Budgets
-                            .Include(x=>x.BudgetCategories).ThenInclude(x => x.BudgetCategoryBudgetedAmounts)
-                            .Include(x=>x.BudgetShares).ThenInclude(x=>x.SharedWithUser)
-                            .Include(x=>x.BudgetCategories).ThenInclude(x=>x.Transactions)
-                            .Include(x=>x.BudgetCategories).ThenInclude(x=>x.SourceAllocations)
-                            .Include(x=>x.BudgetCategories).ThenInclude(x=>x.TargetAllocations)
-                            .Include(x=>x.OwnedByUser)
-                            .FirstOrDefaultAsync(x=>x.Id == id);
+                            .Include(x => x.BudgetCategories)
+                            .ThenInclude(x => x.BudgetCategoryBudgetedAmounts)
+                            .Include(x => x.BudgetShares)
+                            .ThenInclude(x => x.SharedWithUser)
+                            .Include(x => x.BudgetCategories)
+                            .ThenInclude(x => x.Transactions)
+                            .Include(x => x.BudgetCategories)
+                            .ThenInclude(x => x.SourceAllocations)
+                            .Include(x => x.BudgetCategories)
+                            .ThenInclude(x => x.TargetAllocations)
+                            .Include(x => x.OwnedByUser)
+                            .FirstOrDefaultAsync(x => x.Id == id);
         }
+
         /// <inheritdoc />
         public async Task<IReadOnlyList<Budget>> ListAllAsync()
         {
@@ -103,6 +114,5 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         }
 
         #endregion
-
     }
 }

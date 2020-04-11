@@ -15,7 +15,7 @@ namespace raBudget.Domain.Entities
         public Guid CreatedByUserId { get; set; }
 
         public int BudgetCategoryId { get; set; }
-        
+
         public int? TransactionScheduleId { get; set; }
 
         /*

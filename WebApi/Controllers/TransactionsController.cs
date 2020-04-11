@@ -1,12 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using raBudget.Core.Dto.Transaction;
-using raBudget.Core.Handlers.TransactionHandlers.Command;
-using raBudget.Core.Handlers.TransactionHandlers.Query;
-using TransactionDto = raBudget.Core.Dto.Transaction.TransactionDto;
+using raBudget.Core.Handlers.Transaction.Command;
+using raBudget.Core.Handlers.Transaction.Query;
 
-namespace WebApi.Controllers
+namespace raBudget.WebApi.Controllers
 {
     [Authorize]
     [ApiController]

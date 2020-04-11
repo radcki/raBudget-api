@@ -8,7 +8,7 @@ using raBudget.Domain.FilterModels;
 
 namespace raBudget.Core.Dto.Allocation
 {
-    public class AllocationFilterDto: IHaveCustomMapping
+    public class AllocationFilterDto : IHaveCustomMapping
     {
         public IEnumerable<int> AllocationIdFilter { get; set; }
         public IEnumerable<int> CategoryIdFilter { get; set; }
@@ -28,8 +28,10 @@ namespace raBudget.Core.Dto.Allocation
         /// <inheritdoc />
         public void CreateMappings(Profile configuration)
         {
-            configuration.CreateMap<AllocationFilterDto, AllocationFilterModel>();
-            configuration.CreateMap<AllocationFilterModel, AllocationFilterDto>();
+            configuration.CreateMap<AllocationFilterDto, AllocationFilterModel>()
+                         .ForMember(dest => dest.TargetCategoryIdFilter, opt => opt.MapFrom(src => src.CategoryIdFilter));
+            configuration.CreateMap<AllocationFilterModel, AllocationFilterDto>()
+                         .ForMember(dest => dest.CategoryIdFilter, opt => opt.MapFrom(src => src.TargetCategoryIdFilter));
         }
 
         #endregion

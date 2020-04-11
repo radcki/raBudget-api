@@ -15,7 +15,9 @@ namespace raBudget.Domain.Entities
         public string EnglishName { get; private set; }
         public string NativeName { get; private set; }
 
-        private Currency(){}
+        private Currency()
+        {
+        }
 
         /// <summary>
         /// Constructs a currency object with a NumberFormatInfo.
@@ -60,16 +62,18 @@ namespace raBudget.Domain.Entities
                 {
                     continue;
                 }
-                
             }
+
             throw new Exception("Currency code " + isoCode + " is not supported by the current .Net Framework.");
         }
 
         private static Dictionary<eCurrency, Currency> _currencyDictionary;
+
         public static Dictionary<eCurrency, Currency> CurrencyDictionary
         {
             get { return _currencyDictionary ?? (_currencyDictionary = CreateCurrencyDictionary()); }
         }
+
         private static Dictionary<eCurrency, Currency> CreateCurrencyDictionary()
         {
             var result = new Dictionary<eCurrency, Currency>();
@@ -84,6 +88,7 @@ namespace raBudget.Domain.Entities
                     continue;
                 }
             }
+
             return result;
         }
     }

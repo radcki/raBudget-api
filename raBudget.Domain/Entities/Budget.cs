@@ -43,6 +43,7 @@ namespace raBudget.Domain.Entities
         #endregion
 
         #region Business logic
+
         public int DaysFromBudgetStart => (int) (DateTime.Today - StartingDate).TotalDays;
 
         private IEnumerable<BudgetCategory> SpendingCategories => BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Spending);
@@ -51,7 +52,7 @@ namespace raBudget.Domain.Entities
 
         private IEnumerable<BudgetCategory> SavingCategories => BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Saving);
 
-        public IEnumerable<BudgetCategoryBalance> SpendingCategoriesBalance => SpendingCategories.Select(x=>new BudgetCategoryBalance(x));
+        public IEnumerable<BudgetCategoryBalance> SpendingCategoriesBalance => SpendingCategories.Select(x => new BudgetCategoryBalance(x));
         public IEnumerable<BudgetCategoryBalance> IncomeCategoriesBalance => IncomeCategories.Select(x => new BudgetCategoryBalance(x));
         public IEnumerable<BudgetCategoryBalance> SavingCategoriesBalance => SavingCategories.Select(x => new BudgetCategoryBalance(x));
 
@@ -66,8 +67,8 @@ namespace raBudget.Domain.Entities
                     _currentFunds = IncomeCategories.Sum(x => x.TotalTransactionsSum)
                                     - SpendingCategories.Sum(x => x.TotalTransactionsSum)
                                     - SavingCategories.Sum(x => x.TotalTransactionsSum);
-                    
                 }
+
                 return _currentFunds;
             }
         }
@@ -77,6 +78,7 @@ namespace raBudget.Domain.Entities
             var budgeted = SpendingCategories.Select(x => x.OverallBudgetBalance).Where(x => x > 0).Sum();
             return CurrentFunds - budgeted;
         }
+
         #endregion
     }
 }
