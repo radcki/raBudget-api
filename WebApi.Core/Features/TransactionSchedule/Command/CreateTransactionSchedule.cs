@@ -73,7 +73,7 @@ namespace raBudget.Core.Features.TransactionSchedule.Command
 
             public override async Task<TransactionScheduleDto> Handle(Command request, CancellationToken cancellationToken)
             {
-                if (!await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.BudgetCategoryId))
+                if (!await BudgetCategoryRepository.IsAccessibleToUser(request.BudgetCategoryId))
                 {
                     throw new NotFoundException("Target budget category was not found.");
                 }

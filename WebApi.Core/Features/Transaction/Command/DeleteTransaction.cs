@@ -43,7 +43,7 @@ namespace raBudget.Core.Features.Transaction.Command
             public override async Task<Response> Handle(Request request, CancellationToken cancellationToken)
             {
                 var transactionEntity = await TransactionRepository.GetByIdAsync(request.TransactionId);
-                if (transactionEntity.IsNullOrDefault() || !await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, transactionEntity.BudgetCategoryId))
+                if (transactionEntity.IsNullOrDefault() || !await BudgetCategoryRepository.IsAccessibleToUser(transactionEntity.BudgetCategoryId))
                 {
                     throw new NotFoundException("Target transaction was not found.");
                 }

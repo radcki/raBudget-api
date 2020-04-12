@@ -58,7 +58,7 @@ namespace raBudget.Core.Tests.Handlers.Budget
 
             var mockUser = new Mock<User>();
             var mockUserDto = new Mock<UserDto>();
-            RepoMock.Setup(x => x.ListAvailableBudgets(It.IsAny<Guid>()))
+            RepoMock.Setup(x => x.ListAvailableBudgets())
                     .ReturnsAsync(SampleBudgetEntities);
 
             MapperMock.Setup(m => m.Map<User>(It.IsAny<UserDto>()))

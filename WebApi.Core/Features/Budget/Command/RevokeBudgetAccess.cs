@@ -62,7 +62,7 @@ namespace raBudget.Core.Features.Budget.Command
                                                                           {
                                                                               UserIdFilter = request.UserId
                                                                           });
-                if (!await BudgetRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.BudgetId))
+                if (!await BudgetRepository.IsAccessibleToUser(request.BudgetId))
                 {
                     throw new NotFoundException("Budget was not found");
                 }

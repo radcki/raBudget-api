@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
 using raBudget.EfPersistence.Contexts;
@@ -15,16 +16,18 @@ namespace raBudget.EfPersistence.RepositoryImplementations
     public class BudgetRepository : IBudgetRepository
     {
         private readonly DataContext _db;
+        private readonly IAuthenticationProvider _authenticationProvider;
 
-        public BudgetRepository(DataContext dataContext)
+        public BudgetRepository(DataContext dataContext, IAuthenticationProvider authenticationProvider)
         {
             _db = dataContext;
+            _authenticationProvider = authenticationProvider;
         }
 
         #region Implementation of IBudgetRepository
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Budget>> ListAvailableBudgets(Guid userId)
+        public async Task<IEnumerable<Budget>> ListAvailableBudgets()
         {
             return await Task.FromResult(_db.Budgets
                                             .Include(x => x.BudgetShares)
@@ -37,19 +40,19 @@ namespace raBudget.EfPersistence.RepositoryImplementations
                                             .ThenInclude(x => x.SourceAllocations)
                                             .Include(x => x.BudgetCategories)
                                             .ThenInclude(x => x.TargetAllocations)
-                                            .Where(x => x.OwnedByUserId == userId
-                                                        || x.BudgetShares.Any(s => s.SharedWithUserId == userId)));
+                                            .Where(x => x.OwnedByUserId == _authenticationProvider.User.UserId
+                                                        || x.BudgetShares.Any(s => s.SharedWithUserId == _authenticationProvider.User.UserId)));
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Budget>> ListOwnedBudgets(Guid userId)
+        public async Task<IEnumerable<Budget>> ListOwnedBudgets()
         {
             return await Task.FromResult(_db.Budgets
                                             .Include(x => x.BudgetShares)
                                             .Include(x => x.OwnedByUser)
                                             .Include(x => x.BudgetCategories)
                                             .ThenInclude(x => x.BudgetCategoryBudgetedAmounts)
-                                            .Where(x => x.OwnedByUserId == userId));
+                                            .Where(x => x.OwnedByUserId == _authenticationProvider.User.UserId));
         }
 
         /// <inheritdoc />
@@ -103,16 +106,11 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             return await _db.SaveChangesAsync(cancellationToken);
         }
 
-        /// <inheritdoc />
-        public Task<bool> IsAccessibleToUser(User user, int budgetId)
-        {
-            return IsAccessibleToUser(user.Id, budgetId);
-        }
 
         /// <inheritdoc />
-        public Task<bool> IsAccessibleToUser(Guid userId, int budgetId)
+        public Task<bool> IsAccessibleToUser(int budgetId)
         {
-            return _db.Budgets.AnyAsync(x => x.Id == budgetId && x.OwnedByUserId == userId || x.BudgetShares.Any(s => s.SharedWithUserId == userId));
+            return _db.Budgets.AnyAsync(x => x.Id == budgetId && x.OwnedByUserId == _authenticationProvider.User.UserId || x.BudgetShares.Any(s => s.SharedWithUserId == _authenticationProvider.User.UserId));
         }
 
         #endregion

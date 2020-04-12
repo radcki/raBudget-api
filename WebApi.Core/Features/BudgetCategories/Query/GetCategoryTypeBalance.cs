@@ -40,7 +40,7 @@ namespace raBudget.Core.Features.BudgetCategories.Query
             /// <inheritdoc />
             public override async Task<IEnumerable<BudgetCategoryBalance>> Handle(Query query, CancellationToken cancellationToken)
             {
-                var repositoryResult = await BudgetRepository.ListAvailableBudgets(AuthenticationProvider.User.UserId);
+                var repositoryResult = await BudgetRepository.ListAvailableBudgets();
                 var budget = repositoryResult.FirstOrDefault(x => x.Id == query.BudgetId);
                 if (budget == null)
                 {

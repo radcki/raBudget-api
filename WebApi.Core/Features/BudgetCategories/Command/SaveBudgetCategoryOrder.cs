@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -41,17 +42,15 @@ namespace raBudget.Core.Features.BudgetCategories.Command
 
             public override async Task<Unit> Handle(Command command, CancellationToken cancellationToken)
             {
+                var availableBudgets = await BudgetCategoryRepository.ListAllAsync();
                 for (var index = 0; index < command.BudgetCategoryOrder.Count; index++)
                 {
                     var budgetCategoryId = command.BudgetCategoryOrder[index].BudgetCategoryId;
-
-                    var isAccessible = await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, budgetCategoryId);
-                    var budgetCategoryEntity = await BudgetCategoryRepository.GetByIdAsync(budgetCategoryId);
-                    if (!(isAccessible))
+                    var budgetCategoryEntity = availableBudgets.FirstOrDefault(x=>x.Id == budgetCategoryId);
+                    if (budgetCategoryEntity == null)
                     {
                         throw new NotFoundException("Budget category was not found");
                     }
-
                     budgetCategoryEntity.Order = index;
                     await BudgetCategoryRepository.UpdateAsync(budgetCategoryEntity);
                 }

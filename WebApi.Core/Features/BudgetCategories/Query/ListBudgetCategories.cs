@@ -49,7 +49,7 @@ namespace raBudget.Core.Features.BudgetCategories.Query
 
             public override async Task<IEnumerable<BudgetCategoryDto>> Handle(Query query, CancellationToken cancellationToken)
             {
-                var availableBudgets = await _budgetRepository.ListAvailableBudgets(AuthenticationProvider.User.UserId);
+                var availableBudgets = await _budgetRepository.ListAvailableBudgets();
                 if (availableBudgets.All(x => x.Id == query.BudgetId))
                 {
                     throw new NotFoundException("Target budget was not found");

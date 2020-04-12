@@ -50,7 +50,7 @@ namespace raBudget.Core.Features.Budget.Query
             /// <inheritdoc />
             public override async Task<Response> Handle(Query request, CancellationToken cancellationToken)
             {
-                if (!await BudgetRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.BudgetId))
+                if (!await BudgetRepository.IsAccessibleToUser(request.BudgetId))
                 {
                     throw new NotFoundException("Budget was not found");
                 }

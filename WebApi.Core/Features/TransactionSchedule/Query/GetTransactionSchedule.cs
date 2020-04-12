@@ -43,7 +43,7 @@ namespace raBudget.Core.Features.TransactionSchedule.Query
             public override async Task<TransactionScheduleDetailsDto> Handle(Query request, CancellationToken cancellationToken)
             {
                 var transactionScheduleEntity = await TransactionScheduleRepository.GetByIdAsync(request.TransactionScheduleId);
-                if (transactionScheduleEntity.IsNullOrDefault() || !await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, transactionScheduleEntity.Id))
+                if (transactionScheduleEntity.IsNullOrDefault() || !await BudgetCategoryRepository.IsAccessibleToUser(transactionScheduleEntity.Id))
                 {
                     throw new NotFoundException("Target Transaction Schedule was not found.");
                 }
