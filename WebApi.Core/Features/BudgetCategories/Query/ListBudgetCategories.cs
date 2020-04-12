@@ -9,6 +9,7 @@ using raBudget.Core.Dto.Budget;
 using raBudget.Core.Exceptions;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
+using raBudget.Domain.Enum;
 using raBudget.Domain.FilterModels;
 
 namespace raBudget.Core.Features.BudgetCategories.Query
@@ -54,7 +55,11 @@ namespace raBudget.Core.Features.BudgetCategories.Query
                     throw new NotFoundException("Target budget was not found");
                 }
 
-                var categories = await BudgetCategoryRepository.ListWithFilter(new Domain.Entities.Budget(query.BudgetId), new BudgetCategoryFilterModel());
+                var categories = await BudgetCategoryRepository.ListWithFilter(new Domain.Entities.Budget(query.BudgetId), new BudgetCategoryFilterModel()
+                                                                                                                           {
+                                                                                                                               OrderBy = x=>x.Order,
+                                                                                                                               DataOrder = eDataOrder.Ascending
+                                                                                                                           });
                 return Mapper.Map<IEnumerable<BudgetCategoryDto>>(categories);
             }
         }

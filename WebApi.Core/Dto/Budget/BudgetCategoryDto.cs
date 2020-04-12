@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
 using raBudget.Core.Interfaces.Mapping;
 using raBudget.Domain.Entities;

@@ -46,11 +46,11 @@ namespace raBudget.Domain.Entities
 
         public int DaysFromBudgetStart => (int) (DateTime.Today - StartingDate).TotalDays;
 
-        private IEnumerable<BudgetCategory> SpendingCategories => BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Spending);
+        private IEnumerable<BudgetCategory> SpendingCategories => BudgetCategories.OrderBy(x=>x.Order).Where(x => x.Type == eBudgetCategoryType.Spending);
 
-        private IEnumerable<BudgetCategory> IncomeCategories => BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Income);
+        private IEnumerable<BudgetCategory> IncomeCategories => BudgetCategories.OrderBy(x => x.Order).Where(x => x.Type == eBudgetCategoryType.Income);
 
-        private IEnumerable<BudgetCategory> SavingCategories => BudgetCategories.Where(x => x.Type == eBudgetCategoryType.Saving);
+        private IEnumerable<BudgetCategory> SavingCategories => BudgetCategories.OrderBy(x => x.Order).Where(x => x.Type == eBudgetCategoryType.Saving);
 
         public IEnumerable<BudgetCategoryBalance> SpendingCategoriesBalance => SpendingCategories.Select(x => new BudgetCategoryBalance(x));
         public IEnumerable<BudgetCategoryBalance> IncomeCategoriesBalance => IncomeCategories.Select(x => new BudgetCategoryBalance(x));
