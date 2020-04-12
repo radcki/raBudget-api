@@ -14,6 +14,7 @@ using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
 using raBudget.Domain.Enum;
 using raBudget.Domain.ExtensionMethods;
+using raBudget.Domain.FilterModels;
 
 namespace raBudget.Core.Features.BudgetCategories.Command
 {
@@ -78,9 +79,10 @@ namespace raBudget.Core.Features.BudgetCategories.Command
                 {
                     throw new NotFoundException("Specified budget does not exist");
                 }
+                var maxOrder = (await BudgetCategoryRepository.ListWithFilter(new Domain.Entities.Budget(command.BudgetId), new BudgetCategoryFilterModel())).Max(x=>x.Order);
 
                 var budgetCategoryEntity = Mapper.Map<BudgetCategory>(command);
-
+                budgetCategoryEntity.Order = maxOrder + 1;
                 for (int i = 0; i < command.AmountConfigs.Count - 1; i++)
                 {
                     command.AmountConfigs[i + 1].ValidTo = null;

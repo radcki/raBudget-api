@@ -69,7 +69,6 @@ namespace raBudget.Core.Features.Transaction.Command
                     throw new NotFoundException("Target budget category was not found.");
                 }
 
-
                 var transactionEntity = Mapper.Map<Domain.Entities.Transaction>(command);
                 transactionEntity.CreatedByUserId = AuthenticationProvider.User.UserId;
                 var savedTransaction = await TransactionRepository.AddAsync(transactionEntity);
