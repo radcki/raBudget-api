@@ -63,7 +63,7 @@ namespace raBudget.Core.Features.TransactionSchedule.Command
                 {
                     throw new NotFoundException("Transaction schedule was not found.");
                 }
-                var sourceCategoryAccessible = BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, transactionSchedule.Id);
+                var sourceCategoryAccessible = BudgetCategoryRepository.IsAccessibleToUser(transactionSchedule.Id);
                 if (!await sourceCategoryAccessible)
                 {
                     throw new NotFoundException("Source budget category was not found.");

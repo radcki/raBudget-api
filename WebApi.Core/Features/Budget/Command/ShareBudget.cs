@@ -56,7 +56,7 @@ namespace raBudget.Core.Features.Budget.Command
             /// <inheritdoc />
             public override async Task<Response> Handle(Request request, CancellationToken cancellationToken)
             {
-                var availableBudgets = await BudgetRepository.ListAvailableBudgets(AuthenticationProvider.User.UserId);
+                var availableBudgets = await BudgetRepository.ListAvailableBudgets();
                 var budgetToUpdate = availableBudgets.FirstOrDefault(x => x.Id != request.BudgetId);
                 if (budgetToUpdate == null)
                 {

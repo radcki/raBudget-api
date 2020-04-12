@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
 using raBudget.Domain.Enum;
@@ -16,10 +17,12 @@ namespace raBudget.EfPersistence.RepositoryImplementations
     public class BudgetCategoryRepository : IBudgetCategoryRepository
     {
         private readonly DataContext _db;
+        private readonly IAuthenticationProvider _authenticationProvider;
 
-        public BudgetCategoryRepository(DataContext dataContext)
+        public BudgetCategoryRepository(DataContext dataContext, IAuthenticationProvider authenticationProvider)
         {
             _db = dataContext;
+            _authenticationProvider = authenticationProvider;
         }
 
         #region Implementation of IAsyncRepository<Transaction,in int>
@@ -27,13 +30,20 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         /// <inheritdoc />
         public async Task<BudgetCategory> GetByIdAsync(int id)
         {
-            return await _db.BudgetCategories.Include(x => x.BudgetCategoryBudgetedAmounts).Where(x => x.Id == id).FirstOrDefaultAsync();
+            return await _db.BudgetCategories
+                            .Include(x => x.BudgetCategoryBudgetedAmounts)
+                            .Where(x => AccessibleBudgetIds().Contains(x.BudgetId))
+                            .Where(x => x.Id == id).FirstOrDefaultAsync();
         }
 
         /// <inheritdoc />
         public async Task<IReadOnlyList<BudgetCategory>> ListAllAsync()
         {
-            return await _db.BudgetCategories.OrderBy(x => x.Order).ToListAsync();
+            return await _db.BudgetCategories
+                            .Include(x=>x.BudgetCategoryBudgetedAmounts)
+                            .Where(x=>AccessibleBudgetIds().Contains(x.BudgetId))
+                            .OrderBy(x => x.Order)
+                            .ToListAsync();
         }
 
         /// <inheritdoc />
@@ -87,6 +97,7 @@ namespace raBudget.EfPersistence.RepositoryImplementations
                                 .Include(x => x.SourceAllocations)
                                 .Include(x => x.TargetAllocations)
                                 .Include(x => x.BudgetCategoryBudgetedAmounts)
+                                .Where(x => AccessibleBudgetIds().Contains(x.BudgetId))
                                 .OrderBy(x => x.Order)
                                 .Where(x => x.BudgetId == budget.Id);
 
@@ -123,20 +134,23 @@ namespace raBudget.EfPersistence.RepositoryImplementations
             return await categories.ToListAsync();
         }
 
-
-        public async Task<bool> IsAccessibleToUser(User user, int budgetCategoryId)
+        public async Task<bool> IsAccessibleToUser(int budgetCategoryId)
         {
-            return await IsAccessibleToUser(user.Id, budgetCategoryId);
-        }
-
-        public async Task<bool> IsAccessibleToUser(Guid userId, int budgetCategoryId)
-        {
-            return await _db.Budgets.AsNoTracking()
+            return await _db.Budgets
+                            .AsNoTracking()
                             .Include(x => x.BudgetCategories)
-                            .Include(x => x.BudgetShares)
-                            .Where(x => x.OwnedByUserId == userId || x.BudgetShares.Any(s => s.SharedWithUserId == userId))
+                            .Where(x=>AccessibleBudgetIds().Contains(x.Id))
                             .SelectMany(x => x.BudgetCategories)
                             .AnyAsync(x => x.Id == budgetCategoryId);
+        }
+
+        private IQueryable<int> AccessibleBudgetIds()
+        {
+            return _db.Budgets
+                      .Include(x => x.BudgetShares)
+                      .Where(x => x.OwnedByUserId == _authenticationProvider.User.UserId
+                                  || x.BudgetShares.Any(s => s.SharedWithUserId == _authenticationProvider.User.UserId))
+                      .Select(x => x.Id);
         }
 
         #endregion

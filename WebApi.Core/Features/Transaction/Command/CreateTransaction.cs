@@ -64,7 +64,7 @@ namespace raBudget.Core.Features.Transaction.Command
 
             public override async Task<Response> Handle(Command command, CancellationToken cancellationToken)
             {
-                if (!await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, command.BudgetCategoryId))
+                if (!await BudgetCategoryRepository.IsAccessibleToUser(command.BudgetCategoryId))
                 {
                     throw new NotFoundException("Target budget category was not found.");
                 }

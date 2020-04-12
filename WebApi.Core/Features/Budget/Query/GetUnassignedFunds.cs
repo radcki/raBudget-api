@@ -38,7 +38,7 @@ namespace raBudget.Core.Features.Budget.Query
             /// <inheritdoc />
             public override async Task<Response> Handle(Query request, CancellationToken cancellationToken)
             {
-                var repositoryResult = await BudgetRepository.ListAvailableBudgets(AuthenticationProvider.User.UserId);
+                var repositoryResult = await BudgetRepository.ListAvailableBudgets();
                 var budget = repositoryResult.FirstOrDefault(x => x.Id == request.BudgetId);
                 if (budget == null)
                 {

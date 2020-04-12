@@ -44,7 +44,7 @@ namespace raBudget.Core.Features.Allocation.Query
             public override async Task<AllocationDto> Handle(Query request, CancellationToken cancellationToken)
             {
                 var allocationEntity = await AllocationRepository.GetByIdAsync(request.AllocationId);
-                if (allocationEntity.IsNullOrDefault() || !await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, allocationEntity.Id))
+                if (allocationEntity.IsNullOrDefault() || !await BudgetCategoryRepository.IsAccessibleToUser(allocationEntity.Id))
                 {
                     throw new NotFoundException("Target allocation was not found.");
                 }

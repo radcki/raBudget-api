@@ -14,17 +14,16 @@ namespace raBudget.Core.Interfaces.Repository
         /// Find all budgets available for user - owned and shared.
         /// </summary>
         /// <returns>Collection of budget entities</returns>
-        Task<IEnumerable<Budget>> ListAvailableBudgets(Guid userId);
+        Task<IEnumerable<Budget>> ListAvailableBudgets();
 
 
         /// <summary>
         /// Find budgets owned by user.
         /// </summary>
         /// <returns>Collection of budget entities</returns>
-        Task<IEnumerable<Budget>> ListOwnedBudgets(Guid userId);
+        Task<IEnumerable<Budget>> ListOwnedBudgets();
 
-        Task<bool> IsAccessibleToUser(User user, int budgetId);
-        Task<bool> IsAccessibleToUser(Guid userId, int budgetId);
+        Task<bool> IsAccessibleToUser(int budgetId);
 
     }
 }

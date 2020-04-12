@@ -78,7 +78,7 @@ namespace raBudget.Core.Features.Transaction.Query
 
             public override async Task<Response> Handle(Query query, CancellationToken cancellationToken)
             {
-                if (!await _budgetRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, query.BudgetId))
+                if (!await _budgetRepository.IsAccessibleToUser(query.BudgetId))
                 {
                     throw new AccessViolationException("Requested budget not available");
                 }

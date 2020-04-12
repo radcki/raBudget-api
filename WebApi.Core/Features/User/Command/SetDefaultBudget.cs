@@ -29,7 +29,7 @@ namespace raBudget.Core.Features.User.Command
                 RuleFor(x => x.BudgetId).NotEmpty();
 
                 /* Check if user has access to budget */
-                var availableBudgets = budgetRepository.ListAvailableBudgets(authenticationProvider.User.UserId).Result;
+                var availableBudgets = budgetRepository.ListAvailableBudgets().Result;
                 RuleFor(x => availableBudgets.Any(s => s.Id == x.BudgetId))
                    .NotEqual(false)
                    .WithMessage("Requested budget does not exist.");

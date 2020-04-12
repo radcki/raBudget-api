@@ -53,8 +53,8 @@ namespace raBudget.Core.Features.Allocation.Command
                     throw new NotFoundException("Target allocation was not found.");
                 }
 
-                var originalTargetCategoryAccessible = await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, allocation.TargetBudgetCategoryId);
-                var targetCategoryAccessible = await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.TargetBudgetCategoryId);
+                var originalTargetCategoryAccessible = await BudgetCategoryRepository.IsAccessibleToUser(allocation.TargetBudgetCategoryId);
+                var targetCategoryAccessible = await BudgetCategoryRepository.IsAccessibleToUser(request.TargetBudgetCategoryId);
                 if (!targetCategoryAccessible || !originalTargetCategoryAccessible)
                 {
                     throw new NotFoundException("Target budget category was not found.");
@@ -62,7 +62,7 @@ namespace raBudget.Core.Features.Allocation.Command
 
                 if (request.SourceBudgetCategoryId != null)
                 {
-                    var sourceCategoryAccessible = BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, request.SourceBudgetCategoryId.Value);
+                    var sourceCategoryAccessible = BudgetCategoryRepository.IsAccessibleToUser(request.SourceBudgetCategoryId.Value);
                     if (!await sourceCategoryAccessible)
                     {
                         throw new NotFoundException("Source budget category was not found.");

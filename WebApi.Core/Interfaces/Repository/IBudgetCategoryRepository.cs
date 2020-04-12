@@ -12,7 +12,6 @@ namespace raBudget.Core.Interfaces.Repository
     {
         Task<IReadOnlyList<BudgetCategory>> ListWithFilter(Budget budget, BudgetCategoryFilterModel filters);
 
-        Task<bool> IsAccessibleToUser(User user, int budgetCategoryId);
-        Task<bool> IsAccessibleToUser(Guid userId, int budgetCategoryId);
+        Task<bool> IsAccessibleToUser(int budgetCategoryId);
     }
 }

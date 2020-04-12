@@ -45,7 +45,7 @@ namespace raBudget.Core.Features.BudgetCategories.Command
 
             public override async Task<BudgetCategoryDto> Handle(Command command, CancellationToken cancellationToken)
             {
-                var isAccessible = await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, command.BudgetCategoryId);
+                var isAccessible = await BudgetCategoryRepository.IsAccessibleToUser(command.BudgetCategoryId);
 
                 var budgetCategoryEntity = await BudgetCategoryRepository.GetByIdAsync(command.BudgetCategoryId);
 

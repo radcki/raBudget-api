@@ -44,7 +44,7 @@ namespace raBudget.Core.Features.BudgetCategories.Query
 
             public override async Task<BudgetCategoryDto> Handle(Query query, CancellationToken cancellationToken)
             {
-                var isAccessible = await BudgetCategoryRepository.IsAccessibleToUser(AuthenticationProvider.User.UserId, query.BudgetCategoryId);
+                var isAccessible = await BudgetCategoryRepository.IsAccessibleToUser(query.BudgetCategoryId);
                 if (!isAccessible)
                 {
                     throw new NotFoundException("Specified budget does not exist");

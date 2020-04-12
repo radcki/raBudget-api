@@ -74,7 +74,7 @@ namespace raBudget.Core.Features.BudgetCategories.Command
 
             public override async Task<BudgetCategoryDto> Handle(Command command, CancellationToken cancellationToken)
             {
-                var availableBudgets = await _budgetRepository.ListAvailableBudgets(AuthenticationProvider.User.UserId);
+                var availableBudgets = await _budgetRepository.ListAvailableBudgets();
                 if (availableBudgets.All(s => s.Id != command.BudgetId))
                 {
                     throw new NotFoundException("Specified budget does not exist");
