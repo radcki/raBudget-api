@@ -15,7 +15,7 @@ namespace raBudget.Domain.Entities
         public string EnglishName { get; private set; }
         public string NativeName { get; private set; }
 
-        private Currency()
+        public Currency()
         {
         }
 

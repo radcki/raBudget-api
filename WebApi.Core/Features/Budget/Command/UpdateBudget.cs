@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using raBudget.Core.Exceptions;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
+using raBudget.Domain.Enum;
 
 namespace raBudget.Core.Features.Budget.Command
 {
@@ -20,10 +22,16 @@ namespace raBudget.Core.Features.Budget.Command
         {
             public int BudgetId { get; set; }
             public string Name { get; set; }
-            public Currency Currency { get; set; }
+            public CurrencyDto Currency { get; set; }
             public DateTime StartingDate { get; set; }
             public Guid OwnedByUserId { get; set; }
 
+        }
+
+        public class CurrencyDto
+        {
+            public eCurrency CurrencyCode { get; set; }
+            public string Code { get; set; }
         }
 
         public class Response : BaseResponse<Unit>

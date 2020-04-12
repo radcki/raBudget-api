@@ -8,9 +8,12 @@ using MediatR;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Dto.Common;
 using raBudget.Core.Exceptions;
+using raBudget.Core.Features.Allocation.Command;
 using raBudget.Core.Interfaces;
+using raBudget.Core.Interfaces.Mapping;
 using raBudget.Core.Interfaces.Repository;
 using raBudget.Domain.Entities;
+using raBudget.Domain.Enum;
 using raBudget.Domain.ExtensionMethods;
 
 namespace raBudget.Core.Features.Budget.Command
@@ -20,7 +23,7 @@ namespace raBudget.Core.Features.Budget.Command
         public class Command : IRequest<Response>
         {
             public string Name { get; set; }
-            public Currency Currency { get; set; }
+            public CurrencyDto Currency { get; set; }
             public DateTime StartingDate { get; set; }
 
             public IEnumerable<BudgetCategoryDto> BudgetCategories { get; set; }
@@ -28,6 +31,26 @@ namespace raBudget.Core.Features.Budget.Command
             public Command()
             {
                 BudgetCategories = new List<BudgetCategoryDto>();
+            }
+        }
+
+
+        public class CurrencyDto
+        {
+            public eCurrency CurrencyCode { get; set; }
+            public string Code { get; set; }
+        }
+
+        public class Mapper : IHaveCustomMapping
+        {
+            public void CreateMappings(Profile configuration)
+            {
+                // dto -> entity
+                configuration.CreateMap<Command, Domain.Entities.Budget>()
+                             .ForMember(entity => entity.CurrentFunds, opt => opt.Ignore())
+                             .ForMember(entity => entity.OwnedByUser, opt => opt.Ignore())
+                             .ForMember(entity => entity.CurrencyCode, opt => opt.MapFrom(dto => dto.Currency.CurrencyCode))
+                             .ForMember(entity => entity.BudgetCategories, opt => opt.MapFrom(dto => dto.BudgetCategories));
             }
         }
 
