@@ -15,7 +15,6 @@ namespace raBudget.Core.Features.Transaction.Command
         public class Request : IRequest<Response>
         {
             public int TransactionId { get; set; }
-            
         }
 
         public class Response
@@ -30,14 +29,24 @@ namespace raBudget.Core.Features.Transaction.Command
             }
         }
 
+        public class Notification : INotification
+        {
+            public int BudgetId { get; set; }
+            public int TransactionId { get; set; }
+        }
+
         public class Handler : BaseTransactionHandler<Request, Response>
         {
+            private readonly IMediator _mediator;
+
             public Handler
             (IBudgetCategoryRepository budgetCategoryRepository,
              ITransactionRepository transactionRepository,
              IMapper mapper,
-             IAuthenticationProvider authenticationProvider) : base(budgetCategoryRepository, transactionRepository, mapper, authenticationProvider)
+             IAuthenticationProvider authenticationProvider,
+             IMediator mediator) : base(budgetCategoryRepository, transactionRepository, mapper, authenticationProvider)
             {
+                _mediator = mediator;
             }
 
             public override async Task<Response> Handle(Request request, CancellationToken cancellationToken)
@@ -50,6 +59,12 @@ namespace raBudget.Core.Features.Transaction.Command
 
                 await TransactionRepository.DeleteAsync(transactionEntity);
                 await TransactionRepository.SaveChangesAsync(cancellationToken);
+
+                _ = _mediator.Publish(new Notification()
+                                      {
+                                          BudgetId = transactionEntity.BudgetCategory.BudgetId,
+                                          TransactionId = transactionEntity.Id
+                                      }, cancellationToken);
 
                 return new Response();
             }

@@ -8,6 +8,7 @@ using raBudget.Core.Dto.Allocation;
 using raBudget.Core.Dto.Budget;
 using raBudget.Core.Dto.User;
 using raBudget.Core.Exceptions;
+using raBudget.Core.Features.Transaction.Command;
 using raBudget.Core.Interfaces;
 using raBudget.Core.Interfaces.Mapping;
 using raBudget.Core.Interfaces.Repository;
@@ -51,20 +52,30 @@ namespace raBudget.Core.Features.Allocation.Command
                              .ForMember(entity => entity.TargetBudgetCategoryId, opt => opt.MapFrom(dto => dto.TargetBudgetCategoryId));
             }
         }
+        public class Notification : INotification
+        {
+            public int BudgetId { get; set; }
+            public AllocationDto Allocation { get; set; }
+        }
 
         public class Handler : BaseAllocationHandler<Command, AllocationDto>
         {
+            private readonly IMediator _mediator;
+
             public Handler
             (IBudgetCategoryRepository budgetCategoryRepository,
              IAllocationRepository allocationRepository,
              IMapper mapper,
-             IAuthenticationProvider authenticationProvider) : base(budgetCategoryRepository, allocationRepository, mapper, authenticationProvider)
+             IAuthenticationProvider authenticationProvider, 
+             IMediator mediator) : base(budgetCategoryRepository, allocationRepository, mapper, authenticationProvider)
             {
+                _mediator = mediator;
             }
 
             public override async Task<AllocationDto> Handle(Command request, CancellationToken cancellationToken)
             {
-                if (!await BudgetCategoryRepository.IsAccessibleToUser(request.TargetBudgetCategoryId))
+                var category = await BudgetCategoryRepository.GetByIdAsync(request.TargetBudgetCategoryId);
+                if (category == null)
                 {
                     throw new NotFoundException("Target budget category was not found.");
                 }
@@ -82,7 +93,13 @@ namespace raBudget.Core.Features.Allocation.Command
                     throw new SaveFailureException(nameof(allocationEntity), allocationEntity);
                 }
 
-                return Mapper.Map<AllocationDto>(savedAllocation);
+                var dto = Mapper.Map<AllocationDto>(savedAllocation);
+                _ = _mediator.Publish(new Notification()
+                                      {
+                                          BudgetId = category.BudgetId,
+                                          Allocation = dto
+                                      }, cancellationToken);
+                return dto;
             }
         }
     }

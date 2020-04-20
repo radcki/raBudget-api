@@ -7,8 +7,10 @@ using raBudget.Core.Features.Budget.Query;
 using raBudget.Core.Features.BudgetCategories.Command;
 using raBudget.Core.Features.BudgetCategories.Query;
 using raBudget.Core.Features.User.Command;
+using raBudget.Core.Interfaces;
 using raBudget.Domain.Entities;
 using raBudget.Domain.Enum;
+using WebApi.Hubs;
 
 namespace raBudget.WebApi.Controllers
 {
@@ -91,11 +93,13 @@ namespace raBudget.WebApi.Controllers
         /// Save order of budget categories
         /// </summary>
         /// <param name="command"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost("{id}/save-categories-order")]
-        public async Task<ActionResult> SaveBudgetCategoryOrder([FromBody] SaveBudgetCategoryOrder.Command command)
+        public async Task<ActionResult> SaveBudgetCategoryOrder([FromBody] SaveBudgetCategoryOrder.Command command, [FromRoute] int id)
         {
-            return Ok(await Mediator.Send(command));
+            var response = await Mediator.Send(command);
+            return Ok(response);
         }
 
         #endregion

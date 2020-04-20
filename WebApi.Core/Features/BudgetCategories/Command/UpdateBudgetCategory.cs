@@ -34,13 +34,22 @@ namespace raBudget.Core.Features.BudgetCategories.Command
             }
         }
 
+        public class Notification : INotification
+        {
+            public int BudgetId { get; set; }
+            public BudgetCategoryDto BudgetCategory { get; set; }
+        }
+
         public class Handler : BaseBudgetCategoryHandler<Command, BudgetCategoryDto>
         {
+            private readonly IMediator _mediator;
+
             public Handler
             (IBudgetCategoryRepository budgetCategoryRepository,
              IMapper mapper,
-             IAuthenticationProvider authenticationProvider) : base(budgetCategoryRepository, mapper, authenticationProvider)
+             IAuthenticationProvider authenticationProvider, IMediator mediator) : base(budgetCategoryRepository, mapper, authenticationProvider)
             {
+                _mediator = mediator;
             }
 
             public override async Task<BudgetCategoryDto> Handle(Command command, CancellationToken cancellationToken)
@@ -86,7 +95,14 @@ namespace raBudget.Core.Features.BudgetCategories.Command
                     throw new SaveFailureException(nameof(budgetCategoryEntity), budgetCategoryEntity);
                 }
 
-                return Mapper.Map<BudgetCategoryDto>(budgetCategoryEntity);
+                var dto = Mapper.Map<BudgetCategoryDto>(budgetCategoryEntity);
+                _ = _mediator.Publish(new Notification()
+                                      {
+                                          BudgetId = budgetCategoryEntity.BudgetId,
+                                          BudgetCategory = dto
+                                      }, cancellationToken);
+
+                return dto;
             }
         }
     }

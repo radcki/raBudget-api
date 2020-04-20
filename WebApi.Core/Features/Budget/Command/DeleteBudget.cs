@@ -29,10 +29,18 @@ namespace raBudget.Core.Features.Budget.Command
             }
         }
 
+        public class Notification : INotification
+        {
+            public int BudgetId { get; set; }
+        }
+
         public class Handler : BaseBudgetHandler<Request, Response>
         {
-            public Handler(IBudgetRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider) : base(repository, mapper, authenticationProvider)
+            private readonly IMediator _mediator;
+
+            public Handler(IBudgetRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider, IMediator mediator) : base(repository, mapper, authenticationProvider)
             {
+                _mediator = mediator;
             }
 
             /// <inheritdoc />
@@ -46,7 +54,10 @@ namespace raBudget.Core.Features.Budget.Command
 
                 await BudgetRepository.DeleteAsync(budgetEntity);
                 await BudgetRepository.SaveChangesAsync(cancellationToken);
-
+                _ = _mediator.Publish(new Notification()
+                                      {
+                                          BudgetId = budgetEntity.Id,
+                                      }, cancellationToken);
                 return new Response() {Data = new Unit()};
             }
         }

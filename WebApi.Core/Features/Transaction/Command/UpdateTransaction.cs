@@ -54,21 +54,30 @@ namespace raBudget.Core.Features.Transaction.Command
             }
         }
 
+        public class Notification : INotification
+        {
+            public int BudgetId { get; set; }
+            public TransactionDetailsDto Transaction { get; set; }
+        }
+
         public class Handler : BaseTransactionHandler<Command, Response>
         {
+            private readonly IMediator _mediator;
+
             public Handler
             (IBudgetCategoryRepository budgetCategoryRepository,
              ITransactionRepository transactionRepository,
              IMapper mapper,
-             IAuthenticationProvider authenticationProvider) : base(budgetCategoryRepository, transactionRepository, mapper, authenticationProvider)
+             IAuthenticationProvider authenticationProvider, IMediator mediator) : base(budgetCategoryRepository, transactionRepository, mapper, authenticationProvider)
             {
+                _mediator = mediator;
             }
 
             public override async Task<Response> Handle(Command command, CancellationToken cancellationToken)
             {
                 var transaction = await TransactionRepository.GetByIdAsync(command.TransactionId);
-                var budgetCategoryAccessible = BudgetCategoryRepository.IsAccessibleToUser(command.BudgetCategoryId);
-                if (!await budgetCategoryAccessible)
+                var budgetCategory = await BudgetCategoryRepository.GetByIdAsync(command.BudgetCategoryId);
+                if (budgetCategory == null)
                 {
                     throw new NotFoundException("Target budget category was not found.");
                 }
@@ -82,7 +91,15 @@ namespace raBudget.Core.Features.Transaction.Command
                 await TransactionRepository.UpdateAsync(transaction);
                 await TransactionRepository.SaveChangesAsync(cancellationToken);
 
-                return new Response() {Data = Mapper.Map<TransactionDetailsDto>(transaction)};
+                var updated = Mapper.Map<TransactionDetailsDto>(transaction);
+                updated.Type = budgetCategory.Type;
+                _ = _mediator.Publish(new Notification()
+                                      {
+                                          BudgetId = budgetCategory.BudgetId,
+                                          Transaction = updated
+                                      }, cancellationToken);
+
+                return new Response {Data = updated};
             }
         }
     }
