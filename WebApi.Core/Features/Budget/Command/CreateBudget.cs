@@ -67,11 +67,17 @@ namespace raBudget.Core.Features.Budget.Command
                 RuleFor(x => x.StartingDate).NotEmpty();
             }
         }
-
+        public class Notification : INotification
+        {
+            public int BudgetId { get; set; }
+        }
         public class Handler : BaseBudgetHandler<Command, Response>
         {
-            public Handler(IBudgetRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider) : base(repository, mapper, authenticationProvider)
+            private readonly IMediator _mediator;
+
+            public Handler(IBudgetRepository repository, IMapper mapper, IAuthenticationProvider authenticationProvider, IMediator mediator) : base(repository, mapper, authenticationProvider)
             {
+                _mediator = mediator;
             }
 
             /// <inheritdoc />
@@ -88,6 +94,10 @@ namespace raBudget.Core.Features.Budget.Command
                 }
 
                 var dto = Mapper.Map<BudgetDto>(savedBudget);
+                _ = _mediator.Publish(new Notification()
+                                      {
+                                          BudgetId = dto.BudgetId,
+                                      }, cancellationToken);
 
                 return new Response() {Data = dto};
             }

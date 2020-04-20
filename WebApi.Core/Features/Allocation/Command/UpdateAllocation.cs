@@ -27,22 +27,35 @@ namespace raBudget.Core.Features.Allocation.Command
 
         public class Validator : AbstractValidator<Command>
         {
-            public Validator()
+            private readonly IMediator _mediator;
+
+            public Validator(IMediator mediator)
             {
+                _mediator = mediator;
                 RuleFor(x => x.Description).NotEmpty();
                 RuleFor(x => x.TargetBudgetCategoryId).NotEmpty();
                 RuleFor(x => x.Amount).NotEmpty();
             }
         }
 
+        public class Notification : INotification
+        {
+            public int BudgetId { get; set; }
+            public AllocationDto Allocation { get; set; }
+        }
+
         public class Handler : BaseAllocationHandler<Command, AllocationDto>
         {
+            private readonly IMediator _mediator;
+
             public Handler
             (IBudgetCategoryRepository budgetCategoryRepository,
              IAllocationRepository allocationRepository,
              IMapper mapper,
-             IAuthenticationProvider authenticationProvider) : base(budgetCategoryRepository, allocationRepository, mapper, authenticationProvider)
+             IAuthenticationProvider authenticationProvider,
+             IMediator mediator) : base(budgetCategoryRepository, allocationRepository, mapper, authenticationProvider)
             {
+                _mediator = mediator;
             }
 
             public override async Task<AllocationDto> Handle(Command request, CancellationToken cancellationToken)
@@ -77,8 +90,13 @@ namespace raBudget.Core.Features.Allocation.Command
 
                 await AllocationRepository.UpdateAsync(allocation);
                 await AllocationRepository.SaveChangesAsync(cancellationToken);
-
-                return Mapper.Map<AllocationDto>(allocation);
+                var dto = Mapper.Map<AllocationDto>(allocation);
+                _ = _mediator.Publish(new Notification()
+                                      {
+                                          BudgetId = allocation.TargetBudgetCategory.BudgetId,
+                                          Allocation = dto
+                                      }, cancellationToken);
+                return dto;
             }
         }
     }

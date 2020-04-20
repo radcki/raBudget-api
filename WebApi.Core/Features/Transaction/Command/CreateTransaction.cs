@@ -52,19 +52,29 @@ namespace raBudget.Core.Features.Transaction.Command
             }
         }
 
+        public class Notification : INotification
+        {
+            public int BudgetId { get; set; }
+            public TransactionDetailsDto Transaction { get; set; }
+        }
+
         public class Handler : BaseTransactionHandler<Command, Response>
         {
+            private readonly IMediator _mediator;
+
             public Handler
             (IBudgetCategoryRepository budgetCategoryRepository,
              ITransactionRepository transactionRepository,
              IMapper mapper,
-             IAuthenticationProvider authenticationProvider) : base(budgetCategoryRepository, transactionRepository, mapper, authenticationProvider)
+             IAuthenticationProvider authenticationProvider, IMediator mediator) : base(budgetCategoryRepository, transactionRepository, mapper, authenticationProvider)
             {
+                _mediator = mediator;
             }
 
             public override async Task<Response> Handle(Command command, CancellationToken cancellationToken)
             {
-                if (!await BudgetCategoryRepository.IsAccessibleToUser(command.BudgetCategoryId))
+                var budgetCategory = await BudgetCategoryRepository.GetByIdAsync(command.BudgetCategoryId);
+                if (budgetCategory == null)
                 {
                     throw new NotFoundException("Target budget category was not found.");
                 }
@@ -79,8 +89,17 @@ namespace raBudget.Core.Features.Transaction.Command
                     throw new SaveFailureException(nameof(transactionEntity), transactionEntity);
                 }
 
-                return new Response {Data = Mapper.Map<TransactionDetailsDto>(savedTransaction)};
+                var createdTransaction = Mapper.Map<TransactionDetailsDto>(savedTransaction);
+                createdTransaction.Type = budgetCategory.Type;
+                _ = _mediator.Publish(new Notification()
+                                      {
+                                          BudgetId = budgetCategory.BudgetId,
+                                          Transaction = createdTransaction
+                                      }, cancellationToken);
+
+                return new Response {Data = createdTransaction};
             }
+            
         }
     }
 }

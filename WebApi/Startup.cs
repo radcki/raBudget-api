@@ -118,7 +118,7 @@ namespace WebApi
                                    );
 
             // Add MediatR
-            services.AddMediatR(typeof(CheckInUser).GetTypeInfo().Assembly);
+            services.AddMediatR(typeof(CheckInUser).GetTypeInfo().Assembly, Assembly.GetExecutingAssembly());
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestPerformanceBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>));
 
@@ -222,6 +222,7 @@ namespace WebApi
                                  endpoints.MapControllers();
                                  endpoints.MapHub<BudgetsHub>("/hubs/budgets");
                                  endpoints.MapHub<TransactionsHub>("/hubs/transactions");
+                                 endpoints.MapHub<AllocationsHub>("/hubs/allocations");
                              });
         }
 
@@ -281,8 +282,19 @@ namespace WebApi
                                                               c.Response.StatusCode = 401;
                                                               c.Response.ContentType = "application/json";
                                                               return c.Response.WriteAsync(JsonConvert.SerializeObject(problem));
-                                                          }
-                             };
+                                                          },
+                                 OnMessageReceived = context =>
+                                                     {
+                                                         var accessToken = context.Request.Query["access_token"];
+
+                                                         var path = context.HttpContext.Request.Path;
+                                                         if (path.StartsWithSegments("/hubs"))
+                                                         {
+                                                             context.Token = accessToken;
+                                                         }
+                                                         return Task.CompletedTask;
+                                                     }
+            };
 
             options.SaveToken = true;
             options.Validate();

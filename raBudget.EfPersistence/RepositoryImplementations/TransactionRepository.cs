@@ -34,7 +34,10 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         /// <inheritdoc />
         public async Task<Transaction> GetByIdAsync(int id)
         {
-            return await _db.Transactions.FindAsync(id);
+            return await _db.Transactions
+                            .Include(x=>x.TransactionSchedule)
+                            .Include(x=>x.BudgetCategory)
+                            .FirstOrDefaultAsync(x=>x.Id == id);
         }
 
         /// <inheritdoc />

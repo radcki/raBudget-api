@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using raBudget.Core.Features.Transaction.Command;
 using raBudget.Core.Features.Transaction.Query;
+using WebApi.Hubs;
 
 namespace raBudget.WebApi.Controllers
 {

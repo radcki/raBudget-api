@@ -59,17 +59,26 @@ namespace raBudget.Core.Features.BudgetCategories.Command
             }
         }
 
+        public class Notification : INotification
+        {
+            public int BudgetId { get; set; }
+            public BudgetCategoryDto BudgetCategory { get; set; }
+        }
+
         public class Handler : BaseBudgetCategoryHandler<Command, BudgetCategoryDto>
         {
             private readonly IBudgetRepository _budgetRepository;
+            private readonly IMediator _mediator;
 
             public Handler
             (IBudgetCategoryRepository budgetCategoryRepository,
              IBudgetRepository budgetRepository,
              IMapper mapper,
-             IAuthenticationProvider authenticationProvider) : base(budgetCategoryRepository, mapper, authenticationProvider)
+             IAuthenticationProvider authenticationProvider,
+             IMediator mediator) : base(budgetCategoryRepository, mapper, authenticationProvider)
             {
                 _budgetRepository = budgetRepository;
+                _mediator = mediator;
             }
 
             public override async Task<BudgetCategoryDto> Handle(Command command, CancellationToken cancellationToken)
@@ -79,7 +88,8 @@ namespace raBudget.Core.Features.BudgetCategories.Command
                 {
                     throw new NotFoundException("Specified budget does not exist");
                 }
-                var maxOrder = (await BudgetCategoryRepository.ListWithFilter(new Domain.Entities.Budget(command.BudgetId), new BudgetCategoryFilterModel())).Max(x=>x.Order);
+
+                var maxOrder = (await BudgetCategoryRepository.ListWithFilter(new Domain.Entities.Budget(command.BudgetId), new BudgetCategoryFilterModel())).Max(x => x.Order);
 
                 var budgetCategoryEntity = Mapper.Map<BudgetCategory>(command);
                 budgetCategoryEntity.Order = maxOrder + 1;
@@ -109,7 +119,13 @@ namespace raBudget.Core.Features.BudgetCategories.Command
                     throw new SaveFailureException(nameof(budgetCategoryEntity), budgetCategoryEntity);
                 }
 
-                return Mapper.Map<BudgetCategoryDto>(savedBudgetCategory);
+                var dto = Mapper.Map<BudgetCategoryDto>(savedBudgetCategory);
+                _ = _mediator.Publish(new Notification()
+                                      {
+                                          BudgetId = budgetCategoryEntity.BudgetId,
+                                          BudgetCategory = dto
+                                      }, cancellationToken);
+                return dto;
             }
         }
     }

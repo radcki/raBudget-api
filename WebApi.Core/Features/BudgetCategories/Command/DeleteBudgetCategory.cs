@@ -29,13 +29,21 @@ namespace raBudget.Core.Features.BudgetCategories.Command
             }
         }
 
+        public class Notification : INotification
+        {
+            public int BudgetId { get; set; }
+        }
+
         public class Handler : BaseBudgetCategoryHandler<Command, Unit>
         {
+            private readonly IMediator _mediator;
+
             public Handler
             (IBudgetCategoryRepository budgetCategoryRepository,
              IMapper mapper,
-             IAuthenticationProvider authenticationProvider) : base(budgetCategoryRepository, mapper, authenticationProvider)
+             IAuthenticationProvider authenticationProvider, IMediator mediator) : base(budgetCategoryRepository, mapper, authenticationProvider)
             {
+                _mediator = mediator;
             }
 
 
@@ -50,6 +58,10 @@ namespace raBudget.Core.Features.BudgetCategories.Command
                 var budgetCategoryToDelete = await BudgetCategoryRepository.GetByIdAsync(command.BudgetCategoryId);
                 await BudgetCategoryRepository.DeleteAsync(budgetCategoryToDelete);
                 await BudgetCategoryRepository.SaveChangesAsync(cancellationToken);
+                _ = _mediator.Publish(new Notification()
+                                      {
+                                          BudgetId = budgetCategoryToDelete.BudgetId
+                                      }, cancellationToken);
                 return new Unit();
             }
         }

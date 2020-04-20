@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using raBudget.Core.Interfaces;
 using WebApi.Models.Dtos;
 
 namespace WebApi.Hubs
@@ -9,6 +11,17 @@ namespace WebApi.Hubs
     [Authorize]
     public class TransactionsHub : Hub
     {
+        public override async Task OnConnectedAsync()
+        {
+            await base.OnConnectedAsync();
+        }
+    }
+
+    public enum eTransactionHubEvent
+    {
+        TransactionAdded,
+        TransactionRemoved,
+        TransactionUpdated
     }
 
     public class TransactionsNotifier
@@ -16,33 +29,26 @@ namespace WebApi.Hubs
         #region Privates
 
         private readonly IHubContext<TransactionsHub> _hubContext;
+        private readonly IAuthenticationProvider _authenticationProvider;
+        private string UserId => _authenticationProvider.User.UserId.ToString();
 
         #endregion
 
         #region Constructors
 
-        public TransactionsNotifier(IHubContext<TransactionsHub> hubContext)
+        public TransactionsNotifier(IHubContext<TransactionsHub> hubContext, IAuthenticationProvider authenticationProvider)
         {
             _hubContext = hubContext;
+            _authenticationProvider = authenticationProvider;
         }
 
         #endregion
 
         #region Methods
 
-        public async Task TransactionAdded(Guid userId, TransactionDto newTransaction)
+        public async Task Send(eTransactionHubEvent eventType, INotification payload)
         {
-            await _hubContext.Clients.User(userId.ToString()).SendAsync("TransactionAdded", newTransaction);
-        }
-
-        public async Task TransactionRemoved(Guid userId, int transactionId)
-        {
-            await _hubContext.Clients.User(userId.ToString()).SendAsync("TransactionRemoved", transactionId);
-        }
-
-        public async Task TransactionUpdated(Guid userId, TransactionDto updatedTransaction)
-        {
-            await _hubContext.Clients.User(userId.ToString()).SendAsync("TransactionUpdated", updatedTransaction);
+            await _hubContext.Clients.User(UserId).SendAsync(eventType.ToString(), payload);
         }
 
         #endregion
