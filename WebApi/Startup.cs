@@ -171,6 +171,7 @@ namespace WebApi
             services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
             services.AddScoped<BudgetsNotifier>();
             services.AddScoped<TransactionsNotifier>();
+            services.AddScoped<AllocationsNotifier>();
             services.AddSignalR();
         }
 
@@ -228,14 +229,13 @@ namespace WebApi
 
         private void ConfigureProblemDetails(ProblemDetailsOptions options)
         {
-            options.IncludeExceptionDetails = ctx => Environment.IsDevelopment();
+            options.IncludeExceptionDetails = (context, exception) => Environment.IsDevelopment();
 
             options.Map<NotImplementedException>(ex => new ExceptionProblemDetails(ex, StatusCodes.Status501NotImplemented));
             options.Map<HttpRequestException>(ex => new ExceptionProblemDetails(ex, StatusCodes.Status503ServiceUnavailable));
             options.Map<ValidationException>(ex => new ValidationProblemDetails(ex));
 
-            options.Map<Exception>(ex => 
-                                       new ExceptionProblemDetails(ex, StatusCodes.Status500InternalServerError));
+            options.Map<Exception>(ex => new ExceptionProblemDetails(ex, StatusCodes.Status500InternalServerError));
         }
 
         private void ConfigureJwtBearer(JwtBearerOptions options)
