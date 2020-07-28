@@ -27,13 +27,13 @@ namespace raBudget.EfPersistence.RepositoryImplementations
         /// <inheritdoc />
         public async Task<TransactionSchedule> GetByIdAsync(int id)
         {
-            return await _db.TransactionSchedules.FindAsync(id);
+            return await _db.TransactionSchedules.Include(x=>x.Transactions).FirstOrDefaultAsync(x=>x.Id == id);
         }
 
         /// <inheritdoc />
         public async Task<IReadOnlyList<TransactionSchedule>> ListAllAsync()
         {
-            return await _db.TransactionSchedules.ToListAsync();
+            return await _db.TransactionSchedules.Include(x => x.Transactions).ToListAsync();
         }
 
         /// <inheritdoc />
