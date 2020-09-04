@@ -144,10 +144,12 @@ namespace raBudget.EfPersistence.RepositoryImplementations
                 {
                     case eDataOrder.Default:
                     case eDataOrder.Ascending:
-                        transactions = transactions.OrderBy(x => filters.OrderBy(x));
+                        transactions = transactions.OrderBy(x => filters.OrderBy(x))
+                                                   .ThenByDescending(x => x.CreationDateTime);
                         break;
                     case eDataOrder.Descending:
-                        transactions = transactions.OrderByDescending(x => filters.OrderBy(x));
+                        transactions = transactions.OrderByDescending(x => filters.OrderBy(x))
+                                                   .ThenByDescending(x => x.CreationDateTime);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
